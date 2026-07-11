@@ -3,16 +3,54 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Flame } from "lucide-react";
-import { motion, useSpring, useTransform } from "framer-motion";
+import { motion, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
 import hero from "@/assets/hero-burger.jpg";
+
+const OFFERS = [
+  {
+    badge: "Today only",
+    title: (
+      <>
+        Double Smash <br />
+        Combo · 30% off
+      </>
+    ),
+    btnText: "Order now",
+    link: "/menu",
+  },
+  {
+    badge: "Limited time",
+    title: (
+      <>
+        Free Rosemary <br />
+        Fries on ₹500+
+      </>
+    ),
+    btnText: "Claim deal",
+    link: "/menu",
+  },
+  {
+    badge: "Happy Hour",
+    title: (
+      <>
+        BOGO Shakes <br />
+        2 PM to 5 PM
+      </>
+    ),
+    btnText: "Select shake",
+    link: "/menu",
+  },
+];
 
 export function PushingHandBanner() {
   const containerRef = useRef<HTMLDivElement>(null);
   const burgerRef = useRef<HTMLDivElement>(null);
+  const innerBurgerRef = useRef<HTMLImageElement>(null);
   
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   // Motion Values for position tracking
   const rawX = useSpring(0, { damping: 30, stiffness: 220, mass: 0.6 });
@@ -37,35 +75,58 @@ export function PushingHandBanner() {
   const textX = useSpring(0, springConfig);
   const textY = useSpring(0, springConfig);
 
-  // Idle hint animation on mount using GSAP
+  // Cycle offers every 4 seconds
   useEffect(() => {
-    if (!burgerRef.current) return;
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % OFFERS.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
 
-    // A subtle hint animation (burger wiggle + banner nudge) to prompt interaction
-    const tl = gsap.timeline({ delay: 1.5 });
-    tl.to(burgerRef.current, {
-      x: -10,
-      rotation: -5,
-      duration: 0.4,
-      ease: "power2.out",
+  // Wiggle the burger whenever the offer cycles
+  useEffect(() => {
+    if (!innerBurgerRef.current) return;
+    
+    // Avoid auto-wiggling when the user is hovering to prevent interaction jank
+    if (isHovered) return;
+
+    const tl = gsap.timeline();
+    tl.to(innerBurgerRef.current, {
+      x: -8,
+      y: -2,
+      rotate: -6,
+      duration: 0.08,
     })
-    .to(burgerRef.current, {
-      x: 5,
-      rotation: 3,
-      duration: 0.3,
-      ease: "power2.inOut",
+    .to(innerBurgerRef.current, {
+      x: 6,
+      y: 2,
+      rotate: 5,
+      duration: 0.08,
     })
-    .to(burgerRef.current, {
+    .to(innerBurgerRef.current, {
+      x: -5,
+      y: -1,
+      rotate: -4,
+      duration: 0.08,
+    })
+    .to(innerBurgerRef.current, {
+      x: 4,
+      y: 1,
+      rotate: 3,
+      duration: 0.08,
+    })
+    .to(innerBurgerRef.current, {
       x: 0,
-      rotation: 0,
-      duration: 0.5,
-      ease: "elastic.out(1, 0.5)",
+      y: 0,
+      rotate: 0,
+      duration: 0.4,
+      ease: "elastic.out(1.2, 0.4)",
     });
 
     return () => {
       tl.kill();
     };
-  }, []);
+  }, [currentIndex, isHovered]);
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
@@ -93,7 +154,6 @@ export function PushingHandBanner() {
     textY.set(relY * -6);
 
     // 2. Smashed Cheeseburger pushing reaction physics
-    // Burger center estimation: 75% width, 50% height
     const burgerCenterX = rect.width * 0.75;
     const burgerCenterY = rect.height * 0.5;
 
@@ -104,15 +164,12 @@ export function PushingHandBanner() {
 
     if (distance < pushThreshold) {
       const force = (pushThreshold - distance) / pushThreshold; // 0 to 1
-      
-      // Push direction (opposite of cursor direction relative to burger center)
       const forceDirectionX = dx / (distance || 1);
       const forceDirectionY = dy / (distance || 1);
 
       burgerX.set(forceDirectionX * force * 35);
       burgerY.set(forceDirectionY * force * 25);
       
-      // Squash & stretch: shrink in direction of force, stretch perpendicularly
       burgerScaleX.set(1 - force * 0.18);
       burgerScaleY.set(1 + force * 0.1);
       burgerRotate.set(forceDirectionX * force * -15);
@@ -133,7 +190,6 @@ export function PushingHandBanner() {
     const xVal = e.clientX - rect.left;
     const yVal = e.clientY - rect.top;
 
-    // Immediately position spring targets
     rawX.set(xVal);
     rawY.set(yVal);
 
@@ -198,24 +254,39 @@ export function PushingHandBanner() {
       >
         {/* Content Layout */}
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-5 relative z-10 pointer-events-none">
-          {/* Text details (Parallax movement) */}
+          
+          {/* Text details container (Parallax + Content sliding transition) */}
           <motion.div
             style={{ x: textX, y: textY }}
-            className="min-w-0"
+            className="min-w-0 h-[135px] relative flex flex-col justify-center overflow-hidden"
           >
-            <span className="inline-flex items-center gap-1 rounded-full bg-brand px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-foreground shadow-sm">
-              <Flame className="h-3 w-3 fill-brand-foreground" /> Today only
-            </span>
-            <h2 className="mt-2 text-xl font-bold leading-tight">
-              Double Smash <br />
-              Combo · 30% off
-            </h2>
-            <Link
-              href="/menu"
-              className="mt-3 inline-flex items-center rounded-full bg-brand px-4 py-2 text-xs font-semibold text-brand-foreground shadow-sm hover:brightness-105 transition-all pointer-events-auto"
-            >
-              Order now
-            </Link>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentIndex}
+                initial={{ y: 35, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -35, opacity: 0 }}
+                transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
+                className="absolute left-0 right-0 top-0 bottom-0 flex flex-col justify-center pointer-events-none"
+              >
+                <div>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-brand px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-foreground shadow-sm">
+                    <Flame className="h-3 w-3 fill-brand-foreground" /> {OFFERS[currentIndex].badge}
+                  </span>
+                </div>
+                <h2 className="mt-2 text-xl font-bold leading-tight">
+                  {OFFERS[currentIndex].title}
+                </h2>
+                <div>
+                  <Link
+                    href={OFFERS[currentIndex].link}
+                    className="mt-3 inline-flex items-center rounded-full bg-brand px-4 py-2 text-xs font-semibold text-brand-foreground shadow-sm hover:brightness-105 transition-all pointer-events-auto"
+                  >
+                    {OFFERS[currentIndex].btnText}
+                  </Link>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </motion.div>
 
           {/* Smashed Cheeseburger Image with pushing physics */}
@@ -231,6 +302,7 @@ export function PushingHandBanner() {
             className="shrink-0"
           >
             <img
+              ref={innerBurgerRef}
               src={hero.src}
               alt="Kaivu signature smashed cheeseburger"
               width={512}
