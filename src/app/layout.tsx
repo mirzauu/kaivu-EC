@@ -18,6 +18,7 @@ const sansFont = Inter({
 export const metadata: Metadata = {
   title: "Kaivu — Smashed Burgers, Delivered",
   description: "Deliciously Yours Mobile is a food e-commerce application for mobile devices.",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
