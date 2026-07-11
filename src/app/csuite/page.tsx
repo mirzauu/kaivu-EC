@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -21,10 +21,7 @@ import {
   Check,
   User,
   Activity,
-  MenuSquare,
-  Users,
-  Clock,
-  MapPin
+  MenuSquare
 } from "lucide-react";
 import { adminAuth, useAdminAuth } from "@/lib/admin-store";
 import { ordersStore, useOrders, Order } from "@/lib/orders-store";
@@ -45,15 +42,6 @@ import {
 
 export default function CSuiteRoot() {
   const isAuthenticated = useAdminAuth((s) => s.isAuthenticated);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return <div className="flex min-h-screen bg-[oklch(0.97_0.012_75)] font-sans"></div>;
-  }
 
   if (!isAuthenticated) {
     return <AdminLogin />;
@@ -167,7 +155,7 @@ function AdminLogin() {
 
 // --- ADMIN CONSOLE COMPONENT ---
 function AdminConsole() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "orders" | "menu" | "users" | "customers" | "settings">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "orders" | "menu" | "settings">("dashboard");
   const orders = useOrders((s) => s.orders);
   const menuItems = useMenu((s) => s.menu);
 
@@ -188,11 +176,10 @@ function AdminConsole() {
         <nav className="flex-1 space-y-1.5 px-4 py-6">
           <button
             onClick={() => setActiveTab("dashboard")}
-            className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === "dashboard"
+            className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all cursor-pointer ${activeTab === "dashboard"
                 ? "bg-brand text-brand-foreground shadow-lg shadow-brand/15"
                 : "text-[oklch(0.5_0.02_60)] hover:bg-[oklch(0.94_0.018_75)] hover:text-[oklch(0.18_0.02_50)]"
-            }`}
+              }`}
           >
             <LayoutDashboard className="h-5 w-5 shrink-0" />
             <span>Dashboard Overview</span>
@@ -200,20 +187,18 @@ function AdminConsole() {
 
           <button
             onClick={() => setActiveTab("orders")}
-            className={`flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === "orders"
+            className={`flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all cursor-pointer ${activeTab === "orders"
                 ? "bg-brand text-brand-foreground shadow-lg shadow-brand/15"
                 : "text-[oklch(0.5_0.02_60)] hover:bg-[oklch(0.94_0.018_75)] hover:text-[oklch(0.18_0.02_50)]"
-            }`}
+              }`}
           >
             <div className="flex items-center gap-3">
               <ShoppingBag className="h-5 w-5 shrink-0" />
               <span>Order Management</span>
             </div>
             {orders.filter((o) => o.status === "active").length > 0 && (
-              <span className={`grid h-5 min-w-5 place-items-center rounded-full text-[10px] font-bold px-1.5 ${
-                activeTab === "orders" ? "bg-white text-brand" : "bg-brand text-brand-foreground"
-              }`}>
+              <span className={`grid h-5 min-w-5 place-items-center rounded-full text-[10px] font-bold px-1.5 ${activeTab === "orders" ? "bg-white text-brand" : "bg-brand text-brand-foreground"
+                }`}>
                 {orders.filter((o) => o.status === "active").length}
               </span>
             )}
@@ -221,47 +206,21 @@ function AdminConsole() {
 
           <button
             onClick={() => setActiveTab("menu")}
-            className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === "menu"
+            className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all cursor-pointer ${activeTab === "menu"
                 ? "bg-brand text-brand-foreground shadow-lg shadow-brand/15"
                 : "text-[oklch(0.5_0.02_60)] hover:bg-[oklch(0.94_0.018_75)] hover:text-[oklch(0.18_0.02_50)]"
-            }`}
+              }`}
           >
             <Utensils className="h-5 w-5 shrink-0" />
             <span>Menu Management</span>
           </button>
 
           <button
-            onClick={() => setActiveTab("users")}
-            className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === "users"
-                ? "bg-brand text-brand-foreground shadow-lg shadow-brand/15"
-                : "text-[oklch(0.5_0.02_60)] hover:bg-[oklch(0.94_0.018_75)] hover:text-[oklch(0.18_0.02_50)]"
-            }`}
-          >
-            <User className="h-5 w-5 shrink-0" />
-            <span>User Management</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("customers")}
-            className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === "customers"
-                ? "bg-brand text-brand-foreground shadow-lg shadow-brand/15"
-                : "text-[oklch(0.5_0.02_60)] hover:bg-[oklch(0.94_0.018_75)] hover:text-[oklch(0.18_0.02_50)]"
-            }`}
-          >
-            <Users className="h-5 w-5 shrink-0" />
-            <span>Customer Insights</span>
-          </button>
-
-          <button
             onClick={() => setActiveTab("settings")}
-            className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === "settings"
+            className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all cursor-pointer ${activeTab === "settings"
                 ? "bg-brand text-brand-foreground shadow-lg shadow-brand/15"
                 : "text-[oklch(0.5_0.02_60)] hover:bg-[oklch(0.94_0.018_75)] hover:text-[oklch(0.18_0.02_50)]"
-            }`}
+              }`}
           >
             <Settings className="h-5 w-5 shrink-0" />
             <span>Settings & Tools</span>
@@ -288,8 +247,6 @@ function AdminConsole() {
               {activeTab === "dashboard" && "Dashboard Overview"}
               {activeTab === "orders" && "Order Management"}
               {activeTab === "menu" && "Menu Management"}
-              {activeTab === "users" && "User Management"}
-              {activeTab === "customers" && "Customer Insights"}
               {activeTab === "settings" && "Settings & Simulator"}
             </h2>
             <p className="text-xs text-[oklch(0.5_0.02_60)]">
@@ -324,8 +281,6 @@ function AdminConsole() {
           )}
           {activeTab === "orders" && <OrdersTab orders={orders} />}
           {activeTab === "menu" && <MenuTab menuItems={menuItems} />}
-          {activeTab === "users" && <UsersTab />}
-          {activeTab === "customers" && <CustomersTab />}
           {activeTab === "settings" && <SettingsTab />}
         </main>
       </div>
@@ -633,11 +588,10 @@ function OrdersTab({ orders }: OrdersTabProps) {
                   <li
                     key={o.id}
                     onClick={() => setSelectedOrderId(o.id)}
-                    className={`group relative flex items-center justify-between p-4 -mx-4 rounded-2xl transition-all cursor-pointer ${
-                      isSelected
+                    className={`group relative flex items-center justify-between p-4 -mx-4 rounded-2xl transition-all cursor-pointer ${isSelected
                         ? "bg-[oklch(0.94_0.018_75)]"
                         : "hover:bg-[oklch(0.97_0.012_75)]"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-4 min-w-0">
                       <img src={o.image} alt="" className="h-12 w-12 rounded-xl object-cover" />
@@ -692,11 +646,10 @@ function OrdersTab({ orders }: OrdersTabProps) {
                   <li
                     key={o.id}
                     onClick={() => setSelectedOrderId(o.id)}
-                    className={`group flex items-center justify-between p-4 -mx-4 rounded-2xl transition-all cursor-pointer ${
-                      isSelected
+                    className={`group flex items-center justify-between p-4 -mx-4 rounded-2xl transition-all cursor-pointer ${isSelected
                         ? "bg-[oklch(0.94_0.018_75)]"
                         : "hover:bg-[oklch(0.97_0.012_75)]"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-4 min-w-0">
                       <img src={o.image} alt="" className="h-10 w-10 rounded-xl object-cover opacity-60" />
@@ -712,9 +665,8 @@ function OrdersTab({ orders }: OrdersTabProps) {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                        o.status === "cancelled" ? "bg-destructive/10 text-destructive" : "bg-emerald-500/10 text-emerald-600"
-                      }`}>
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${o.status === "cancelled" ? "bg-destructive/10 text-destructive" : "bg-emerald-500/10 text-emerald-600"
+                        }`}>
                         {o.status}
                       </span>
                       <span className="font-bold text-sm text-[oklch(0.18_0.02_50)]">
@@ -764,21 +716,18 @@ function OrdersTab({ orders }: OrdersTabProps) {
                 </p>
 
                 <div className="grid grid-cols-3 gap-2">
-                  <div className={`flex flex-col items-center p-2 rounded-xl text-center border ${
-                    selectedOrder.stage >= 0 ? "bg-brand/10 border-brand/20 text-brand" : "bg-white border-transparent text-muted-foreground"
-                  }`}>
+                  <div className={`flex flex-col items-center p-2 rounded-xl text-center border ${selectedOrder.stage >= 0 ? "bg-brand/10 border-brand/20 text-brand" : "bg-white border-transparent text-muted-foreground"
+                    }`}>
                     <Check className="h-4 w-4" />
                     <span className="text-[9px] font-bold mt-1 uppercase">Confirmed</span>
                   </div>
-                  <div className={`flex flex-col items-center p-2 rounded-xl text-center border ${
-                    selectedOrder.stage >= 1 ? "bg-brand/10 border-brand/20 text-brand" : "bg-white border-transparent text-muted-foreground"
-                  }`}>
+                  <div className={`flex flex-col items-center p-2 rounded-xl text-center border ${selectedOrder.stage >= 1 ? "bg-brand/10 border-brand/20 text-brand" : "bg-white border-transparent text-muted-foreground"
+                    }`}>
                     <Activity className={`h-4 w-4 ${selectedOrder.stage === 1 ? "animate-pulse" : ""}`} />
                     <span className="text-[9px] font-bold mt-1 uppercase">Cooking</span>
                   </div>
-                  <div className={`flex flex-col items-center p-2 rounded-xl text-center border ${
-                    selectedOrder.stage >= 2 ? "bg-brand/10 border-brand/20 text-brand" : "bg-white border-transparent text-muted-foreground"
-                  }`}>
+                  <div className={`flex flex-col items-center p-2 rounded-xl text-center border ${selectedOrder.stage >= 2 ? "bg-brand/10 border-brand/20 text-brand" : "bg-white border-transparent text-muted-foreground"
+                    }`}>
                     <TrendingUp className="h-4 w-4" />
                     <span className="text-[9px] font-bold mt-1 uppercase">In Transit</span>
                   </div>
@@ -1182,189 +1131,6 @@ function SettingsTab() {
             <dd className="font-bold text-[oklch(0.18_0.02_50)] mt-0.5">useSyncExternalStore (React 19)</dd>
           </div>
         </dl>
-      </div>
-    </div>
-  );
-}
-
-// ==========================================
-// --- USERS TAB PANEL ---
-// ==========================================
-function UsersTab() {
-  return (
-    <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm animate-fadeIn">
-      <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)] mb-4">User Management</h3>
-      <p className="text-sm text-[oklch(0.5_0.02_60)]">
-        Manage registered users and permissions here.
-      </p>
-      <div className="mt-6">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-[oklch(0.9_0.015_75)] text-xs font-bold text-[oklch(0.5_0.02_60)] uppercase tracking-wider">
-              <th className="pb-3">Name</th>
-              <th className="pb-3">Email</th>
-              <th className="pb-3">Role</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="border-b border-[oklch(0.95_0.01_75)] text-sm group hover:bg-[oklch(0.98_0.005_75)] transition-colors">
-              <td className="py-4 font-bold text-[oklch(0.18_0.02_50)]">Admin User</td>
-              <td className="py-4 text-[oklch(0.5_0.02_60)]">admin@kaivu.com</td>
-              <td className="py-4">
-                <span className="rounded-full bg-brand/10 px-2.5 py-1 text-xs font-bold text-brand">Admin</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-// ==========================================
-// --- CUSTOMERS TAB PANEL ---
-// ==========================================
-function CustomersTab() {
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
-
-  const mockCustomers = useMemo(() => [
-    { id: 'CUST-001', name: 'Alice Smith', email: 'alice@example.com', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80', joined: '2023-01-15', status: 'Online' },
-    { id: 'CUST-002', name: 'Bob Johnson', email: 'bob@example.com', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&q=80', joined: '2023-02-20', status: 'Offline' },
-    { id: 'CUST-003', name: 'Charlie Brown', email: 'charlie@example.com', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80', joined: '2023-03-10', status: 'Online' }
-  ], []);
-
-  const mockTimelines: Record<string, any[]> = useMemo(() => ({
-    'CUST-001': [
-      { time: '10:00 AM', event: 'Logged In', desc: 'User authenticated via Google', icon: <User className="w-4 h-4" /> },
-      { time: '10:05 AM', event: 'Viewed Menu', desc: 'Browsed Burgers category', icon: <MenuSquare className="w-4 h-4" /> },
-      { time: '10:15 AM', event: 'Added to Cart', desc: 'The Smashed Burger', icon: <ShoppingBag className="w-4 h-4" /> },
-      { time: '10:20 AM', event: 'Checkout Completed', desc: 'Order #1024 placed successfully', icon: <Check className="w-4 h-4" /> }
-    ],
-    'CUST-002': [
-      { time: '11:30 AM', event: 'Logged In', desc: 'User authenticated via Email', icon: <User className="w-4 h-4" /> },
-      { time: '11:45 AM', event: 'Viewed Orders', desc: 'Checked order status', icon: <Activity className="w-4 h-4" /> },
-      { time: '12:00 PM', event: 'Logged Out', desc: 'Session ended intentionally', icon: <LogOut className="w-4 h-4" /> }
-    ],
-    'CUST-003': [
-      { time: '01:00 PM', event: 'Account Created', desc: 'User registered via Email', icon: <Plus className="w-4 h-4" /> },
-      { time: '01:05 PM', event: 'Viewed Menu', desc: 'Browsed Drinks category', icon: <MenuSquare className="w-4 h-4" /> }
-    ]
-  }), []);
-
-  const selectedCustomer = selectedCustomerId ? mockCustomers.find(c => c.id === selectedCustomerId) : mockCustomers[0];
-  const timeline = selectedCustomer ? mockTimelines[selectedCustomer.id] : [];
-
-  // If no initial selection, select the first one
-  useEffect(() => {
-    if (!selectedCustomerId && mockCustomers.length > 0) {
-      setSelectedCustomerId(mockCustomers[0].id);
-    }
-  }, [selectedCustomerId, mockCustomers]);
-
-  return (
-    <div className="grid grid-cols-3 gap-8 animate-fadeIn">
-      {/* CUSTOMERS LIST (LEFT 1/3) */}
-      <div className="col-span-1 space-y-6">
-        <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4 border-b border-[oklch(0.9_0.015_75)] pb-3">
-            <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">Customer Directory</h3>
-            <span className="text-xs font-bold text-brand bg-brand/10 px-2.5 py-1 rounded-full">
-              {mockCustomers.length} Total
-            </span>
-          </div>
-          <ul className="divide-y divide-[oklch(0.95_0.01_75)]">
-            {mockCustomers.map((customer) => {
-              const isSelected = customer.id === selectedCustomerId;
-              return (
-                <li
-                  key={customer.id}
-                  onClick={() => setSelectedCustomerId(customer.id)}
-                  className={`group relative flex items-center justify-between p-4 -mx-4 rounded-2xl transition-all cursor-pointer ${
-                    isSelected
-                      ? "bg-[oklch(0.94_0.018_75)]"
-                      : "hover:bg-[oklch(0.97_0.012_75)]"
-                  }`}
-                >
-                  <div className="flex items-center gap-4 min-w-0">
-                    <div className="relative">
-                      <img src={customer.avatar} alt={customer.name} className="h-10 w-10 rounded-full object-cover" />
-                      {customer.status === 'Online' && (
-                        <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <h4 className="font-bold text-sm text-[oklch(0.18_0.02_50)]">{customer.name}</h4>
-                      <p className="truncate text-[10px] font-semibold text-[oklch(0.5_0.02_60)] mt-0.5">
-                        {customer.email}
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-[oklch(0.5_0.02_60)] transition-transform group-hover:translate-x-0.5" />
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </div>
-
-      {/* CUSTOMER TIMELINE DETAILS (RIGHT 2/3) */}
-      <div className="col-span-2">
-        {selectedCustomer ? (
-          <div className="sticky top-28 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-8 shadow-sm animate-fadeIn">
-            <div className="flex items-center gap-6 border-b border-[oklch(0.9_0.015_75)] pb-6 mb-8">
-              <img src={selectedCustomer.avatar} alt={selectedCustomer.name} className="h-20 w-20 rounded-full object-cover shadow-sm" />
-              <div>
-                <h2 className="text-2xl font-display font-extrabold text-[oklch(0.18_0.02_50)]">
-                  {selectedCustomer.name}
-                </h2>
-                <div className="flex items-center gap-4 mt-2 text-sm text-[oklch(0.5_0.02_60)]">
-                  <div className="flex items-center gap-1.5">
-                    <User className="h-4 w-4" />
-                    <span>{selectedCustomer.email}</span>
-                  </div>
-                  <div className="h-1 w-1 rounded-full bg-[oklch(0.8_0.02_75)]" />
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="h-4 w-4" />
-                    <span>Joined {selectedCustomer.joined}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <h3 className="text-sm font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">
-                Activity Timeline
-              </h3>
-              <div className="relative pl-6">
-                <div className="absolute left-0 top-3 bottom-3 w-px bg-gradient-to-b from-brand/40 to-[oklch(0.9_0.015_75)]" />
-                <ul className="space-y-8">
-                  {timeline.map((event, i) => (
-                    <li key={i} className="relative">
-                      <div className="absolute -left-[35px] top-0 grid h-7 w-7 place-items-center rounded-full bg-white border-[2px] border-brand shadow-sm text-brand">
-                        {event.icon}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[10px] font-bold text-[oklch(0.5_0.02_60)] mb-1">
-                          {event.time}
-                        </span>
-                        <h4 className="text-sm font-bold text-[oklch(0.18_0.02_50)]">
-                          {event.event}
-                        </h4>
-                        <p className="text-xs text-[oklch(0.4_0.02_60)] mt-1">
-                          {event.desc}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="sticky top-28 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm text-center text-sm text-[oklch(0.5_0.02_60)] py-12">
-            Select a customer from the directory to view their activity timeline.
-          </div>
-        )}
       </div>
     </div>
   );

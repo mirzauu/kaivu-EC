@@ -6,7 +6,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { useMenu } from "@/lib/menu-store";
 import { cart } from "@/lib/cart-store";
 import { auth, useAuth } from "@/lib/auth-store";
-import hero from "@/assets/hero-burger.jpg";
+import { PushingHandBanner } from "@/components/PushingHandBanner";
 
 const categories = [
   { key: "Burgers", emoji: "🍔" },
@@ -73,34 +73,7 @@ export default function Home() {
       </div>
 
       {/* Hero offer */}
-      <section className="px-5 pt-5">
-        <div className="relative overflow-hidden rounded-3xl bg-primary text-primary-foreground">
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-5">
-            <div className="min-w-0">
-              <span className="inline-flex items-center gap-1 rounded-full bg-brand px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-foreground">
-                <Flame className="h-3 w-3" /> Today only
-              </span>
-              <h2 className="mt-2 text-xl font-bold leading-tight">
-                Double Smash <br />
-                Combo · 30% off
-              </h2>
-              <Link
-                href="/menu"
-                className="mt-3 inline-flex items-center rounded-full bg-brand px-4 py-2 text-xs font-semibold text-brand-foreground"
-              >
-                Order now
-              </Link>
-            </div>
-            <img
-              src={hero.src}
-              alt="Kaivu signature smashed cheeseburger"
-              width={1024}
-              height={1024}
-              className="h-32 w-32 shrink-0 rounded-2xl object-cover"
-            />
-          </div>
-        </div>
-      </section>
+      <PushingHandBanner />
 
       {/* Categories */}
       <section className="pt-6">
