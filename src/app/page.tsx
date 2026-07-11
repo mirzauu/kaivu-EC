@@ -7,6 +7,7 @@ import { useMenu } from "@/lib/menu-store";
 import { cart } from "@/lib/cart-store";
 import { auth, useAuth } from "@/lib/auth-store";
 import { PushingHandBanner } from "@/components/PushingHandBanner";
+import { CheesePullOverscroll } from "@/components/CheesePullOverscroll";
 
 const categories = [
   { key: "Burgers", emoji: "🍔" },
@@ -178,6 +179,8 @@ export default function Home() {
           ))}
         </ul>
       </section>
+
+      <CheesePullOverscroll />
     </MobileShell>
   );
 }
