@@ -231,8 +231,8 @@ export function BottomNav() {
                     className={cn(
                       "group relative grid place-items-center rounded-full transition-all duration-300 ease-out",
                       isCenter
-                        ? "h-16 w-16 bg-background text-orange-500 shadow-lg translate-y-[-10px]"
-                        : "h-11 w-11 bg-transparent text-orange-500/55 hover:text-orange-500",
+                        ? "h-16 w-16 bg-white text-orange-500 shadow-lg translate-y-[-10px]"
+                        : "h-11 w-11 bg-white text-orange-500/55 hover:text-orange-500",
                     )}
                   >
                     <Icon
