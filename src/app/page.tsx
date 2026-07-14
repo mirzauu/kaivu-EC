@@ -7,8 +7,6 @@ import { useMenu } from "@/lib/menu-store";
 import { cart } from "@/lib/cart-store";
 import { auth, useAuth } from "@/lib/auth-store";
 import { PushingHandBanner } from "@/components/PushingHandBanner";
-import { CheesePullOverscroll } from "@/components/CheesePullOverscroll";
-
 const categories = [
   { key: "Burgers", emoji: "🍔" },
   { key: "Sides", emoji: "🍟" },
@@ -109,7 +107,7 @@ export default function Home() {
               <article className="overflow-hidden rounded-3xl bg-surface shadow-sm">
                 <div className="relative h-36 w-full bg-accent">
                   <img
-                    src={item.image.src || item.image}
+                    src={item.image?.src || item.image || ""}
                     alt={item.name}
                     loading="lazy"
                     width={768}
@@ -133,7 +131,7 @@ export default function Home() {
                   <div className="mt-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
                     <span className="text-base font-bold">₹{item.price.toFixed(2)}</span>
                     <button
-                      onClick={() => handleAdd({ id: item.id, name: item.name, price: item.price, image: item.image.src || item.image })}
+                      onClick={() => handleAdd({ id: item.id, name: item.name, price: item.price, image: item.image?.src || item.image })}
                       aria-label={`Add ${item.name}`}
                       className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand text-brand-foreground"
                     >
@@ -155,7 +153,7 @@ export default function Home() {
             <li key={item.id}>
               <article className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-surface p-3 shadow-sm">
                 <img
-                  src={item.image.src || item.image}
+                  src={item.image?.src || item.image || ""}
                   alt={item.name}
                   loading="lazy"
                   width={768}
@@ -168,7 +166,7 @@ export default function Home() {
                   <span className="mt-1 inline-block text-sm font-bold">₹{item.price.toFixed(2)}</span>
                 </div>
                 <button
-                  onClick={() => handleAdd({ id: item.id, name: item.name, price: item.price, image: item.image.src || item.image })}
+                  onClick={() => handleAdd({ id: item.id, name: item.name, price: item.price, image: item.image?.src || item.image })}
                   aria-label={`Add ${item.name}`}
                   className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground"
                 >
@@ -180,7 +178,6 @@ export default function Home() {
         </ul>
       </section>
 
-      <CheesePullOverscroll />
     </MobileShell>
   );
 }

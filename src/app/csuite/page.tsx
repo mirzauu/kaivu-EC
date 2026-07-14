@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -42,6 +42,13 @@ import {
 
 export default function CSuiteRoot() {
   const isAuthenticated = useAdminAuth((s) => s.isAuthenticated);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   if (!isAuthenticated) {
     return <AdminLogin />;
@@ -57,22 +64,17 @@ function AdminLogin() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    setTimeout(() => {
-      if (username === "admin" && password === "admin") {
-        const success = adminAuth.login(password);
-        if (!success) {
-          setError("Failed to initialize session.");
-        }
-      } else {
-        setError("Invalid username or password. Double check credentials.");
-      }
-      setLoading(false);
-    }, 600);
+    const success = await adminAuth.login(username, password);
+    setLoading(false);
+    
+    if (!success) {
+      setError("Invalid username or password. Double check credentials.");
+    }
   };
 
   return (
@@ -155,9 +157,17 @@ function AdminLogin() {
 
 // --- ADMIN CONSOLE COMPONENT ---
 function AdminConsole() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "orders" | "menu" | "settings">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "orders" | "menu" | "settings" | "activity">("dashboard");
   const orders = useOrders((s) => s.orders);
   const menuItems = useMenu((s) => s.menu);
+
+  useEffect(() => {
+    ordersStore.refresh();
+    const interval = setInterval(() => {
+      ordersStore.refresh();
+    }, 15000); // refresh orders every 15s for the admin panel
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => {
     adminAuth.logout();
@@ -225,6 +235,17 @@ function AdminConsole() {
             <Settings className="h-5 w-5 shrink-0" />
             <span>Settings & Tools</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab("activity")}
+            className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all cursor-pointer ${activeTab === "activity"
+                ? "bg-brand text-brand-foreground shadow-lg shadow-brand/15"
+                : "text-[oklch(0.5_0.02_60)] hover:bg-[oklch(0.94_0.018_75)] hover:text-[oklch(0.18_0.02_50)]"
+              }`}
+          >
+            <Activity className="h-5 w-5 shrink-0" />
+            <span>User Activity Stream</span>
+          </button>
         </nav>
 
         <div className="border-t border-[oklch(0.9_0.015_75)] p-4">
@@ -282,6 +303,7 @@ function AdminConsole() {
           {activeTab === "orders" && <OrdersTab orders={orders} />}
           {activeTab === "menu" && <MenuTab menuItems={menuItems} />}
           {activeTab === "settings" && <SettingsTab />}
+          {activeTab === "activity" && <ActivityTab />}
         </main>
       </div>
     </div>
@@ -1059,27 +1081,26 @@ function MenuTab({ menuItems }: MenuTabProps) {
 function SettingsTab() {
   const [simMessage, setSimMessage] = useState("");
 
-  const handleSimulateOrder = () => {
-    // Generate a list of randomized mock items
-    const demoItems = [
-      [
-        { name: "The Smashed", price: 330, qty: 1, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=60" },
-        { name: "Golden Fries", price: 120, qty: 1, image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=600&auto=format&fit=crop&q=60" }
-      ],
-      [
-        { name: "Buffalo Flami'n Hot", price: 260, qty: 1, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=60" },
-        { name: "Choco Velvet Shake", price: 150, qty: 2, image: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=600&auto=format&fit=crop&q=60" }
-      ],
-      [
-        { name: "Smoke & Jam", price: 360, qty: 1, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=60" }
-      ]
-    ];
-
-    const pick = demoItems[Math.floor(Math.random() * demoItems.length)];
-    const newId = ordersStore.addOrder(pick);
-
-    setSimMessage(`Mock order placed! Order ID: ${newId}. Check "Order Management" tab.`);
-    setTimeout(() => setSimMessage(""), 5000);
+  const handleSimulateOrder = async () => {
+    try {
+      const res = await fetch("/api/admin/simulate-order", {
+        method: "POST",
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        setSimMessage(
+          `Simulated Customer "${data.data.customer}" checked out! Order: ${data.data.orderNumber} placed.`
+        );
+        // Refresh local orders list
+        await ordersStore.refresh();
+      } else {
+        setSimMessage(`Simulation failed: ${data.error}`);
+      }
+    } catch (e) {
+      setSimMessage("Failed to connect to simulation api.");
+    }
+    setTimeout(() => setSimMessage(""), 6000);
   };
 
   return (
@@ -1132,6 +1153,106 @@ function SettingsTab() {
           </div>
         </dl>
       </div>
+    </div>
+  );
+}
+
+// ==========================================
+// --- USER EVENT ACTIVITY STREAM TAB PANEL ---
+// ==========================================
+function ActivityTab() {
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchEvents = async () => {
+    try {
+      const res = await fetch("/api/admin/dashboard");
+      const data = await res.json();
+      if (data.success) {
+        setEvents(data.data.recentEvents || []);
+      }
+    } catch (e) {
+      console.error("Failed to load live activity", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEvents();
+    const interval = setInterval(fetchEvents, 5000); // poll every 5 seconds for live tracking
+    return () => clearInterval(interval);
+  }, []);
+
+  const getEventBadgeColor = (type: string) => {
+    switch (type) {
+      case "LOGIN": return "bg-green-500/10 text-green-600";
+      case "SIGNUP": return "bg-emerald-500/10 text-emerald-600";
+      case "ADD_TO_CART": return "bg-orange-500/10 text-orange-600";
+      case "REMOVE_FROM_CART": return "bg-red-500/10 text-red-600";
+      case "ORDER_PLACED": return "bg-purple-500/10 text-purple-600";
+      case "PAGE_VIEW": return "bg-blue-500/10 text-blue-600";
+      default: return "bg-neutral-500/10 text-neutral-600";
+    }
+  };
+
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  };
+
+  return (
+    <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm space-y-6 animate-fadeIn">
+      <div className="flex items-center justify-between border-b border-[oklch(0.9_0.015_75)] pb-3">
+        <div>
+          <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">User Activity Feed</h3>
+          <p className="text-xs text-[oklch(0.5_0.02_60)]">Live tracking of customer flows and transactions in real-time.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span className="text-xs font-bold text-emerald-600">Auto-refreshing (5s)</span>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center p-12">
+          <span className="h-6 w-6 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+        </div>
+      ) : events.length === 0 ? (
+        <div className="py-12 text-center text-sm text-[oklch(0.5_0.02_60)]">No user actions recorded in the session database.</div>
+      ) : (
+        <div className="relative border-l border-[oklch(0.9_0.015_75)] ml-4 pl-6 space-y-6">
+          {events.map((event) => (
+            <div key={event.id} className="relative group">
+              {/* Event bullet point */}
+              <div className="absolute -left-[31px] top-1 h-3.5 w-3.5 rounded-full border-2 border-white bg-brand group-hover:scale-125 transition-transform" />
+              
+              <div className="flex justify-between items-start gap-4">
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-bold text-[oklch(0.18_0.02_50)]">{event.userName}</span>
+                    <span className={`rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${getEventBadgeColor(event.eventType)}`}>
+                      {event.eventType}
+                    </span>
+                  </div>
+                  
+                  {/* Metadata display */}
+                  {event.metadata && Object.keys(event.metadata).length > 0 && (
+                    <div className="mt-1.5 text-xs text-[oklch(0.5_0.02_60)] bg-[oklch(0.97_0.012_75)] rounded-xl p-2.5 max-w-lg font-mono">
+                      {JSON.stringify(event.metadata)}
+                    </div>
+                  )}
+                </div>
+                
+                <span className="text-xs text-[oklch(0.5_0.02_60)] shrink-0">{formatTime(event.createdAt)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

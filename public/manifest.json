@@ -1,0 +1,17 @@
+{
+  "name": "Kaivu — Smashed Burgers, Delivered",
+  "short_name": "Kaivu",
+  "description": "Deliciously Yours Mobile is a food e-commerce application for mobile devices.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF8F5",
+  "theme_color": "#e05318",
+  "icons": [
+    {
+      "src": "/images/menu/burger-classic.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

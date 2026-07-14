@@ -1,15 +1,18 @@
 "use client";
 
-import { MapPin, CreditCard, Heart, Settings, HelpCircle, LogOut, ChevronRight, Award } from "lucide-react";
+import { useEffect, useState } from "react";
+import { MapPin, CreditCard, Heart, Settings, HelpCircle, LogOut, ChevronRight, Award, Loader2 } from "lucide-react";
 import { MobileShell } from "@/components/MobileShell";
+import { useAuth, auth } from "@/lib/auth-store";
+import { toast } from "sonner";
 
 const groups = [
   {
     title: "Account",
     items: [
-      { Icon: MapPin, label: "Addresses", hint: "2 saved" },
-      { Icon: CreditCard, label: "Payment methods", hint: "Visa · 4242" },
-      { Icon: Heart, label: "Favorites", hint: "8 items" },
+      { Icon: MapPin, label: "Addresses", hint: "Saved delivery points" },
+      { Icon: CreditCard, label: "Payment methods", hint: "Kaivu Wallet & Cards" },
+      { Icon: Heart, label: "Favorites", hint: "Liked items" },
     ],
   },
   {
@@ -17,12 +20,66 @@ const groups = [
     items: [
       { Icon: Settings, label: "Settings", hint: "" },
       { Icon: HelpCircle, label: "Help & support", hint: "" },
-      { Icon: LogOut, label: "Log out", hint: "", destructive: true as const },
+      { Icon: LogOut, label: "Log out", hint: "Clear session", destructive: true as const },
     ],
   },
 ];
 
 export default function Profile() {
+  const user = useAuth((s) => s.user);
+  const [loyalty, setLoyalty] = useState({ current: 0, target: 8 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchLoyalty() {
+      try {
+        const res = await fetch("/api/rewards");
+        const data = await res.json();
+        if (data.success && data.data.loyalty) {
+          setLoyalty({
+            current: data.data.loyalty.current,
+            target: data.data.loyalty.target,
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (user) {
+      fetchLoyalty();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
+
+  const handleItemClick = (label: string) => {
+    if (label === "Log out") {
+      auth.logout();
+      toast.success("Successfully logged out");
+    } else {
+      toast.info(`${label} details are coming soon!`);
+    }
+  };
+
+  if (!user) {
+    return (
+      <MobileShell>
+        <div className="flex h-[80vh] flex-col items-center justify-center gap-4 p-5 text-center">
+          <p className="text-sm text-muted-foreground">Sign in to view your profile.</p>
+          <button
+            onClick={() => auth.openModal()}
+            className="rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-brand-foreground"
+          >
+            Log In / Sign Up
+          </button>
+        </div>
+      </MobileShell>
+    );
+  }
+
   return (
     <MobileShell>
       <header className="px-5 pt-6">
@@ -36,16 +93,16 @@ export default function Profile() {
             aria-hidden
             className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-brand text-xl font-bold text-brand-foreground"
           >
-            A
+            {(user.name || "K")[0].toUpperCase()}
           </div>
           <div className="min-w-0">
-            <h2 className="truncate text-base font-bold">Alex Morgan</h2>
-            <p className="truncate text-xs text-muted-foreground">alex@kaivu.app · +1 (555) 010-2210</p>
+            <h2 className="truncate text-base font-bold">{user.name || "Kaivu Customer"}</h2>
+            <p className="truncate text-xs text-muted-foreground">{user.email || "No email linked"} · {user.phone}</p>
           </div>
         </div>
       </section>
 
-      {/* Rewards */}
+      {/* Loyalty Progress Card */}
       <section className="px-5 pt-4">
         <div className="overflow-hidden rounded-3xl bg-primary p-5 text-primary-foreground">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
@@ -53,13 +110,18 @@ export default function Profile() {
               <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-brand">
                 <Award className="h-3 w-3" /> Kaivu Club
               </p>
-              <h3 className="mt-1 text-lg font-bold">1 free burger away</h3>
-              <p className="mt-0.5 text-xs text-primary-foreground/70">7 / 8 orders this month</p>
+              <h3 className="mt-1 text-lg font-bold">
+                {loyalty.current >= loyalty.target ? "Free burger earned! 🍔" : `${loyalty.target - loyalty.current} order away`}
+              </h3>
+              <p className="mt-0.5 text-xs text-primary-foreground/70">{loyalty.current} / {loyalty.target} orders this month</p>
             </div>
-            <span className="shrink-0 text-2xl font-bold text-brand">7/8</span>
+            <span className="shrink-0 text-2xl font-bold text-brand">{loyalty.current}/{loyalty.target}</span>
           </div>
           <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-white/10">
-            <div className="h-full rounded-full bg-brand" style={{ width: "87.5%" }} />
+            <div 
+              className="h-full rounded-full bg-brand transition-all duration-500" 
+              style={{ width: `${(loyalty.current / loyalty.target) * 100}%` }} 
+            />
           </div>
         </div>
       </section>
@@ -73,7 +135,10 @@ export default function Profile() {
           <ul className="divide-y divide-border overflow-hidden rounded-3xl bg-surface shadow-sm">
             {g.items.map(({ Icon, label, hint, destructive }) => (
               <li key={label}>
-                <button className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3.5 text-left">
+                <button 
+                  onClick={() => handleItemClick(label)}
+                  className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3.5 text-left cursor-pointer transition-colors hover:bg-accent"
+                >
                   <span
                     className="grid h-9 w-9 shrink-0 place-items-center rounded-xl"
                     style={{
@@ -100,7 +165,7 @@ export default function Profile() {
         </section>
       ))}
 
-      <p className="px-5 pt-6 text-center text-[11px] text-muted-foreground">Kaivu · v1.0.0</p>
+      <p className="px-5 pt-6 text-center text-[11px] text-muted-foreground">Kaivu · v1.0.0 · DB connected</p>
     </MobileShell>
   );
 }

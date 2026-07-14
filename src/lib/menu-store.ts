@@ -1,12 +1,16 @@
 import { useSyncExternalStore } from "react";
-import { menu as initialMenu, MenuItem } from "./menu-data";
+import { MenuItem } from "./menu-data";
 
 type State = {
   menu: MenuItem[];
+  isLoading: boolean;
+  error: string | null;
 };
 
 let state: State = {
-  menu: [...initialMenu],
+  menu: [],
+  isLoading: true,
+  error: null,
 };
 
 const listeners = new Set<() => void>();
@@ -14,31 +18,107 @@ function emit() {
   listeners.forEach((cb) => cb());
 }
 
+// Load menu items from server on client initialization
+async function loadMenu() {
+  try {
+    state = { ...state, isLoading: true, error: null };
+    emit();
+
+    const res = await fetch("/api/menu");
+    const data = await res.json();
+
+    if (data.success) {
+      state = {
+        menu: data.data,
+        isLoading: false,
+        error: null,
+      };
+    } else {
+      state = {
+        ...state,
+        isLoading: false,
+        error: data.error || "Failed to load menu",
+      };
+    }
+  } catch (e) {
+    state = {
+      ...state,
+      isLoading: false,
+      error: "Network error loading menu items",
+    };
+  }
+  emit();
+}
+
+if (typeof window !== "undefined") {
+  loadMenu();
+}
+
 export const menuStore = {
-  addItem(item: Omit<MenuItem, "id">) {
-    const id = item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-    const newItem: MenuItem = {
-      ...item,
-      id,
-      rating: item.rating || 5.0,
-    };
-    state = {
-      menu: [...state.menu, newItem],
-    };
-    emit();
-    return newItem;
+  /**
+   * Refreshes the menu from the database.
+   */
+  async refresh() {
+    await loadMenu();
   },
-  updateItem(id: string, updated: Partial<Omit<MenuItem, "id">>) {
-    state = {
-      menu: state.menu.map((item) => (item.id === id ? { ...item, ...updated } : item)),
-    };
-    emit();
+
+  /**
+   * Admin: Add a new item to the menu.
+   */
+  async addItem(item: Omit<MenuItem, "id" | "rating">): Promise<MenuItem | null> {
+    try {
+      const res = await fetch("/api/admin/menu", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(item),
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Reload menu to keep local state in sync
+        await loadMenu();
+        return data.data;
+      }
+      return null;
+    } catch (e) {
+      console.error("Failed to add menu item", e);
+      return null;
+    }
   },
-  deleteItem(id: string) {
-    state = {
-      menu: state.menu.filter((item) => item.id !== id),
-    };
-    emit();
+
+  /**
+   * Admin: Update an existing menu item.
+   */
+  async updateItem(id: string, updated: Partial<Omit<MenuItem, "id">>) {
+    try {
+      const res = await fetch(`/api/menu/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updated),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await loadMenu();
+      }
+    } catch (e) {
+      console.error("Failed to update menu item", e);
+    }
+  },
+
+  /**
+   * Admin: Delete (disable) a menu item.
+   */
+  async deleteItem(id: string) {
+    try {
+      const res = await fetch(`/api/menu/${id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        await loadMenu();
+      }
+    } catch (e) {
+      console.error("Failed to delete menu item", e);
+    }
   },
 };
 
@@ -49,6 +129,6 @@ export function useMenu<T>(selector: (s: State) => T): T {
       return () => listeners.delete(cb);
     },
     () => selector(state),
-    () => selector(state),
+    () => selector(state)
   );
 }

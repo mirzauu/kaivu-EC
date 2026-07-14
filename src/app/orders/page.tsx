@@ -42,34 +42,51 @@ export default function Orders() {
                 </p>
               </div>
             </div>
-            <ol className="relative grid grid-cols-4 gap-1 bg-primary/95 px-4 pb-4 pt-2">
-              {stages.map((s, idx) => {
-                const done = idx <= live.stage;
-                const current = idx === live.stage;
-                return (
-                  <li key={s} className="flex flex-col items-center gap-1.5">
-                    <span
-                      className="grid h-6 w-6 place-items-center rounded-full"
-                      style={{
-                        background: done ? "var(--color-brand)" : "rgba(255,255,255,0.12)",
-                      }}
-                    >
-                      {done && !current ? (
-                        <CheckCircle2 className="h-4 w-4 text-brand-foreground" strokeWidth={2.5} />
-                      ) : (
-                        <span className="h-2 w-2 rounded-full bg-current opacity-90" />
-                      )}
-                    </span>
-                    <span
-                      className="text-[10px] font-semibold"
-                      style={{ color: done ? "var(--color-brand-foreground)" : "rgba(255,255,255,0.55)" }}
-                    >
-                      {s}
-                    </span>
-                  </li>
-                );
-              })}
-            </ol>
+            <div className="relative bg-primary/95 px-4 pb-4 pt-2">
+              <div className="relative">
+                {/* Inactive line connecting all stages */}
+                <div className="absolute top-[12px] left-[12.5%] right-[12.5%] h-0.5 -translate-y-1/2 bg-white/12" />
+                
+                {/* Active line showing progress */}
+                <div 
+                  className="absolute top-[12px] left-[12.5%] h-0.5 -translate-y-1/2 bg-brand transition-all duration-500 ease-out" 
+                  style={{ width: `${Math.max(0, live.stage) * 25}%` }}
+                />
+
+                <ol className="grid grid-cols-4 gap-1">
+                  {stages.map((s, idx) => {
+                    const done = idx <= live.stage;
+                    const current = idx === live.stage;
+                    return (
+                      <li key={s} className="relative z-10 flex flex-col items-center gap-1.5">
+                        <span
+                          className="relative grid h-6 w-6 place-items-center rounded-full"
+                          style={{
+                            background: done ? "var(--color-brand)" : "rgba(255,255,255,0.12)",
+                          }}
+                        >
+                          {/* Live ping animation for the current active step */}
+                          {current && (
+                            <span className="absolute inset-0 rounded-full bg-brand opacity-75 animate-ping" />
+                          )}
+                          {done && !current ? (
+                            <CheckCircle2 className="relative z-10 h-4 w-4 text-brand-foreground" strokeWidth={2.5} />
+                          ) : (
+                            <span className="relative z-10 h-2 w-2 rounded-full bg-current opacity-90" />
+                          )}
+                        </span>
+                        <span
+                          className="text-[10px] font-semibold"
+                          style={{ color: done ? "var(--color-brand-foreground)" : "rgba(255,255,255,0.55)" }}
+                        >
+                          {s}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+            </div>
           </div>
         </section>
       )}

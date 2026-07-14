@@ -1,0 +1,396 @@
+// Kaivu Backend — Prisma Schema
+// PostgreSQL database with full food ordering system
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── SYSTEM SETTINGS (Admin-configurable) ─────────────────────────────────────
+// All coin rates, reward values, and business rules are stored here.
+// The admin can update these at any time from the C-Suite dashboard.
+
+model SystemSetting {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique // e.g. "coin_earn_rate", "referral_bonus_referrer"
+  value       String   // stored as string, parsed by the service layer
+  type        String   @default("number") // "number" | "string" | "boolean" | "json"
+  label       String   // Human-readable label for admin UI
+  description String?  // Tooltip/help text for admin
+  group       String   @default("general") // "coins" | "referral" | "rewards" | "delivery" | "general"
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
+
+// ─── USERS ────────────────────────────────────────────────────────────────────
+
+model User {
+  id            String   @id @default(uuid()) @db.Uuid
+  phone         String   @unique
+  name          String?
+  email         String?
+  avatarUrl     String?  @map("avatar_url")
+  referralCode  String   @unique @map("referral_code")
+  referredById  String?  @map("referred_by_id") @db.Uuid
+  kaivuCoins    Int      @default(0) @map("kaivu_coins")
+  walletBalance Decimal  @default(0) @map("wallet_balance") @db.Decimal(10, 2)
+  role          UserRole @default(USER)
+  pwaInstalled               Boolean  @default(false) @map("pwa_installed")
+  pwaLastDismissedOrderCount Int      @default(-1) @map("pwa_last_dismissed_order_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  referredBy          User?               @relation("UserReferrals", fields: [referredById], references: [id])
+  referredUsers       User[]              @relation("UserReferrals")
+  sessions            Session[]
+  cartItems           CartItem[]
+  orders              Order[]
+  userRewards         UserReward[]
+  coinTransactions    CoinTransaction[]
+  walletTransactions  WalletTransaction[]
+  referralsMade       Referral[]          @relation("ReferralsMade")
+  referralsReceived   Referral[]          @relation("ReferralsReceived")
+  events              UserEvent[]
+  addresses           Address[]
+  pushSubscriptions   PushSubscription[]
+
+  @@index([phone])
+  @@index([referralCode])
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+// ─── AUTH ──────────────────────────────────────────────────────────────────────
+
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("sessions")
+}
+
+model OtpCode {
+  id        String   @id @default(uuid()) @db.Uuid
+  phone     String
+  code      String
+  attempts  Int      @default(0)
+  verified  Boolean  @default(false)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([phone, code])
+  @@map("otp_codes")
+}
+
+// ─── MENU ─────────────────────────────────────────────────────────────────────
+
+model MenuItem {
+  id          String       @id @default(uuid()) @db.Uuid
+  slug        String       @unique
+  name        String
+  description String
+  price       Decimal      @db.Decimal(10, 2)
+  imageUrl    String?      @map("image_url")
+  category    MenuCategory
+  tag         String?
+  rating      Decimal      @default(5.0) @db.Decimal(2, 1)
+  isAvailable Boolean      @default(true) @map("is_available")
+  sortOrder   Int          @default(0) @map("sort_order")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([category])
+  @@index([isAvailable])
+  @@map("menu_items")
+}
+
+enum MenuCategory {
+  BURGERS
+  SIDES
+  DRINKS
+  DESSERTS
+  COMBOS
+}
+
+// ─── CART ──────────────────────────────────────────────────────────────────────
+
+model CartItem {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  menuItemId String   @map("menu_item_id") @db.Uuid
+  quantity   Int      @default(1)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, menuItemId]) // one row per item per user
+  @@index([userId])
+  @@map("cart_items")
+}
+
+// ─── ORDERS ───────────────────────────────────────────────────────────────────
+
+model Order {
+  id                String      @id @default(uuid()) @db.Uuid
+  orderNumber       String      @unique @map("order_number") // KV-XXXX
+  userId            String      @map("user_id") @db.Uuid
+  subtotal          Decimal     @db.Decimal(10, 2)
+  deliveryFee       Decimal     @map("delivery_fee") @db.Decimal(10, 2)
+  discount          Decimal     @default(0) @db.Decimal(10, 2)
+  total             Decimal     @db.Decimal(10, 2)
+  coinsEarned       Int         @default(0) @map("coins_earned")
+  coinsRedeemed     Int         @default(0) @map("coins_redeemed")
+  status            OrderStatus @default(PENDING)
+  deliveryAddress   String?     @map("delivery_address")
+  paymentMethod     String?     @map("payment_method")
+  estimatedDelivery DateTime?   @map("estimated_delivery")
+  deliveredAt       DateTime?   @map("delivered_at")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+
+  user        User         @relation(fields: [userId], references: [id])
+  items       OrderItem[]
+  userRewards UserReward[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([orderNumber])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  COOKING
+  ON_THE_WAY
+  DELIVERED
+  CANCELLED
+}
+
+model OrderItem {
+  id         String  @id @default(uuid()) @db.Uuid
+  orderId    String  @map("order_id") @db.Uuid
+  menuItemId String  @map("menu_item_id") @db.Uuid
+  itemName   String  @map("item_name") // snapshot at order time
+  itemPrice  Decimal @map("item_price") @db.Decimal(10, 2)
+  quantity   Int
+  lineTotal  Decimal @map("line_total") @db.Decimal(10, 2)
+
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+// ─── REWARDS ──────────────────────────────────────────────────────────────────
+
+model Reward {
+  id             String     @id @default(uuid()) @db.Uuid
+  name           String
+  description    String
+  type           RewardType
+  pointsRequired Int        @map("points_required")
+  value          Decimal    @db.Decimal(10, 2) // discount amount or percentage
+  targetItemId   String?    @map("target_item_id") // for FREE_ITEM type
+  isActive       Boolean    @default(true) @map("is_active")
+  validFrom      DateTime?  @map("valid_from")
+  validUntil     DateTime?  @map("valid_until")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  userRewards UserReward[]
+
+  @@map("rewards")
+}
+
+enum RewardType {
+  FREE_ITEM
+  DISCOUNT_PERCENT
+  DISCOUNT_FLAT
+  COINS_BONUS
+}
+
+model UserReward {
+  id              String       @id @default(uuid()) @db.Uuid
+  userId          String       @map("user_id") @db.Uuid
+  rewardId        String       @map("reward_id") @db.Uuid
+  status          RewardStatus @default(AVAILABLE)
+  redeemedOnOrder String?      @map("redeemed_on_order") @db.Uuid
+  redeemedAt      DateTime?    @map("redeemed_at")
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id])
+  reward  Reward  @relation(fields: [rewardId], references: [id])
+  order   Order?  @relation(fields: [redeemedOnOrder], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@map("user_rewards")
+}
+
+enum RewardStatus {
+  AVAILABLE
+  REDEEMED
+  EXPIRED
+}
+
+// ─── KAIVU COINS ──────────────────────────────────────────────────────────────
+
+model CoinTransaction {
+  id          String              @id @default(uuid()) @db.Uuid
+  userId      String              @map("user_id") @db.Uuid
+  amount      Int                 // positive = earned, negative = spent
+  type        CoinTransactionType
+  description String
+  referenceId String?             @map("reference_id") @db.Uuid // order_id, referral user_id, etc.
+  createdAt   DateTime            @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("coin_transactions")
+}
+
+enum CoinTransactionType {
+  ORDER_EARN
+  REFERRAL_BONUS
+  REWARD_REDEEM
+  SIGNUP_BONUS
+  ADMIN_ADJUST
+}
+
+// ─── WALLET ───────────────────────────────────────────────────────────────────
+
+model WalletTransaction {
+  id           String                @id @default(uuid()) @db.Uuid
+  userId       String                @map("user_id") @db.Uuid
+  amount       Decimal               @db.Decimal(10, 2) // positive = credit, negative = debit
+  type         WalletTransactionType
+  description  String
+  referenceId  String?               @map("reference_id") @db.Uuid
+  balanceAfter Decimal               @map("balance_after") @db.Decimal(10, 2)
+  createdAt    DateTime              @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("wallet_transactions")
+}
+
+enum WalletTransactionType {
+  TOP_UP
+  ORDER_PAYMENT
+  REFERRAL_CREDIT
+  REFUND
+}
+
+// ─── REFERRALS ────────────────────────────────────────────────────────────────
+
+model Referral {
+  id                   String         @id @default(uuid()) @db.Uuid
+  referrerId           String         @map("referrer_id") @db.Uuid
+  referredId           String         @map("referred_id") @db.Uuid
+  status               ReferralStatus @default(PENDING)
+  referrerCoinsAwarded Int            @default(0) @map("referrer_coins_awarded")
+  referredCoinsAwarded Int            @default(0) @map("referred_coins_awarded")
+  completedAt          DateTime?      @map("completed_at")
+  createdAt            DateTime       @default(now()) @map("created_at")
+
+  referrer User @relation("ReferralsMade", fields: [referrerId], references: [id])
+  referred User @relation("ReferralsReceived", fields: [referredId], references: [id])
+
+  @@unique([referrerId, referredId])
+  @@index([referrerId])
+  @@index([referredId])
+  @@map("referrals")
+}
+
+enum ReferralStatus {
+  PENDING
+  COMPLETED
+  REWARDED
+}
+
+// ─── USER TRACKING ────────────────────────────────────────────────────────────
+
+model UserEvent {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid // nullable for anonymous events
+  eventType String   @map("event_type") // PAGE_VIEW, ADD_TO_CART, CHECKOUT_START, etc.
+  metadata  Json?    // { page, itemId, searchQuery, etc. }
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  sessionId String?  @map("session_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@index([sessionId])
+  @@map("user_events")
+}
+
+// ─── ADDRESSES ────────────────────────────────────────────────────────────────
+
+model Address {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  label       String   @default("Home") // Home, Work, Other
+  fullAddress String   @map("full_address")
+  city        String?
+  pincode     String?
+  lat         Decimal? @db.Decimal(10, 7)
+  lng         Decimal? @db.Decimal(10, 7)
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+// ─── PUSH SUBSCRIPTIONS ────────────────────────────────────────────────────────
+
+model PushSubscription {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscriptions")
+}

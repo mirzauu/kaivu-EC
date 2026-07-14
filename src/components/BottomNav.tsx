@@ -103,23 +103,21 @@ export function BottomNav() {
       }
       centerOn(index, true);
 
-      // Navigate after animation
-      setTimeout(() => {
-        const current = tabs.findIndex(({ to }) =>
-          to === "/" ? pathnameRef.current === "/" : pathnameRef.current.startsWith(to),
-        );
-        if (index !== current) {
-          const target = tabs[index].to;
-          if (target !== "/" && !isAuthenticated) {
-            auth.openModal(() => {
-              router.push(target);
-            });
-            centerOn(current, true);
-          } else {
+      // Navigate immediately for instantaneous response
+      const current = tabs.findIndex(({ to }) =>
+        to === "/" ? pathnameRef.current === "/" : pathnameRef.current.startsWith(to),
+      );
+      if (index !== current) {
+        const target = tabs[index].to;
+        if (target !== "/" && !isAuthenticated) {
+          auth.openModal(() => {
             router.push(target);
-          }
+          });
+          centerOn(current, true);
+        } else {
+          router.push(target);
         }
-      }, 300);
+      }
     },
     [centerOn, router, isAuthenticated],
   );
@@ -192,10 +190,10 @@ export function BottomNav() {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 bg-transparent pt-6 pb-2">
       <div
-        ref={containerRef}
         className="mx-auto max-w-md px-4 pb-[max(env(safe-area-inset-bottom),0.5rem)] overflow-hidden"
       >
         <div
+          ref={containerRef}
           className="relative h-20 pt-4 pb-1 touch-none select-none"
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
@@ -231,8 +229,8 @@ export function BottomNav() {
                     className={cn(
                       "group relative grid place-items-center rounded-full transition-all duration-300 ease-out",
                       isCenter
-                        ? "h-16 w-16 bg-background text-orange-500 shadow-lg translate-y-[-10px]"
-                        : "h-11 w-11 bg-transparent text-orange-500/55 hover:text-orange-500",
+                        ? "h-16 w-16 bg-orange-500 text-white shadow-lg translate-y-[-10px]"
+                        : "h-11 w-11 bg-white text-orange-500 shadow-sm hover:bg-orange-50/50",
                     )}
                   >
                     <Icon
