@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { toast } from "sonner";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -157,7 +158,7 @@ function AdminLogin() {
 
 // --- ADMIN CONSOLE COMPONENT ---
 function AdminConsole() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "orders" | "menu" | "settings" | "activity">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "orders" | "menu" | "users" | "settings" | "activity">("dashboard");
   const orders = useOrders((s) => s.orders);
   const menuItems = useMenu((s) => s.menu);
 
@@ -226,6 +227,19 @@ function AdminConsole() {
           </button>
 
           <button
+            onClick={() => setActiveTab("users")}
+            className={`flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all cursor-pointer ${activeTab === "users"
+                ? "bg-brand text-brand-foreground shadow-lg shadow-brand/15"
+                : "text-[oklch(0.5_0.02_60)] hover:bg-[oklch(0.94_0.018_75)] hover:text-[oklch(0.18_0.02_50)]"
+              }`}
+          >
+            <div className="flex items-center gap-3">
+              <User className="h-5 w-5 shrink-0" />
+              <span>User Management</span>
+            </div>
+          </button>
+
+          <button
             onClick={() => setActiveTab("settings")}
             className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all cursor-pointer ${activeTab === "settings"
                 ? "bg-brand text-brand-foreground shadow-lg shadow-brand/15"
@@ -268,6 +282,7 @@ function AdminConsole() {
               {activeTab === "dashboard" && "Dashboard Overview"}
               {activeTab === "orders" && "Order Management"}
               {activeTab === "menu" && "Menu Management"}
+              {activeTab === "users" && "User Management"}
               {activeTab === "settings" && "Settings & Simulator"}
             </h2>
             <p className="text-xs text-[oklch(0.5_0.02_60)]">
@@ -302,6 +317,7 @@ function AdminConsole() {
           )}
           {activeTab === "orders" && <OrdersTab orders={orders} />}
           {activeTab === "menu" && <MenuTab menuItems={menuItems} />}
+          {activeTab === "users" && <UsersTab />}
           {activeTab === "settings" && <SettingsTab />}
           {activeTab === "activity" && <ActivityTab />}
         </main>
@@ -1253,6 +1269,375 @@ function ActivityTab() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// ==========================================
+// --- USERS TAB PANEL ---
+// ==========================================
+function UsersTab() {
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [userDetail, setUserDetail] = useState<any>(null);
+  const [userEvents, setUserEvents] = useState<any[]>([]);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [notifyTitle, setNotifyTitle] = useState("");
+  const [notifyBody, setNotifyBody] = useState("");
+  const [sendingNotify, setSendingNotify] = useState(false);
+
+  // Fetch users list
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`/api/admin/users?search=${encodeURIComponent(search)}`);
+        const data = await res.json();
+        if (data.success && data.data?.users) {
+          setUsers(data.data.users);
+          if (data.data.users.length > 0 && !selectedUserId) {
+            setSelectedUserId(data.data.users[0].id);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const timer = setTimeout(fetchUsers, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Fetch user details and timeline events when selectedUserId changes
+  useEffect(() => {
+    if (!selectedUserId) {
+      setUserDetail(null);
+      setUserEvents([]);
+      return;
+    }
+
+    const fetchDetail = async () => {
+      try {
+        setDetailLoading(true);
+        const [detailRes, eventsRes] = await Promise.all([
+          fetch(`/api/admin/users/${selectedUserId}`),
+          fetch(`/api/admin/users/${selectedUserId}/events?limit=20`)
+        ]);
+        const detailData = await detailRes.json();
+        const eventsData = await eventsRes.json();
+
+        if (detailData.success && detailData.data) {
+          setUserDetail(detailData.data);
+        }
+        if (eventsData.success && eventsData.data?.events) {
+          setUserEvents(eventsData.data.events);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setDetailLoading(false);
+      }
+    };
+
+    fetchDetail();
+  }, [selectedUserId]);
+
+  const handleSendNotification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUserId || !notifyTitle || !notifyBody) return;
+
+    try {
+      setSendingNotify(true);
+      const res = await fetch(`/api/admin/users/${selectedUserId}/notify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: notifyTitle, body: notifyBody }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message || "Notification sent successfully!");
+        setNotifyTitle("");
+        setNotifyBody("");
+        // Instantly refresh user profile details to show newly added notification
+        const detailRes = await fetch(`/api/admin/users/${selectedUserId}`);
+        const detailData = await detailRes.json();
+        if (detailData.success && detailData.data) {
+          setUserDetail(detailData.data);
+        }
+      } else {
+        toast.error(data.error || "Failed to send notification.");
+      }
+    } catch (err) {
+      toast.error("Network error sending notification.");
+    } finally {
+      setSendingNotify(false);
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  };
+
+  return (
+    <div className="grid grid-cols-3 gap-8 animate-fadeIn">
+      {/* USERS LIST PANEL (LEFT 2/3) */}
+      <div className="col-span-2 space-y-6">
+        <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-6 border-b border-[oklch(0.9_0.015_75)] pb-3">
+            <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">Customer Accounts</h3>
+            <span className="text-xs font-bold text-brand bg-brand/10 px-2.5 py-1 rounded-full">
+              {users.length} Users Found
+            </span>
+          </div>
+
+          {/* Search bar */}
+          <div className="mb-6">
+            <input
+              type="text"
+              placeholder="Search by name, phone, or email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-2xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] px-4 py-3 text-sm focus:border-brand focus:outline-none transition-colors"
+            />
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center p-12">
+              <span className="h-6 w-6 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+            </div>
+          ) : users.length === 0 ? (
+            <div className="py-12 text-center text-sm text-[oklch(0.5_0.02_60)]">
+              No users found matching search criteria.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-[oklch(0.9_0.015_75)] text-xs font-bold text-[oklch(0.5_0.02_60)] uppercase tracking-wider">
+                    <th className="pb-3">Customer</th>
+                    <th className="pb-3">Phone</th>
+                    <th className="pb-3">Coins</th>
+                    <th className="pb-3">Wallet</th>
+                    <th className="pb-3">Orders</th>
+                    <th className="pb-3">Joined</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[oklch(0.95_0.01_75)]">
+                  {users.map((u) => {
+                    const isSelected = u.id === selectedUserId;
+                    return (
+                      <tr
+                        key={u.id}
+                        onClick={() => setSelectedUserId(u.id)}
+                        className={`text-sm cursor-pointer transition-all ${
+                          isSelected ? "bg-[oklch(0.94_0.018_75)] font-semibold" : "hover:bg-[oklch(0.97_0.012_75)]"
+                        }`}
+                      >
+                        <td className="py-3.5 px-2">
+                          <div className="font-bold text-[oklch(0.18_0.02_50)]">{u.name || "Guest User"}</div>
+                          <div className="text-[10px] text-[oklch(0.5_0.02_60)] font-normal">{u.email || "No email"}</div>
+                        </td>
+                        <td className="py-3.5 px-2 text-[oklch(0.18_0.02_50)] font-mono">{u.phone}</td>
+                        <td className="py-3.5 px-2 text-brand font-bold">🪙 {u.kaivuCoins}</td>
+                        <td className="py-3.5 px-2 text-[oklch(0.18_0.02_50)]">₹{u.walletBalance.toFixed(2)}</td>
+                        <td className="py-3.5 px-2">
+                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700">
+                            {u.orderCount}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-2 text-[oklch(0.5_0.02_60)] text-xs">{formatDate(u.createdAt)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* USER DETAIL CONSOLE PANEL (RIGHT 1/3) */}
+      <div className="col-span-1">
+        {detailLoading ? (
+          <div className="sticky top-28 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-12 shadow-sm flex justify-center items-center">
+            <span className="h-6 w-6 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+          </div>
+        ) : userDetail ? (
+          <div className="sticky top-28 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm space-y-6 overflow-y-auto max-h-[calc(100vh-180px)] animate-fadeIn">
+            <div className="border-b border-[oklch(0.9_0.015_75)] pb-4">
+              <span className="text-[10px] font-bold text-brand uppercase tracking-wider">
+                User Details Console
+              </span>
+              <h3 className="text-xl font-display font-extrabold text-[oklch(0.18_0.02_50)] mt-1">
+                {userDetail.name || "Guest User"}
+              </h3>
+              <p className="text-xs text-[oklch(0.5_0.02_60)] font-mono mt-0.5">{userDetail.id}</p>
+            </div>
+
+            {/* Core Stats */}
+            <div className="grid grid-cols-2 gap-3 bg-[oklch(0.97_0.012_75)] p-4 rounded-2xl">
+              <div>
+                <p className="text-[10px] font-bold text-[oklch(0.5_0.02_60)] uppercase">Total Orders</p>
+                <p className="text-lg font-extrabold text-[oklch(0.18_0.02_50)] mt-0.5">{userDetail.orderCount}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-[oklch(0.5_0.02_60)] uppercase">Total Spent</p>
+                <p className="text-lg font-extrabold text-[oklch(0.18_0.02_50)] mt-0.5">₹{userDetail.totalSpent.toFixed(2)}</p>
+              </div>
+            </div>
+
+            {/* PWA & Permissions info */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">PWA & Notification Details</h4>
+              <div className="space-y-1 text-xs text-[oklch(0.18_0.02_50)]">
+                <div className="flex justify-between py-1 border-b border-[oklch(0.95_0.01_75)]">
+                  <span className="text-[oklch(0.5_0.02_60)]">PWA App Installed:</span>
+                  <span className={`font-bold ${userDetail.pwaInstalled ? "text-emerald-600" : "text-amber-600"}`}>
+                    {userDetail.pwaInstalled ? "Yes (Standalone)" : "No"}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-[oklch(0.95_0.01_75)]">
+                  <span className="text-[oklch(0.5_0.02_60)]">Last Dismissed Order:</span>
+                  <span className="font-bold">
+                    {userDetail.pwaLastDismissedOrderCount === -1 ? "Never" : `Order #${userDetail.pwaLastDismissedOrderCount}`}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Addresses list */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">Delivery Addresses</h4>
+              {userDetail.addresses?.length === 0 ? (
+                <p className="text-xs text-[oklch(0.5_0.02_60)] italic">No addresses saved yet.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {userDetail.addresses.map((addr: any) => (
+                    <li key={addr.id} className="rounded-xl border border-[oklch(0.9_0.015_75)] p-2.5 text-xs">
+                      <div className="flex justify-between font-bold text-[oklch(0.18_0.02_50)] mb-1">
+                        <span>{addr.label}</span>
+                        {addr.isDefault && (
+                          <span className="rounded bg-brand/10 px-1 py-0.5 text-[8px] text-brand uppercase">Default</span>
+                        )}
+                      </div>
+                      <p className="text-[oklch(0.5_0.02_60)] leading-tight">{addr.fullAddress}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Referrals */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">Referrals Made ({userDetail.referralCount})</h4>
+              {userDetail.referralsMade?.length === 0 ? (
+                <p className="text-xs text-[oklch(0.5_0.02_60)] italic">No referrals recorded.</p>
+              ) : (
+                <ul className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                  {userDetail.referralsMade.map((ref: any) => (
+                    <li key={ref.id} className="flex justify-between items-center text-xs py-1 border-b border-[oklch(0.95_0.01_75)]">
+                      <span className="font-bold text-[oklch(0.18_0.02_50)]">{ref.referred.name || "Guest"}</span>
+                      <span className={`text-[9px] font-bold uppercase rounded px-1.5 py-0.5 ${
+                        ref.status === "COMPLETED" ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-600"
+                      }`}>{ref.status}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Sent Notifications history */}
+            <div className="border-t border-[oklch(0.9_0.015_75)] pt-4 space-y-3">
+              <h4 className="text-xs font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">Sent Notifications ({userDetail.notifications?.length || 0})</h4>
+              {userDetail.notifications?.length === 0 ? (
+                <p className="text-xs text-[oklch(0.5_0.02_60)] italic">No notifications sent yet.</p>
+              ) : (
+                <ul className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
+                  {userDetail.notifications.map((notif: any) => (
+                    <li key={notif.id} className="rounded-xl bg-[oklch(0.98_0.005_75)] border border-[oklch(0.95_0.01_75)] p-2.5 text-xs animate-fadeIn">
+                      <div className="flex justify-between font-bold text-[oklch(0.18_0.02_50)] mb-1">
+                        <span className="truncate max-w-[180px]">{notif.title}</span>
+                        <span className="text-[10px] text-[oklch(0.5_0.02_60)] font-normal shrink-0">
+                          {new Date(notif.sentAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        </span>
+                      </div>
+                      <p className="text-[oklch(0.5_0.02_60)] leading-snug">{notif.body}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Send Push Notification */}
+            <div className="border-t border-[oklch(0.9_0.015_75)] pt-4 space-y-3">
+              <h4 className="text-xs font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">Send Custom Push Notification</h4>
+              <form onSubmit={handleSendNotification} className="space-y-3">
+                <input
+                  type="text"
+                  required
+                  placeholder="Notification Title"
+                  value={notifyTitle}
+                  onChange={(e) => setNotifyTitle(e.target.value)}
+                  className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] px-3 py-2 text-xs focus:border-brand focus:outline-none transition-colors"
+                />
+                <textarea
+                  required
+                  rows={2}
+                  placeholder="Notification message body..."
+                  value={notifyBody}
+                  onChange={(e) => setNotifyBody(e.target.value)}
+                  className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] px-3 py-2 text-xs focus:border-brand focus:outline-none transition-colors resize-none"
+                />
+                <button
+                  type="submit"
+                  disabled={sendingNotify}
+                  className="w-full rounded-full bg-brand py-2 text-xs font-bold text-brand-foreground hover:opacity-95 transition-all disabled:opacity-70 cursor-pointer shadow"
+                >
+                  {sendingNotify ? "Sending Push..." : "Send Web Push Alert"}
+                </button>
+              </form>
+            </div>
+
+            {/* User Activity Feed (Timeline) */}
+            <div className="border-t border-[oklch(0.9_0.015_75)] pt-4 space-y-3">
+              <h4 className="text-xs font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">User Action Timeline</h4>
+              {userEvents.length === 0 ? (
+                <p className="text-xs text-[oklch(0.5_0.02_60)] italic">No actions recorded on this user.</p>
+              ) : (
+                <div className="relative border-l border-[oklch(0.9_0.015_75)] ml-2 pl-4 space-y-4">
+                  {userEvents.map((evt: any) => (
+                    <div key={evt.id} className="relative text-xs">
+                      <div className="absolute -left-[21px] top-1.5 h-2 w-2 rounded-full border border-white bg-brand" />
+                      <div className="flex justify-between items-start gap-2">
+                        <div>
+                          <span className="font-bold text-[oklch(0.18_0.02_50)] capitalize">{evt.eventType.replace(/_/g, " ")}</span>
+                          {evt.metadata && Object.keys(evt.metadata).length > 0 && (
+                            <div className="text-[10px] text-[oklch(0.5_0.02_60)] bg-[oklch(0.98_0.005_75)] rounded p-1.5 mt-1 font-mono break-all max-w-[200px]">
+                              {JSON.stringify(evt.metadata)}
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-[oklch(0.5_0.02_60)] shrink-0">
+                          {new Date(evt.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="sticky top-28 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-8 shadow-sm text-center text-sm text-[oklch(0.5_0.02_60)]">
+            Select a customer from the table to view their database profile.
+          </div>
+        )}
+      </div>
     </div>
   );
 }

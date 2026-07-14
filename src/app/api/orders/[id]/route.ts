@@ -98,7 +98,14 @@ export const PATCH = withAdmin(
         );
       }
 
-      const order = await db.order.findUnique({ where: { id } });
+      const order = await db.order.findFirst({
+        where: {
+          OR: [
+            ...(id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i) ? [{ id }] : []),
+            { orderNumber: id }
+          ]
+        }
+      });
       if (!order) {
         return NextResponse.json(apiError("Order not found"), { status: 404 });
       }
@@ -109,7 +116,7 @@ export const PATCH = withAdmin(
       }
 
       const updated = await db.order.update({
-        where: { id },
+        where: { id: order.id },
         data: updateData,
       });
 
@@ -120,35 +127,44 @@ export const PATCH = withAdmin(
             where: { userId: order.userId },
           });
 
-          if (subscriptions.length > 0) {
-            const payload = JSON.stringify({
-              title: "Order on the way! 🛵",
-              body: `Your order ${order.orderNumber} is dispatched. Keep your phone handy!`,
-              icon: "/images/menu/burger-classic.jpg",
-              url: "/orders",
+            // Save notification to DB for history tracking (runs always)
+            await db.notification.create({
+              data: {
+                userId: order.userId,
+                title: "Order on the way! 🛵",
+                body: `Your order ${order.orderNumber} is dispatched. Keep your phone handy!`,
+              },
             });
 
-            // Trigger pushes asynchronously
-            Promise.allSettled(
-              subscriptions.map((sub) =>
-                webpush.sendNotification(
-                  {
-                    endpoint: sub.endpoint,
-                    keys: {
-                      p256dh: sub.p256dh,
-                      auth: sub.auth,
+            if (subscriptions.length > 0) {
+              const payload = JSON.stringify({
+                title: "Order on the way! 🛵",
+                body: `Your order ${order.orderNumber} is dispatched. Keep your phone handy!`,
+                icon: "/images/menu/burger-classic.jpg",
+                url: "/orders",
+              });
+
+              // Trigger pushes asynchronously
+              Promise.allSettled(
+                subscriptions.map((sub) =>
+                  webpush.sendNotification(
+                    {
+                      endpoint: sub.endpoint,
+                      keys: {
+                        p256dh: sub.p256dh,
+                        auth: sub.auth,
+                      },
                     },
-                  },
-                  payload
-                ).catch(async (err) => {
-                  // If subscription has expired or is invalid, delete it from the DB
-                  if (err.statusCode === 410 || err.statusCode === 404) {
-                    await db.pushSubscription.delete({ where: { id: sub.id } });
-                  }
-                })
-              )
-            ).catch((err) => console.error("Error in web-push Promise:", err));
-          }
+                    payload
+                  ).catch(async (err) => {
+                    // If subscription has expired or is invalid, delete it from the DB
+                    if (err.statusCode === 410 || err.statusCode === 404) {
+                      await db.pushSubscription.delete({ where: { id: sub.id } });
+                    }
+                  })
+                )
+              ).catch((err) => console.error("Error in web-push Promise:", err));
+            }
         } catch (pushErr) {
           console.error("Failed to query/trigger push notifications:", pushErr);
         }

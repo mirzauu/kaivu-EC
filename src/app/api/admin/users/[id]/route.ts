@@ -44,6 +44,10 @@ export const GET = withAdmin(
             orderBy: { createdAt: "desc" },
           },
           addresses: true,
+          notifications: {
+            orderBy: { sentAt: "desc" },
+            take: 20,
+          },
           _count: {
             select: {
               orders: true,

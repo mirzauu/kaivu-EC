@@ -283,7 +283,14 @@ export async function placeOrder(params: {
  */
 export async function cancelOrder(orderId: string, userId: string) {
   return db.$transaction(async (tx) => {
-    const order = await tx.order.findUnique({ where: { id: orderId } });
+    const order = await tx.order.findFirst({
+      where: {
+        OR: [
+          ...(orderId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i) ? [{ id: orderId }] : []),
+          { orderNumber: orderId }
+        ]
+      }
+    });
 
     if (!order) throw new Error("Order not found");
     if (order.userId !== userId) throw new Error("Not your order");
@@ -302,7 +309,7 @@ export async function cancelOrder(orderId: string, userId: string) {
           amount: -order.coinsEarned,
           type: "ADMIN_ADJUST",
           description: `Coins reversed from cancelled order ${order.orderNumber}`,
-          referenceId: orderId,
+          referenceId: order.id,
         },
       });
     }
@@ -319,14 +326,14 @@ export async function cancelOrder(orderId: string, userId: string) {
           amount: order.coinsRedeemed,
           type: "ADMIN_ADJUST",
           description: `Coins refunded from cancelled order ${order.orderNumber}`,
-          referenceId: orderId,
+          referenceId: order.id,
         },
       });
     }
 
     // Update order status
     const cancelled = await tx.order.update({
-      where: { id: orderId },
+      where: { id: order.id },
       data: { status: "CANCELLED" },
     });
 

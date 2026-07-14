@@ -36,7 +36,9 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
       <Toaster position="top-center" />
       {children}
       <BottomNav />
-      <AuthModal />
+      <Suspense fallback={null}>
+        <AuthModal />
+      </Suspense>
       <InstallPrompt />
     </QueryClientProvider>
   );
