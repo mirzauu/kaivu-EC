@@ -48,6 +48,8 @@ export const GET = withAuth(async (req: AuthenticatedRequest) => {
       deliveryFee: Number(order.deliveryFee),
       discount: Number(order.discount),
       total: Number(order.total),
+      deliveryLat: order.deliveryLat ? Number(order.deliveryLat) : null,
+      deliveryLng: order.deliveryLng ? Number(order.deliveryLng) : null,
       items: order.items.map((item) => ({
         ...item,
         itemPrice: Number(item.itemPrice),
@@ -79,8 +81,10 @@ export const GET = withAuth(async (req: AuthenticatedRequest) => {
 export const POST = withAuth(async (req: AuthenticatedRequest) => {
   try {
     const body = await req.json().catch(() => ({}));
-    const { deliveryAddress, paymentMethod, redeemCoins } = body as {
+    const { deliveryAddress, deliveryLat, deliveryLng, paymentMethod, redeemCoins } = body as {
       deliveryAddress?: string;
+      deliveryLat?: number;
+      deliveryLng?: number;
       paymentMethod?: string;
       redeemCoins?: number;
     };
@@ -88,6 +92,8 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
     const result = await placeOrder({
       userId: req.user.userId,
       deliveryAddress,
+      deliveryLat,
+      deliveryLng,
       paymentMethod,
       redeemCoins: redeemCoins || 0,
     });

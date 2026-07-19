@@ -37,9 +37,12 @@ export async function GET() {
         addresses: {
           select: {
             id: true,
+            name: true,
             label: true,
             fullAddress: true,
             isDefault: true,
+            lat: true,
+            lng: true,
           },
           orderBy: {
             createdAt: 'desc',
@@ -67,6 +70,11 @@ export async function GET() {
           walletBalance: Number(user.walletBalance),
           orderCount: user._count.orders,
           addressCount: user.addresses.length,
+          addresses: user.addresses.map((a) => ({
+            ...a,
+            lat: a.lat ? Number(a.lat) : null,
+            lng: a.lng ? Number(a.lng) : null,
+          })),
         },
       })
     );

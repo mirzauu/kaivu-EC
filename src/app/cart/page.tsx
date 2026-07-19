@@ -7,7 +7,7 @@ import { Minus, Plus, Trash2, ShoppingBag, Coins, Loader2 } from "lucide-react";
 import { MobileShell } from "@/components/MobileShell";
 import { cart, useCart } from "@/lib/cart-store";
 import { ordersStore } from "@/lib/orders-store";
-import { useAuth } from "@/lib/auth-store";
+import { auth, useAuth } from "@/lib/auth-store";
 import { getImageUrl } from "@/lib/utils";
 
 export default function Cart() {
@@ -50,11 +50,18 @@ export default function Cart() {
     if (items.length === 0 || checkingOut) return;
     
     let deliveryAddress = "";
+    let deliveryLat: number | undefined;
+    let deliveryLng: number | undefined;
+
     if (selectedAddressId === "new") {
       deliveryAddress = addressInput;
     } else {
       const addr = user?.addresses?.find(a => a.id === selectedAddressId);
       deliveryAddress = addr?.fullAddress || "";
+      if (addr?.lat !== null && addr?.lng !== null) {
+        deliveryLat = Number(addr?.lat);
+        deliveryLng = Number(addr?.lng);
+      }
     }
     
     if (!deliveryAddress.trim()) {
@@ -67,6 +74,8 @@ export default function Cart() {
     try {
       const orderId = await ordersStore.addOrder({
         deliveryAddress,
+        deliveryLat,
+        deliveryLng,
         paymentMethod: "WALLET",
         redeemCoins: coinsRedeemedCount,
       });
@@ -156,36 +165,64 @@ export default function Cart() {
 
           {/* Delivery Address Section */}
           <section className="mx-5 mt-4 rounded-3xl bg-surface p-5 shadow-sm border border-border">
-            <h3 className="text-sm font-bold mb-3">Delivery Address</h3>
-            {user?.addresses && user.addresses.length > 0 && (
-              <div className="space-y-2 mb-3">
-                {user.addresses.map((addr) => (
-                  <label key={addr.id} className="flex items-start gap-3 p-2 rounded-xl border border-transparent has-[:checked]:border-brand/30 has-[:checked]:bg-brand/5 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="address"
-                      value={addr.id}
-                      checked={selectedAddressId === addr.id}
-                      onChange={() => setSelectedAddressId(addr.id)}
-                      className="mt-1 h-4 w-4 text-brand focus:ring-brand accent-brand cursor-pointer"
-                    />
-                    <div>
-                      <p className="text-sm font-semibold">{addr.label}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-2">{addr.fullAddress}</p>
-                    </div>
-                  </label>
-                ))}
-                <label className="flex items-center gap-3 p-2 rounded-xl border border-transparent has-[:checked]:border-brand/30 has-[:checked]:bg-brand/5 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="address"
-                    value="new"
-                    checked={selectedAddressId === "new"}
-                    onChange={() => setSelectedAddressId("new")}
-                    className="h-4 w-4 text-brand focus:ring-brand accent-brand cursor-pointer"
-                  />
-                  <span className="text-sm font-semibold">Add new address</span>
-                </label>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold">Delivery Address</h3>
+              {user && user.addresses && user.addresses.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => router.push("/profile/addresses/new?redirect=/cart")}
+                  className="text-xs font-bold text-brand hover:underline"
+                >
+                  + Add New
+                </button>
+              )}
+            </div>
+
+            {user?.addresses && user.addresses.length > 0 ? (
+              <div className="space-y-3 mb-3">
+                <div className="relative">
+                  <select
+                    value={selectedAddressId}
+                    onChange={(e) => setSelectedAddressId(e.target.value)}
+                    className="w-full appearance-none rounded-xl border border-border bg-surface p-3 pr-10 text-sm font-semibold focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                  >
+                    {user.addresses.map((addr) => (
+                      <option key={addr.id} value={addr.id}>
+                        {addr.label} {addr.name ? `(${addr.name})` : ""} - {addr.fullAddress}
+                      </option>
+                    ))}
+                    <option value="new">Deliver to another address</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground">
+                    <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3 mb-3">
+                {user ? (
+                  <button
+                    type="button"
+                    onClick={() => router.push("/profile/addresses/new?redirect=/cart")}
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand/10 border border-brand/20 py-3 text-sm font-semibold text-brand transition-colors hover:bg-brand/15"
+                  >
+                    + Add Saved Address (GPS Auto-Fill)
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => auth.openModal()}
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand/10 border border-brand/20 py-3 text-sm font-semibold text-brand transition-colors hover:bg-brand/15"
+                  >
+                    Log in to save address
+                  </button>
+                )}
+
+                <div className="relative flex py-1 items-center">
+                  <div className="flex-grow border-t border-border"></div>
+                  <span className="flex-shrink mx-4 text-muted-foreground text-[10px] uppercase font-bold tracking-wide">Or type manually</span>
+                  <div className="flex-grow border-t border-border"></div>
+                </div>
               </div>
             )}
             
@@ -193,7 +230,7 @@ export default function Cart() {
               <textarea
                 value={addressInput}
                 onChange={(e) => setAddressInput(e.target.value)}
-                placeholder="e.g. 221B Baker Street, London"
+                placeholder="Enter delivery address details manually..."
                 rows={2}
                 className="w-full rounded-xl border border-border bg-background p-3 text-sm placeholder:text-muted-foreground focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               />

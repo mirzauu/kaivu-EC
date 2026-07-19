@@ -17,10 +17,12 @@ import { Prisma } from "@prisma/client";
 export async function placeOrder(params: {
   userId: string;
   deliveryAddress?: string;
+  deliveryLat?: number;
+  deliveryLng?: number;
   paymentMethod?: string;
   redeemCoins?: number; // number of coins to redeem
 }) {
-  const { userId, deliveryAddress, paymentMethod, redeemCoins = 0 } = params;
+  const { userId, deliveryAddress, deliveryLat, deliveryLng, paymentMethod, redeemCoins = 0 } = params;
 
   return db.$transaction(async (tx) => {
     // 1. Fetch cart items with menu item details
@@ -121,6 +123,8 @@ export async function placeOrder(params: {
         coinsRedeemed: actualCoinsRedeemed,
         status: "CONFIRMED",
         deliveryAddress,
+        deliveryLat: deliveryLat ? new Prisma.Decimal(deliveryLat) : null,
+        deliveryLng: deliveryLng ? new Prisma.Decimal(deliveryLng) : null,
         paymentMethod: paymentMethod || "WALLET",
         estimatedDelivery: new Date(Date.now() + 30 * 60 * 1000), // 30 min ETA
       },

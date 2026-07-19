@@ -28,6 +28,10 @@ function TrackingWatcher() {
 }
 
 export function ClientShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const hideNavRoutes = ["/profile/addresses/new"];
+  const shouldHideNav = hideNavRoutes.includes(pathname);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Suspense fallback={null}>
@@ -35,7 +39,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
       </Suspense>
       <Toaster position="top-center" />
       {children}
-      <BottomNav />
+      {!shouldHideNav && <BottomNav />}
       <Suspense fallback={null}>
         <AuthModal />
       </Suspense>

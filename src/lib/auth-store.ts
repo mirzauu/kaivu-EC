@@ -2,9 +2,12 @@ import { useSyncExternalStore } from "react";
 
 export type Address = {
   id: string;
+  name: string | null;
   label: string;
   fullAddress: string;
   isDefault: boolean;
+  lat?: number | null;
+  lng?: number | null;
 };
 
 export type User = {
@@ -113,6 +116,55 @@ export const auth = {
   },
 
   /**
+   * Saves a new address to the user's profile.
+   */
+  async addAddress(addressData: {
+    name?: string;
+    label: string;
+    fullAddress: string;
+    city?: string;
+    pincode?: string;
+    lat?: number;
+    lng?: number;
+    isDefault?: boolean;
+  }): Promise<{ success: boolean; error?: string; data?: any }> {
+    try {
+      const res = await fetch("/api/user/addresses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(addressData),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return { success: false, error: data.error || "Failed to save address" };
+      }
+      await this.refreshUser();
+      return { success: true, data: data.data };
+    } catch (e) {
+      return { success: false, error: "Network error saving address" };
+    }
+  },
+
+  /**
+   * Deletes an address from the user's profile.
+   */
+  async deleteAddress(id: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const res = await fetch(`/api/user/addresses?id=${id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return { success: false, error: data.error || "Failed to delete address" };
+      }
+      await this.refreshUser();
+      return { success: true };
+    } catch (e) {
+      return { success: false, error: "Network error deleting address" };
+    }
+  },
+
+  /**
    * Sends OTP request to the backend.
    */
   async sendOtp(phone: string): Promise<{ success: boolean; error?: string }> {
@@ -179,6 +231,27 @@ export const auth = {
       return { success: true };
     } catch (e) {
       return { success: false, error: "Network error. Please try again." };
+    }
+  },
+
+  /**
+   * Updates the user's name.
+   */
+  async updateName(name: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return { success: false, error: data.error || "Failed to update name" };
+      }
+      await this.refreshUser();
+      return { success: true };
+    } catch (e) {
+      return { success: false, error: "Network error updating profile" };
     }
   },
 

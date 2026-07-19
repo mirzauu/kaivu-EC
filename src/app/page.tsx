@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Search, MapPin, Bell, Star, Plus, Flame } from "lucide-react";
+import { Search, MapPin, Bell, Star, Plus, Flame, RefreshCw } from "lucide-react";
 import { MobileShell } from "@/components/MobileShell";
 import { useMenu } from "@/lib/menu-store";
 import { cart } from "@/lib/cart-store";
 import { auth, useAuth } from "@/lib/auth-store";
 import { PushingHandBanner } from "@/components/PushingHandBanner";
+import { useLocation, locationStore } from "@/lib/location-store";
+
 const categories = [
   { key: "Burgers", emoji: "🍔" },
   { key: "Sides", emoji: "🍟" },
@@ -20,6 +22,10 @@ export default function Home() {
   const popular = menu.filter((m) => m.category === "Burgers");
   const recommended = menu.slice(0, 4);
   const isAuthenticated = useAuth((s) => s.isAuthenticated);
+
+  const locationAddress = useLocation((s) => s.address);
+  const locationLoading = useLocation((s) => s.isLoading);
+  const locationError = useLocation((s) => s.error);
 
   const handleAdd = (item: any) => {
     if (!isAuthenticated) {
@@ -35,14 +41,28 @@ export default function Home() {
     <MobileShell>
       {/* Top bar */}
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 pt-6">
-        <div className="min-w-0">
+        <button
+          type="button"
+          onClick={() => locationStore.refresh()}
+          className="min-w-0 text-left"
+          aria-label="Refresh location"
+        >
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
             <MapPin className="h-3.5 w-3.5" /> Deliver to
           </p>
-          <p className="truncate text-sm font-semibold text-foreground">
-            221B Baker Street · 12 min
-          </p>
-        </div>
+          {locationLoading ? (
+            <div className="mt-1 h-4 w-40 animate-pulse rounded-md bg-muted" />
+          ) : locationError && !locationAddress ? (
+            <p className="flex items-center gap-1 truncate text-sm font-semibold text-muted-foreground">
+              Tap to set location
+              <RefreshCw className="h-3 w-3" />
+            </p>
+          ) : (
+            <p className="truncate text-sm font-semibold text-foreground">
+              {locationAddress}
+            </p>
+          )}
+        </button>
         <button
           aria-label="Notifications"
           className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-surface shadow-sm"

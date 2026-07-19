@@ -66,32 +66,33 @@ async function loadCart() {
 
 // Watch authentication changes to reload cart
 if (typeof window !== "undefined") {
+  let wasAuthenticated = false;
+
   auth.subscribe(() => {
-    // We check state directly. If user is loaded, fetch cart.
-    // Let's delay slightly to let state update.
-    setTimeout(() => {
-      const isUserAuthenticated = document.cookie.includes("kaivu_token");
-      if (isUserAuthenticated) {
-        loadCart();
-      } else {
-        // Logged out, clear cart
-        state = {
-          items: [],
-          subtotal: 0,
-          itemCount: 0,
-          isLoading: false,
-        };
-        emit();
-      }
-    }, 100);
+    const isAuth = auth.getState().isAuthenticated;
+    if (isAuth && !wasAuthenticated) {
+      loadCart();
+      wasAuthenticated = true;
+    } else if (!isAuth && wasAuthenticated) {
+      // Logged out, clear cart
+      state = {
+        items: [],
+        subtotal: 0,
+        itemCount: 0,
+        isLoading: false,
+      };
+      emit();
+      wasAuthenticated = false;
+    }
   });
 
   // Initial load check
   setTimeout(() => {
-    if (document.cookie.includes("kaivu_token")) {
+    if (auth.getState().isAuthenticated) {
       loadCart();
+      wasAuthenticated = true;
     }
-  }, 300);
+  }, 100);
 }
 
 export const cart = {

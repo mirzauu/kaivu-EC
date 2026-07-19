@@ -11,6 +11,9 @@ export type Order = {
   price: number;
   date: string;
   status: "active" | "delivered" | "cancelled";
+  deliveryAddress?: string;
+  deliveryLat?: number;
+  deliveryLng?: number;
 };
 
 type State = {
@@ -153,6 +156,9 @@ async function loadOrders() {
           price: order.total,
           date: formatDate(order.createdAt),
           status,
+          deliveryAddress: order.deliveryAddress,
+          deliveryLat: order.deliveryLat ? Number(order.deliveryLat) : undefined,
+          deliveryLng: order.deliveryLng ? Number(order.deliveryLng) : undefined,
         };
       });
 
@@ -219,7 +225,7 @@ export const ordersStore = {
   /**
    * Places a new order from the cart.
    */
-  async addOrder(params?: { deliveryAddress?: string; paymentMethod?: string; redeemCoins?: number }): Promise<string | null> {
+  async addOrder(params?: { deliveryAddress?: string; deliveryLat?: number; deliveryLng?: number; paymentMethod?: string; redeemCoins?: number }): Promise<string | null> {
     try {
       const res = await fetch("/api/orders", {
         method: "POST",

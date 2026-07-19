@@ -22,7 +22,9 @@ import {
   Check,
   User,
   Activity,
-  MenuSquare
+  MenuSquare,
+  MapPin,
+  ExternalLink
 } from "lucide-react";
 import { adminAuth, useAdminAuth } from "@/lib/admin-store";
 import { ordersStore, useOrders, Order } from "@/lib/orders-store";
@@ -745,6 +747,33 @@ function OrdersTab({ orders }: OrdersTabProps) {
                 </h4>
               </div>
             </div>
+
+            {selectedOrder.deliveryAddress && (
+              <div className="rounded-2xl bg-[oklch(0.97_0.012_75)] p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <MapPin className="h-5 w-5 text-brand shrink-0 mt-0.5" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider mb-1">
+                      Delivery Address
+                    </p>
+                    <p className="text-sm text-[oklch(0.5_0.02_60)] leading-snug break-words">
+                      {selectedOrder.deliveryAddress}
+                    </p>
+                  </div>
+                </div>
+                <a
+                  href={selectedOrder.deliveryLat && selectedOrder.deliveryLng 
+                    ? `https://maps.google.com/?q=${selectedOrder.deliveryLat},${selectedOrder.deliveryLng}`
+                    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedOrder.deliveryAddress)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-full items-center justify-center gap-2 rounded-full border border-[oklch(0.9_0.015_75)] bg-white py-2.5 text-xs font-bold text-[oklch(0.18_0.02_50)] hover:bg-[oklch(0.98_0.005_75)] transition-colors"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Navigate with Google Maps
+                </a>
+              </div>
+            )}
 
             {/* Stepper Status Progress */}
             {selectedOrder.status === "active" && (

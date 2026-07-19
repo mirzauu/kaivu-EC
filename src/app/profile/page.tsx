@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MapPin, CreditCard, Heart, Settings, HelpCircle, LogOut, ChevronRight, Award, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { MapPin, CreditCard, Heart, Settings, HelpCircle, LogOut, ChevronRight, Award, Loader2, Download, Share, Pencil, Check, X } from "lucide-react";
 import { MobileShell } from "@/components/MobileShell";
 import { useAuth, auth } from "@/lib/auth-store";
 import { toast } from "sonner";
@@ -26,9 +27,14 @@ const groups = [
 ];
 
 export default function Profile() {
+  const router = useRouter();
   const user = useAuth((s) => s.user);
   const [loyalty, setLoyalty] = useState({ current: 0, target: 8 });
   const [loading, setLoading] = useState(true);
+  
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState("");
+  const [isSavingName, setIsSavingName] = useState(false);
 
   useEffect(() => {
     async function fetchLoyalty() {
@@ -59,8 +65,56 @@ export default function Profile() {
     if (label === "Log out") {
       auth.logout();
       toast.success("Successfully logged out");
+    } else if (label === "Addresses") {
+      router.push("/profile/addresses");
     } else {
       toast.info(`${label} details are coming soon!`);
+    }
+  };
+
+  const handleInstallApp = async () => {
+    const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+    if (isIOS) {
+      toast.info("To install on iOS: tap the Share button below, then 'Add to Home Screen'.", { duration: 5000 });
+      return;
+    }
+
+    const deferredPrompt = (window as any).deferredPrompt;
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        try {
+          await fetch("/api/user/pwa-action", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "installed" }),
+          });
+          auth.refreshUser();
+        } catch (e) {
+          console.error(e);
+        }
+        (window as any).deferredPrompt = null;
+        toast.success("App installed successfully!");
+      }
+    } else {
+      toast.info("App is already installed or your browser doesn't support automatic installation.");
+    }
+  };
+
+  const handleSaveName = async () => {
+    if (!editNameValue.trim()) {
+      toast.error("Name cannot be empty");
+      return;
+    }
+    setIsSavingName(true);
+    const res = await auth.updateName(editNameValue);
+    setIsSavingName(false);
+    if (res.success) {
+      toast.success("Name updated successfully!");
+      setIsEditingName(false);
+    } else {
+      toast.error(res.error || "Failed to update name");
     }
   };
 
@@ -96,8 +150,48 @@ export default function Profile() {
             {(user.name || "K")[0].toUpperCase()}
           </div>
           <div className="min-w-0">
-            <h2 className="truncate text-base font-bold">{user.name || "Kaivu Customer"}</h2>
-            <p className="truncate text-xs text-muted-foreground">{user.email || "No email linked"} · {user.phone}</p>
+            {isEditingName ? (
+              <div className="flex items-center gap-2 mb-1">
+                <input
+                  type="text"
+                  value={editNameValue}
+                  onChange={(e) => setEditNameValue(e.target.value)}
+                  className="w-full rounded-md border border-brand/30 bg-background px-2 py-1 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                  placeholder="Your Name"
+                  autoFocus
+                  disabled={isSavingName}
+                />
+                <button
+                  onClick={handleSaveName}
+                  disabled={isSavingName}
+                  className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand text-brand-foreground hover:opacity-90 disabled:opacity-50"
+                >
+                  {isSavingName ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                </button>
+                <button
+                  onClick={() => setIsEditingName(false)}
+                  disabled={isSavingName}
+                  className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-accent text-muted-foreground hover:bg-accent/80 disabled:opacity-50"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 mb-1">
+                <h2 className="truncate text-base font-bold">{user.name || "Kaivu Customer"}</h2>
+                <button
+                  onClick={() => {
+                    setEditNameValue(user.name || "");
+                    setIsEditingName(true);
+                  }}
+                  className="grid h-6 w-6 place-items-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                  aria-label="Edit name"
+                >
+                  <Pencil className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+            <p className="truncate text-xs text-muted-foreground">{user.phone}</p>
           </div>
         </div>
       </section>
@@ -164,6 +258,17 @@ export default function Profile() {
           </ul>
         </section>
       ))}
+
+      {/* Install App Button */}
+      <section className="px-5 pt-6">
+        <button
+          onClick={handleInstallApp}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand/10 border border-brand/20 py-3.5 text-sm font-bold text-brand transition-all hover:bg-brand/15 active:scale-[0.98]"
+        >
+          <Download className="h-4.5 w-4.5" />
+          Install Kaivu App
+        </button>
+      </section>
 
       <p className="px-5 pt-6 text-center text-[11px] text-muted-foreground">Kaivu · v1.0.0 · DB connected</p>
     </MobileShell>
