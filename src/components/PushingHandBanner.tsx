@@ -236,7 +236,7 @@ export function PushingHandBanner() {
       <motion.div
         ref={containerRef}
         id="pushing-hand-banner"
-        className="relative overflow-hidden rounded-3xl bg-primary text-primary-foreground shadow-lg cursor-pointer touch-none"
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#C84B31] via-[#93322C] to-[#40271D] text-white shadow-xl cursor-pointer touch-none"
         onPointerMove={handlePointerMove}
         onPointerEnter={handlePointerEnter}
         onPointerLeave={handlePointerLeave}
@@ -249,15 +249,33 @@ export function PushingHandBanner() {
           skewX: cardSkewX,
           skewY: cardSkewY,
           transformStyle: "preserve-3d",
-          perspective: 1000,
+          perspective: 1200,
         }}
       >
+        {/* Giant KAIVU Background Text */}
+        <motion.div
+          className="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
+          style={{
+            z: -40,
+            x: useTransform(textX, (v) => v * -1.2),
+            y: useTransform(textY, (v) => v * -1.2),
+          }}
+        >
+          <span className="text-[140px] font-black uppercase tracking-tighter leading-none opacity-20 mix-blend-overlay blur-[2px]">
+            KAIVU
+          </span>
+        </motion.div>
+
+        {/* Dynamic Warm Highlights */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-white/20 pointer-events-none z-0" />
+        <div className="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-yellow-400/40 blur-3xl pointer-events-none z-0" />
+
         {/* Content Layout */}
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-5 relative z-10 pointer-events-none">
           
-          {/* Text details container (Parallax + Content sliding transition) */}
+          {/* Text details container */}
           <motion.div
-            style={{ x: textX, y: textY }}
+            style={{ x: textX, y: textY, z: 20 }}
             className="min-w-0 h-[135px] relative flex flex-col justify-center overflow-hidden"
           >
             <AnimatePresence mode="wait">
@@ -270,17 +288,17 @@ export function PushingHandBanner() {
                 className="absolute left-0 right-0 top-0 bottom-0 flex flex-col justify-center pointer-events-none"
               >
                 <div>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-brand px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-foreground shadow-sm">
-                    <Flame className="h-3 w-3 fill-brand-foreground" /> {OFFERS[currentIndex].badge}
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/20 backdrop-blur-md border border-white/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
+                    <Flame className="h-3 w-3 fill-white" /> {OFFERS[currentIndex].badge}
                   </span>
                 </div>
-                <h2 className="mt-2 text-xl font-bold leading-tight">
+                <h2 className="mt-2 text-xl font-bold leading-tight drop-shadow-sm">
                   {OFFERS[currentIndex].title}
                 </h2>
                 <div>
                   <Link
                     href={OFFERS[currentIndex].link}
-                    className="mt-3 inline-flex items-center rounded-full bg-brand px-4 py-2 text-xs font-semibold text-brand-foreground shadow-sm hover:brightness-105 transition-all pointer-events-auto"
+                    className="mt-3 inline-flex items-center rounded-full bg-white px-4 py-2 text-xs font-bold text-[#93322C] shadow-lg hover:scale-105 transition-transform pointer-events-auto"
                   >
                     {OFFERS[currentIndex].btnText}
                   </Link>
@@ -298,6 +316,7 @@ export function PushingHandBanner() {
               scaleX: burgerScaleX,
               scaleY: burgerScaleY,
               rotate: burgerRotate,
+              z: 30, // Push burger out towards user
             }}
             className="shrink-0"
           >
@@ -307,13 +326,10 @@ export function PushingHandBanner() {
               alt="Kaivu signature smashed cheeseburger"
               width={512}
               height={512}
-              className="h-32 w-32 shrink-0 rounded-2xl object-cover shadow-md pointer-events-none"
+              className="h-32 w-32 shrink-0 rounded-2xl object-cover shadow-[0_15px_30px_rgba(0,0,0,0.3)] pointer-events-none border border-white/10"
             />
           </motion.div>
         </div>
-
-        {/* Ambient background glow to create depth */}
-        <div className="absolute inset-0 bg-radial from-white/10 to-transparent pointer-events-none" />
       </motion.div>
     </section>
   );

@@ -1,130 +1,245 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { Package, CheckCircle2, Clock, ChefHat, Bike } from "lucide-react";
 import { MobileShell } from "@/components/MobileShell";
 import { useOrders } from "@/lib/orders-store";
 import { getImageUrl } from "@/lib/utils";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
 
 const stages = ["Confirmed", "Cooking", "On the way", "Delivered"];
 
-const OrderAnimation = ({ stage }: { stage: number }) => {
-  if (stage === 0) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center py-10 bg-surface/50 rounded-t-[40px] shadow-inner w-full overflow-hidden mt-4">
-        <svg viewBox="0 0 600 450" className="w-full max-w-[340px] h-auto mx-auto my-auto">
+const ConfirmedAnimation = () => {
+  const [animationEnded, setAnimationEnded] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    // Transition to confirmed checkmark state after playing the 3D fist-bump animation once
+    const timer = setTimeout(() => {
+      setAnimationEnded(true);
+    }, 2800);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!isMounted) {
+    return <div className="flex-1 w-full min-h-[380px]" />;
+  }
+
+  return (
+    <div className="relative flex-1 w-full min-h-[380px] flex flex-col items-center justify-center overflow-hidden">
+      {!animationEnded ? (
+        <svg viewBox="0 0 520 360" className="w-full max-w-[380px] h-auto mx-auto my-auto">
           <defs>
-            <clipPath id="receipt-clip">
-              <rect x="220" y="215" width="160" height="180" />
-            </clipPath>
+            {/* Claymorphism 3D specular highlight and drop shadow filter */}
+            <filter id="clay-3d" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur" />
+              <feOffset in="blur" dx="2" dy="5" result="offset" />
+              <feFlood floodColor="#40271D" floodOpacity={0.18} result="shadowColor" />
+              <feComposite in2="offset" operator="in" result="dropShadow" />
+              
+              {/* Specular lighting for 3D clay glow */}
+              <feSpecularLighting in="SourceAlpha" surfaceScale={6} specularConstant={1.5} specularExponent={20} lightingColor="#ffffff" result="specOut">
+                <fePointLight x="-100" y="-120" z="220" />
+              </feSpecularLighting>
+              <feComposite in2="SourceAlpha" operator="in" result="specular" />
+              
+              <feMerge>
+                <feMergeNode in="dropShadow" />
+                <feMergeNode in="SourceGraphic" />
+                <feMergeNode in="specular" />
+              </feMerge>
+            </filter>
+
+            {/* Left Arm 3D Coral Gradient */}
+            <linearGradient id="left-arm-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FFA494" />
+              <stop offset="60%" stopColor="#FF6E54" />
+              <stop offset="100%" stopColor="#E63F28" />
+            </linearGradient>
+
+            {/* Right Arm 3D Rose Gradient */}
+            <linearGradient id="right-arm-grad" x1="100%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#FF94B8" />
+              <stop offset="60%" stopColor="#FF5488" />
+              <stop offset="100%" stopColor="#D8285C" />
+            </linearGradient>
+
+            {/* Ambient Shadow under the collision */}
+            <radialGradient id="amb-shadow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#40271D" stopOpacity="0.12" />
+              <stop offset="100%" stopColor="#40271D" stopOpacity="0" />
+            </radialGradient>
           </defs>
 
-          {/* Ground */}
-          <ellipse cx="300" cy="415" rx="240" ry="20" fill="#D1D9F9" opacity="0.6" />
-          
-          {/* Background Blobs */}
-          <path d="M 120 380 C 50 320, 50 200, 150 180 C 250 160, 300 100, 420 120 C 540 140, 560 300, 500 380 Z" fill="#FCE4EC" opacity="0.8" />
-          
-          {/* Sun */}
-          <g transform="translate(110, 220)">
-            <circle cx="0" cy="0" r="30" fill="#FFF59D" />
-            <path d="M 0 -45 L 0 -35 M 0 35 L 0 45 M -45 0 L -35 0 M 35 0 L 45 0 M -30 -30 L -22 -22 M 22 22 L 30 30 M -30 30 L -22 22 M 22 -22 L 30 -30" stroke="#FFF59D" strokeWidth="3" strokeLinecap="round" />
-          </g>
+          {/* Ambient Shadow */}
+          <ellipse cx="260" cy="300" rx="140" ry="12" fill="url(#amb-shadow)" />
 
-          {/* Background Leaves */}
-          <path d="M 450 410 C 470 300, 520 280, 530 380 Z" fill="#FFE0B2" opacity="0.7" />
-          <path d="M 470 410 C 500 320, 550 310, 550 390 Z" fill="#FFE0B2" opacity="0.5" />
-          <path d="M 100 410 C 80 300, 140 280, 150 380 Z" fill="#FFE0B2" opacity="0.6" />
-
-          {/* Printer Body (Back Layer) */}
+          {/* --- LEFT HAND --- */}
           <motion.g
-            animate={{ 
-              x: [0, -2, 2, -2, 2, 0],
-              y: [0, 1, -1, 1, 0, 0]
+            initial={{ x: -180, rotate: -15 }}
+            animate={{
+              x: [-180, -200, 10, -5, 0],
+              rotate: [-15, -25, 6, -2, 0],
             }}
             transition={{
-              repeat: Infinity,
-              duration: 1.5,
-              repeatType: "mirror"
+              duration: 2.2,
+              ease: "easeInOut",
+              times: [0, 0.4, 0.65, 0.8, 1],
             }}
+            style={{ originX: "60px", originY: "180px" }}
           >
-            <rect x="210" y="215" width="180" height="145" rx="20" fill="#455A64" />
-            {/* Cute face on printer edges */}
-            <circle cx="235" cy="275" r="4" fill="#212121" />
-            <circle cx="365" cy="275" r="4" fill="#212121" />
-            <circle cx="230" cy="282" r="6" fill="#FF8A80" opacity="0.6" />
-            <circle cx="370" cy="282" r="6" fill="#FF8A80" opacity="0.6" />
-            <path d="M 292 285 Q 300 292 308 285" stroke="#212121" strokeWidth="3" strokeLinecap="round" fill="none" />
+            {/* Left Arm sleeve & body */}
+            <path
+              d="M -60,135 C 10,130 90,125 150,140 C 180,147 195,160 195,180 C 195,200 180,213 150,220 C 90,230 10,225 -60,220 Z"
+              fill="url(#left-arm-grad)"
+              filter="url(#clay-3d)"
+            />
+            {/* Fingers (Curled fist knuckles) */}
+            <g transform="translate(170, 138)" filter="url(#clay-3d)">
+              <rect x="15" y="4" width="28" height="16" rx="8" fill="#FFA494" />
+              <rect x="20" y="18" width="30" height="16" rx="8" fill="#FF826C" />
+              <rect x="18" y="32" width="30" height="16" rx="8" fill="#FF5D43" />
+              <rect x="12" y="46" width="26" height="16" rx="8" fill="#E63F28" />
+              {/* Thumb */}
+              <path
+                d="M -2,8 C 15,3 32,10 32,25 C 32,35 15,35 3,30 Z"
+                fill="#FFA494"
+              />
+            </g>
           </motion.g>
 
-          {/* Receipt Paper (Middle Layer, Clipped) */}
-          <g clipPath="url(#receipt-clip)">
-            <motion.g
-              animate={{ y: [-130, 0] }}
-              transition={{ 
-                repeat: Infinity, 
-                duration: 3, 
-                ease: "easeOut",
-                repeatDelay: 1
-              }}
-            >
-              {/* Receipt body */}
-              <path d="M 250 215 L 350 215 L 350 330 L 342 322 L 334 330 L 326 322 L 318 330 L 310 322 L 302 330 L 294 322 L 286 330 L 278 322 L 270 330 L 262 322 L 250 330 Z" fill="#FFFFFF" stroke="#CFD8DC" strokeWidth="3" />
-              
-              {/* Receipt details */}
-              <circle cx="300" cy="250" r="18" fill="#E8F5E9" />
-              <path d="M 292 250 L 297 255 L 308 244" stroke="#4CAF50" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-              
-              {/* Text lines */}
-              <line x1="270" y1="285" x2="330" y2="285" stroke="#B0BEC5" strokeWidth="4" strokeLinecap="round" />
-              <line x1="270" y1="298" x2="315" y2="298" stroke="#CFD8DC" strokeWidth="4" strokeLinecap="round" />
-              <line x1="270" y1="310" x2="300" y2="310" stroke="#CFD8DC" strokeWidth="4" strokeLinecap="round" />
-            </motion.g>
-          </g>
-
-          {/* Printer Lid & Details (Front Layer) */}
+          {/* --- RIGHT HAND --- */}
           <motion.g
-            animate={{ 
-              x: [0, -2, 2, -2, 2, 0],
-              y: [0, 1, -1, 1, 0, 0]
+            initial={{ x: 180, rotate: 15 }}
+            animate={{
+              x: [180, 200, -10, 5, 0],
+              rotate: [15, 25, -6, 2, 0],
             }}
             transition={{
-              repeat: Infinity,
-              duration: 1.5,
-              repeatType: "mirror"
+              duration: 2.2,
+              ease: "easeInOut",
+              times: [0, 0.4, 0.65, 0.8, 1],
             }}
+            style={{ originX: "460px", originY: "180px" }}
           >
-            <rect x="220" y="195" width="160" height="25" rx="5" fill="#37474F" />
-            <rect x="235" y="210" width="130" height="6" rx="3" fill="#212121" />
-            {/* Feed button */}
-            <circle cx="300" cy="330" r="6" fill="#00E676" />
-            <circle cx="320" cy="330" r="4" fill="#FF1744" />
+            {/* Right Arm sleeve & body */}
+            <path
+              d="M 580,135 C 510,130 430,125 370,140 C 340,147 325,160 325,180 C 325,200 340,213 370,220 C 430,230 510,225 580,220 Z"
+              fill="url(#right-arm-grad)"
+              filter="url(#clay-3d)"
+            />
+            {/* Fingers (Curled fist knuckles) */}
+            <g transform="translate(290, 138)" filter="url(#clay-3d)">
+              <rect x="10" y="4" width="28" height="16" rx="8" fill="#FF94B8" />
+              <rect x="5" y="18" width="30" height="16" rx="8" fill="#FF72A0" />
+              <rect x="7" y="32" width="30" height="16" rx="8" fill="#FF4E83" />
+              <rect x="14" y="46" width="26" height="16" rx="8" fill="#D8285C" />
+              {/* Thumb */}
+              <path
+                d="M 32,8 C 15,3 -2,10 -2,25 C -2,35 15,35 27,30 Z"
+                fill="#FF94B8"
+              />
+            </g>
           </motion.g>
 
-          {/* Sparkles / Pop Effects */}
-          <g>
-            <motion.path
-              d="M 180 250 L 183 257 L 190 260 L 183 263 L 180 270 L 177 263 L 170 260 L 177 257 Z"
-              fill="#FFD54F"
-              animate={{ scale: [0, 1.2, 0], rotate: [0, 90, 180], opacity: [0, 1, 0] }}
-              transition={{ repeat: Infinity, duration: 4, delay: 2.2 }}
-            />
-            <motion.path
-              d="M 420 230 L 423 237 L 430 240 L 423 243 L 420 250 L 417 243 L 410 240 L 417 237 Z"
-              fill="#FFD54F"
-              animate={{ scale: [0, 1.2, 0], rotate: [0, -90, -180], opacity: [0, 1, 0] }}
-              transition={{ repeat: Infinity, duration: 4, delay: 2.4 }}
-            />
+          {/* --- COLLISION EFFECTS (Triggers at t=1.4s (0.65 of 2.2s)) --- */}
+          {/* Shockwave circle */}
+          <motion.circle
+            cx="260"
+            cy="178"
+            r="45"
+            fill="none"
+            stroke="#F2DFB5"
+            strokeWidth="4"
+            animate={{
+              scale: [0, 0, 1.5, 2.2, 0],
+              opacity: [0, 0, 0.9, 0, 0],
+            }}
+            transition={{
+              duration: 2.2,
+              ease: "easeOut",
+              times: [0, 0.62, 0.65, 0.85, 1],
+            }}
+          />
+
+          {/* Sparkles burst */}
+          <g transform="translate(260, 178)">
+            {[0, 60, 120, 180, 240, 300].map((angle, i) => (
+              <motion.g
+                key={i}
+                animate={{
+                  scale: [0, 0, 1.4, 0],
+                  opacity: [0, 0, 1, 0],
+                  x: [0, 0, Math.cos((angle * Math.PI) / 180) * 45, Math.cos((angle * Math.PI) / 180) * 60],
+                  y: [0, 0, Math.sin((angle * Math.PI) / 180) * 45, Math.sin((angle * Math.PI) / 180) * 60],
+                }}
+                transition={{
+                  duration: 2.2,
+                  ease: "easeOut",
+                  times: [0, 0.62, 0.72, 1],
+                }}
+              >
+                <circle cx="0" cy="0" r="4.5" fill={i % 2 === 0 ? "#F2DFB5" : "#40271D"} />
+              </motion.g>
+            ))}
           </g>
         </svg>
+      ) : (
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 100, damping: 15 }}
+          className="flex flex-col items-center justify-center text-center p-6"
+        >
+          {/* Animated checkmark circle */}
+          <div className="relative w-24 h-24 bg-brand/10 rounded-full flex items-center justify-center mb-6">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 150 }}
+              className="w-16 h-16 bg-brand rounded-full flex items-center justify-center shadow-lg shadow-brand/20"
+            >
+              <CheckCircle2 className="w-9 h-9 text-brand-foreground" strokeWidth={3} />
+            </motion.div>
+            <motion.div 
+              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+              className="absolute inset-0 border-2 border-brand rounded-full"
+            />
+          </div>
 
-      </div>
-    );
+          <motion.h3 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-2xl font-bold text-foreground mb-2"
+          >
+            Order Confirmed!
+          </motion.h3>
+
+          <motion.p 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="text-sm text-muted-foreground max-w-[260px]"
+          >
+            Your order is confirmed and is being sent to the kitchen.
+          </motion.p>
+        </motion.div>
+      )}
+    </div>
+  );
+};
+
+const OrderAnimation = ({ stage }: { stage: number }) => {
+  if (stage === 0) {
+    return <ConfirmedAnimation />;
   }
   if (stage === 1) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center py-10 bg-surface/50 rounded-t-[40px] shadow-inner w-full mt-4">
+      <div className="flex-1 flex flex-col items-center justify-center py-6 w-full overflow-hidden">
         {/* ===== COOKING ANIMATION: exact recreation of the reference illustration ===== */}
         <svg viewBox="0 0 560 430" className="w-full max-w-[340px] h-auto mx-auto my-auto">
           <defs>
@@ -342,7 +457,7 @@ const OrderAnimation = ({ stage }: { stage: number }) => {
   }
   if (stage === 2) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center py-10 bg-surface/50 rounded-t-[40px] shadow-inner w-full overflow-hidden mt-4">
+      <div className="flex-1 flex flex-col items-center justify-center py-6 w-full overflow-hidden">
         <svg viewBox="0 0 600 450" className="w-full max-w-[340px] h-auto mx-auto my-auto">
           {/* Ground */}
           <ellipse cx="300" cy="380" rx="240" ry="10" fill="#D1D9F9" opacity="0.6" />

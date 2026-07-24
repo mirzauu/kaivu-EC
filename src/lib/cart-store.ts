@@ -107,6 +107,11 @@ export const cart = {
    * Add item to the server-backed cart.
    */
   async add(item: Omit<CartItem, "qty">) {
+    // Add haptic feedback
+    if (typeof window !== "undefined" && window.navigator && window.navigator.vibrate) {
+      window.navigator.vibrate(50); // short vibration for haptic feedback
+    }
+
     // Add tracking event
     try {
       const { tracker } = await import("@/lib/tracking/tracker");

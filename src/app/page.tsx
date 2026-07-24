@@ -1,4 +1,5 @@
 "use client";
+import { useState, useEffect } from "react";
 
 import Link from "next/link";
 import { Search, MapPin, Bell, Star, Plus, Flame, RefreshCw } from "lucide-react";
@@ -27,6 +28,11 @@ export default function Home() {
   const locationLoading = useLocation((s) => s.isLoading);
   const locationError = useLocation((s) => s.error);
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const handleAdd = (item: any) => {
     if (!isAuthenticated) {
       auth.openModal(() => {
@@ -50,7 +56,7 @@ export default function Home() {
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
             <MapPin className="h-3.5 w-3.5" /> Deliver to
           </p>
-          {locationLoading ? (
+          {!mounted || locationLoading ? (
             <div className="mt-1 h-4 w-40 animate-pulse rounded-md bg-muted" />
           ) : locationError && !locationAddress ? (
             <p className="flex items-center gap-1 truncate text-sm font-semibold text-muted-foreground">

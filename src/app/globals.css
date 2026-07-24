@@ -38,43 +38,62 @@
 
 :root {
   --radius: 1.25rem;
-  /* Kaivu — warm cream + ember + deep charcoal */
-  --background: oklch(0.97 0.012 75);
-  --foreground: oklch(0.18 0.02 50);
-  --surface: oklch(1 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.02 50);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.02 50);
-  --primary: oklch(0.22 0.025 50);
-  --primary-foreground: oklch(0.97 0.012 75);
-  --brand: oklch(0.68 0.19 40);
-  --brand-foreground: oklch(1 0 0);
-  --secondary: oklch(0.94 0.018 75);
-  --secondary-foreground: oklch(0.22 0.025 50);
-  --muted: oklch(0.94 0.018 75);
-  --muted-foreground: oklch(0.5 0.02 60);
-  --accent: oklch(0.92 0.04 75);
-  --accent-foreground: oklch(0.22 0.025 50);
-  --destructive: oklch(0.6 0.22 28);
-  --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.9 0.015 75);
-  --input: oklch(0.9 0.015 75);
-  --ring: oklch(0.68 0.19 40);
+  /* Oat Milk & Cocoa Bean Palette */
+  --background: #F2DFB5;
+  --foreground: #40271D;
+  --surface: #FAF2DF;
+  --card: #FAF2DF;
+  --card-foreground: #40271D;
+  --popover: #FAF2DF;
+  --popover-foreground: #40271D;
+  --primary: #40271D;
+  --primary-foreground: #F2DFB5;
+  --brand: #40271D;
+  --brand-foreground: #F2DFB5;
+  --secondary: #E8D5AA;
+  --secondary-foreground: #40271D;
+  --muted: #E8D5AA;
+  --muted-foreground: #6D5246;
+  --accent: #E0CDA0;
+  --accent-foreground: #40271D;
+  --destructive: #B83A26;
+  --destructive-foreground: #FAF2DF;
+  --border: #DBC79B;
+  --input: #DBC79B;
+  --ring: #40271D;
 }
 
 @layer base {
   * {
     border-color: var(--color-border);
   }
-  html, body {
+
+  html,
+  body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3, h4 {
+
+  h1,
+  h2,
+  h3,
+  h4 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
+}
+
+@layer utilities {
+  .animate-cart-shake {
+    animation: cart-shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+  }
+}
+
+@keyframes cart-shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
 }

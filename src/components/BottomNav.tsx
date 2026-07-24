@@ -45,7 +45,14 @@ export function BottomNav() {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const activeIndex = tabs.findIndex(({ to }) =>
+  const visibleTabs = tabs.filter((tab) => {
+    if (tab.to === "/cart") {
+      return isAuthenticated && count > 0;
+    }
+    return true;
+  });
+
+  const activeIndex = visibleTabs.findIndex(({ to }) =>
     to === "/" ? pathname === "/" : pathname.startsWith(to),
   );
   const safeActive = activeIndex !== -1 ? activeIndex : 0;
@@ -53,6 +60,18 @@ export function BottomNav() {
   const [centeredIndex, setCenteredIndex] = useState(safeActive);
   const [translateX, setTranslateX] = useState(0);
   const [animate, setAnimate] = useState(false);
+
+  const [isShaking, setIsShaking] = useState(false);
+  const prevCountRef = useRef(count);
+
+  useEffect(() => {
+    if (count > prevCountRef.current) {
+      setIsShaking(true);
+      const timer = setTimeout(() => setIsShaking(false), 500);
+      return () => clearTimeout(timer);
+    }
+    prevCountRef.current = count;
+  }, [count]);
 
   const lastVibratedRef = useRef(-1);
   const pathnameRef = useRef(pathname);
@@ -104,11 +123,11 @@ export function BottomNav() {
       centerOn(index, true);
 
       // Navigate immediately for instantaneous response
-      const current = tabs.findIndex(({ to }) =>
+      const current = visibleTabs.findIndex(({ to }) =>
         to === "/" ? pathnameRef.current === "/" : pathnameRef.current.startsWith(to),
       );
       if (index !== current) {
-        const target = tabs[index].to;
+        const target = visibleTabs[index].to;
         if (target !== "/" && !isAuthenticated) {
           auth.openModal(() => {
             router.push(target);
@@ -127,7 +146,7 @@ export function BottomNav() {
       const w = getWidth();
       let best = 0;
       let bestD = Infinity;
-      for (let i = 0; i < tabs.length; i++) {
+      for (let i = 0; i < visibleTabs.length; i++) {
         const d = Math.abs(tx - calcTranslate(i, w));
         if (d < bestD) {
           bestD = d;
@@ -165,7 +184,7 @@ export function BottomNav() {
       drag.current.lastT = now;
 
       const w = getWidth();
-      const minTx = calcTranslate(tabs.length - 1, w);
+      const minTx = calcTranslate(visibleTabs.length - 1, w);
       const maxTx = calcTranslate(0, w);
       const raw = drag.current.startTx + dx;
       const clamped = Math.max(minTx, Math.min(maxTx, raw));
@@ -210,7 +229,7 @@ export function BottomNav() {
             }}
             className="absolute flex items-end gap-5 left-0 top-0 h-full pt-4 pb-1"
           >
-            {tabs.map(({ to, label, Icon }, i) => {
+            {visibleTabs.map(({ to, label, Icon }, i) => {
               const isCenter = i === centeredIndex;
               const isCart = to === "/cart";
 
@@ -229,8 +248,8 @@ export function BottomNav() {
                     className={cn(
                       "group relative grid place-items-center rounded-full transition-all duration-300 ease-out",
                       isCenter
-                        ? "h-16 w-16 bg-orange-500 text-white shadow-lg translate-y-[-10px]"
-                        : "h-11 w-11 bg-white text-orange-500 shadow-sm hover:bg-orange-50/50",
+                        ? "h-16 w-16 bg-primary text-primary-foreground shadow-lg translate-y-[-10px]"
+                        : "h-11 w-11 bg-surface text-primary shadow-sm hover:bg-secondary/50",
                     )}
                   >
                     <Icon
@@ -239,6 +258,7 @@ export function BottomNav() {
                         isCenter
                           ? "h-7 w-7 group-active:rotate-[18deg]"
                           : "h-[22px] w-[22px] group-active:-translate-y-0.5 group-active:scale-110",
+                        isCart && isShaking && "animate-cart-shake"
                       )}
                       strokeWidth={isCenter ? 2.25 : 2}
                     />

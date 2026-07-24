@@ -51,7 +51,7 @@ async function loadMenu() {
 }
 
 if (typeof window !== "undefined") {
-  loadMenu();
+  setTimeout(() => loadMenu(), 0);
 }
 
 export const menuStore = {

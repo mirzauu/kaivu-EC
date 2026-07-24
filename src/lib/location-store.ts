@@ -221,7 +221,7 @@ async function fetchLocation(skipCache = false) {
 /* ─── Initialize on client ──────────────────────────────────────────────────── */
 
 if (typeof window !== "undefined") {
-  fetchLocation();
+  setTimeout(() => fetchLocation(), 0);
 }
 
 /* ─── Public API ────────────────────────────────────────────────────────────── */
