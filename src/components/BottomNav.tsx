@@ -8,6 +8,9 @@ import { useCart } from "@/lib/cart-store";
 import { cn } from "@/lib/utils";
 import { auth, useAuth } from "@/lib/auth-store";
 
+import { motion, AnimatePresence } from "framer-motion";
+import { useFlyToCart } from "./FlyToCartProvider";
+
 const tabs: { to: "/" | "/menu" | "/cart" | "/orders" | "/reward" | "/profile"; label: string; Icon: typeof House }[] = [
   { to: "/", label: "Home", Icon: House },
   { to: "/menu", label: "Menu", Icon: SquareMenu },
@@ -43,6 +46,14 @@ export function BottomNav() {
   const isAuthenticated = useAuth((s) => s.isAuthenticated);
   const router = useRouter();
 
+  let flyContext: ReturnType<typeof useFlyToCart> | null = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    flyContext = useFlyToCart();
+  } catch {
+    /* fallback if context not wrapped */
+  }
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   const visibleTabs = tabs.filter((tab) => {
@@ -62,6 +73,7 @@ export function BottomNav() {
   const [animate, setAnimate] = useState(false);
 
   const [isShaking, setIsShaking] = useState(false);
+  const [showKaivu, setShowKaivu] = useState(false);
   const prevCountRef = useRef(count);
 
   useEffect(() => {
@@ -72,6 +84,18 @@ export function BottomNav() {
     }
     prevCountRef.current = count;
   }, [count]);
+
+  // Animate 'kaivu' text on the active nav icon every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowKaivu(true);
+      const timer = setTimeout(() => setShowKaivu(false), 2200);
+      return () => clearTimeout(timer);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const shouldBounceCart = (flyContext?.isCartBouncing ?? false) || isShaking;
 
   const lastVibratedRef = useRef(-1);
   const pathnameRef = useRef(pathname);
@@ -138,7 +162,7 @@ export function BottomNav() {
         }
       }
     },
-    [centerOn, router, isAuthenticated],
+    [centerOn, router, isAuthenticated, visibleTabs],
   );
 
   const closestIndex = useCallback(
@@ -155,7 +179,7 @@ export function BottomNav() {
       }
       return best;
     },
-    [getWidth],
+    [getWidth, visibleTabs],
   );
 
   const onPointerDown = useCallback(
@@ -196,7 +220,7 @@ export function BottomNav() {
         vibrate(8);
       }
     },
-    [centeredIndex, closestIndex, getWidth],
+    [centeredIndex, closestIndex, getWidth, visibleTabs],
   );
 
   const onPointerUp = useCallback(() => {
@@ -238,43 +262,88 @@ export function BottomNav() {
                   key={to}
                   className="flex-shrink-0 w-16 flex justify-center items-end h-16"
                 >
-                  <Link
-                    href={to}
-                    aria-label={label}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      snapTo(i);
+                  <motion.div
+                    animate={
+                      isCart && shouldBounceCart
+                        ? {
+                            scale: [1, 1.35, 0.85, 1.15, 1],
+                            rotate: [0, -14, 10, -5, 0],
+                          }
+                        : { scale: 1, rotate: 0 }
+                    }
+                    transition={{
+                      duration: 0.55,
+                      ease: "easeInOut",
                     }}
-                    className={cn(
-                      "group relative grid place-items-center rounded-full transition-all duration-300 ease-out",
-                      isCenter
-                        ? "h-16 w-16 bg-primary text-primary-foreground shadow-lg translate-y-[-10px]"
-                        : "h-11 w-11 bg-surface text-primary shadow-sm hover:bg-secondary/50",
-                    )}
+                    className="relative"
                   >
-                    <Icon
+                    <Link
+                      id={isCart ? "bottom-nav-cart-icon" : undefined}
+                      href={to}
+                      aria-label={label}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        snapTo(i);
+                      }}
                       className={cn(
-                        "transition-all duration-300 ease-out",
+                        "group relative grid place-items-center rounded-full transition-all duration-300 ease-out",
                         isCenter
-                          ? "h-7 w-7 group-active:rotate-[18deg]"
-                          : "h-[22px] w-[22px] group-active:-translate-y-0.5 group-active:scale-110",
-                        isCart && isShaking && "animate-cart-shake"
+                          ? "h-16 w-16 bg-primary text-primary-foreground shadow-lg translate-y-[-10px]"
+                          : "h-11 w-11 bg-surface text-primary shadow-sm hover:bg-secondary/50",
                       )}
-                      strokeWidth={isCenter ? 2.25 : 2}
-                    />
-                    {isCart && count > 0 && (
-                      <span
-                        className={cn(
-                          "absolute grid place-items-center rounded-full bg-foreground px-1 text-[10px] font-bold text-background transition-all duration-300",
-                          isCenter
-                            ? "-right-0.5 -top-0.5 h-5 min-w-5"
-                            : "-right-1 -top-1 h-4 min-w-4",
-                        )}
-                      >
-                        {count}
-                      </span>
-                    )}
-                  </Link>
+                    >
+                      {isCenter ? (
+                        <AnimatePresence mode="wait">
+                          {showKaivu ? (
+                            <motion.span
+                              key="kaivu-brand"
+                              initial={{ rotateY: -90, opacity: 0, scale: 0.7 }}
+                              animate={{ rotateY: 0, opacity: 1, scale: 1 }}
+                              exit={{ rotateY: 90, opacity: 0, scale: 0.7 }}
+                              transition={{ duration: 0.3, ease: "easeInOut" }}
+                              className="text-[11px] font-black uppercase tracking-wider text-primary-foreground font-display drop-shadow-sm select-none"
+                            >
+                              kaivu
+                            </motion.span>
+                          ) : (
+                            <motion.div
+                              key="active-icon"
+                              initial={{ rotateY: 90, opacity: 0, scale: 0.7 }}
+                              animate={{ rotateY: 0, opacity: 1, scale: 1 }}
+                              exit={{ rotateY: -90, opacity: 0, scale: 0.7 }}
+                              transition={{ duration: 0.3, ease: "easeInOut" }}
+                            >
+                              <Icon
+                                className="h-7 w-7 transition-all duration-300 ease-out group-active:rotate-[18deg]"
+                                strokeWidth={2.25}
+                              />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      ) : (
+                        <Icon
+                          className="h-[22px] w-[22px] transition-all duration-300 ease-out group-active:-translate-y-0.5 group-active:scale-110"
+                          strokeWidth={2}
+                        />
+                      )}
+                      {isCart && count > 0 && (
+                        <motion.span
+                          key={count}
+                          initial={{ scale: 0.5, opacity: 0 }}
+                          animate={{ scale: [0.5, 1.4, 1], opacity: 1 }}
+                          transition={{ duration: 0.35, ease: "easeOut" }}
+                          className={cn(
+                            "absolute grid place-items-center rounded-full bg-foreground px-1 text-[10px] font-bold text-background transition-all duration-300",
+                            isCenter
+                              ? "-right-0.5 -top-0.5 h-5 min-w-5"
+                              : "-right-1 -top-1 h-4 min-w-4",
+                          )}
+                        >
+                          {count}
+                        </motion.span>
+                      )}
+                    </Link>
+                  </motion.div>
                 </li>
               );
             })}

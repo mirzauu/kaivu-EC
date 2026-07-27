@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Minus, Plus, Trash2, ShoppingBag, Coins, Loader2 } from "lucide-react";
+
 import { MobileShell } from "@/components/MobileShell";
 import { cart, useCart } from "@/lib/cart-store";
 import { ordersStore } from "@/lib/orders-store";
 import { auth, useAuth } from "@/lib/auth-store";
 import { getImageUrl } from "@/lib/utils";
+
+import { Minus, Plus, Trash2, ShoppingBag, Coins, Loader2, ChevronDown } from "lucide-react";
 
 export default function Cart() {
   const items = useCart((s) => s.items);
@@ -194,7 +196,7 @@ export default function Cart() {
                     <option value="new">Deliver to another address</option>
                   </select>
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground">
-                    <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+                    <ChevronDown className="h-4 w-4" />
                   </div>
                 </div>
               </div>

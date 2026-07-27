@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Flame } from "lucide-react";
 import { motion, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
 import hero from "@/assets/hero-burger.jpg";
@@ -47,7 +46,7 @@ export function PushingHandBanner() {
   const containerRef = useRef<HTMLDivElement>(null);
   const burgerRef = useRef<HTMLDivElement>(null);
   const innerBurgerRef = useRef<HTMLImageElement>(null);
-  
+
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -86,7 +85,7 @@ export function PushingHandBanner() {
   // Wiggle the burger whenever the offer cycles
   useEffect(() => {
     if (!innerBurgerRef.current) return;
-    
+
     // Avoid auto-wiggling when the user is hovering to prevent interaction jank
     if (isHovered) return;
 
@@ -97,31 +96,31 @@ export function PushingHandBanner() {
       rotate: -6,
       duration: 0.08,
     })
-    .to(innerBurgerRef.current, {
-      x: 6,
-      y: 2,
-      rotate: 5,
-      duration: 0.08,
-    })
-    .to(innerBurgerRef.current, {
-      x: -5,
-      y: -1,
-      rotate: -4,
-      duration: 0.08,
-    })
-    .to(innerBurgerRef.current, {
-      x: 4,
-      y: 1,
-      rotate: 3,
-      duration: 0.08,
-    })
-    .to(innerBurgerRef.current, {
-      x: 0,
-      y: 0,
-      rotate: 0,
-      duration: 0.4,
-      ease: "elastic.out(1.2, 0.4)",
-    });
+      .to(innerBurgerRef.current, {
+        x: 6,
+        y: 2,
+        rotate: 5,
+        duration: 0.08,
+      })
+      .to(innerBurgerRef.current, {
+        x: -5,
+        y: -1,
+        rotate: -4,
+        duration: 0.08,
+      })
+      .to(innerBurgerRef.current, {
+        x: 4,
+        y: 1,
+        rotate: 3,
+        duration: 0.08,
+      })
+      .to(innerBurgerRef.current, {
+        x: 0,
+        y: 0,
+        rotate: 0,
+        duration: 0.4,
+        ease: "elastic.out(1.2, 0.4)",
+      });
 
     return () => {
       tl.kill();
@@ -169,7 +168,7 @@ export function PushingHandBanner() {
 
       burgerX.set(forceDirectionX * force * 35);
       burgerY.set(forceDirectionY * force * 25);
-      
+
       burgerScaleX.set(1 - force * 0.18);
       burgerScaleY.set(1 + force * 0.1);
       burgerRotate.set(forceDirectionX * force * -15);
@@ -236,7 +235,7 @@ export function PushingHandBanner() {
       <motion.div
         ref={containerRef}
         id="pushing-hand-banner"
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#C84B31] via-[#93322C] to-[#40271D] text-white shadow-xl cursor-pointer touch-none"
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#7B1FA2] via-[#512DA8] to-[#2B0642] text-white shadow-xl cursor-pointer touch-none"
         onPointerMove={handlePointerMove}
         onPointerEnter={handlePointerEnter}
         onPointerLeave={handlePointerLeave}
@@ -272,7 +271,7 @@ export function PushingHandBanner() {
 
         {/* Content Layout */}
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-5 relative z-10 pointer-events-none">
-          
+
           {/* Text details container */}
           <motion.div
             style={{ x: textX, y: textY, z: 20 }}
@@ -289,7 +288,7 @@ export function PushingHandBanner() {
               >
                 <div>
                   <span className="inline-flex items-center gap-1 rounded-full bg-white/20 backdrop-blur-md border border-white/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
-                    <Flame className="h-3 w-3 fill-white" /> {OFFERS[currentIndex].badge}
+                    {OFFERS[currentIndex].badge}
                   </span>
                 </div>
                 <h2 className="mt-2 text-xl font-bold leading-tight drop-shadow-sm">

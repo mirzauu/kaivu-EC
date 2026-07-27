@@ -595,14 +595,9 @@ const OrderAnimation = ({ stage }: { stage: number }) => {
               strokeLinecap="round"
               strokeLinejoin="round"
               fill="none"
-              animate={{ 
-                d: [
-                  "M 270 200 L 300 250 L 290 320",
-                  "M 270 200 L 280 260 L 265 304",
-                  "M 270 200 L 295 240 L 290 320"
-                ] 
-              }}
+              animate={{ rotate: [0, -12, 5, 0] }}
               transition={{ repeat: Infinity, duration: 0.8, ease: "easeInOut" }}
+              style={{ originX: "270px", originY: "200px" }}
             />
             
             {/* Rider Head & Helmet */}

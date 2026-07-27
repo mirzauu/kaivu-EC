@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { toast } from "sonner";
 
 /* ─── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -9,6 +10,8 @@ type State = {
   isLoading: boolean;
   error: string | null;
   coords: Coords | null;
+  showPermissionModal: boolean;
+  permissionMessage: string | null;
 };
 
 type CachedLocation = {
@@ -30,6 +33,8 @@ let state: State = {
   isLoading: true,
   error: null,
   coords: null,
+  showPermissionModal: false,
+  permissionMessage: null,
 };
 
 const listeners = new Set<() => void>();
@@ -143,10 +148,22 @@ async function reverseGeocode(lat: number, lng: number): Promise<string> {
 /* ─── Geolocation ───────────────────────────────────────────────────────────── */
 
 function requestGeolocation(): Promise<GeolocationPosition> {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     if (!navigator.geolocation) {
       reject(new Error("Geolocation is not supported by this browser"));
       return;
+    }
+
+    if (navigator.permissions && navigator.permissions.query) {
+      try {
+        const permissionStatus = await navigator.permissions.query({ name: "geolocation" as PermissionName });
+        if (permissionStatus.state === "denied") {
+          reject(new Error("Location permission is blocked. Please click the tune icon next to the URL or check your browser settings to reset the permission."));
+          return;
+        }
+      } catch (e) {
+        // Ignored
+      }
     }
 
     navigator.geolocation.getCurrentPosition(resolve, reject, {
@@ -212,9 +229,20 @@ async function fetchLocation(skipCache = false) {
           errorMessage = "Location request timed out";
           break;
       }
+    } else if (err instanceof Error) {
+      errorMessage = err.message;
     }
 
     setState({ isLoading: false, error: errorMessage });
+    
+    // If the user manually triggered the refresh, show a modal or toast
+    if (skipCache) {
+      if (err instanceof GeolocationPositionError && err.code === err.PERMISSION_DENIED || errorMessage.toLowerCase().includes("blocked")) {
+        setState({ showPermissionModal: true, permissionMessage: errorMessage });
+      } else {
+        toast.error(errorMessage, { duration: 5000 });
+      }
+    }
   }
 }
 
@@ -236,6 +264,14 @@ export const locationStore = {
   getState(): State {
     return state;
   },
+
+  openPermissionModal(message: string) {
+    setState({ showPermissionModal: true, permissionMessage: message });
+  },
+
+  closePermissionModal() {
+    setState({ showPermissionModal: false });
+  }
 };
 
 /** React hook — subscribe to location state with a selector. */

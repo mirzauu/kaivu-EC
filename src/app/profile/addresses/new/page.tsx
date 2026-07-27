@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, MapPin, Loader2, Navigation, CheckCircle2 } from "lucide-react";
 import { MobileShell } from "@/components/MobileShell";
 import { auth } from "@/lib/auth-store";
+import { locationStore } from "@/lib/location-store";
 import { toast } from "sonner";
 
 function NewAddressForm() {
@@ -38,6 +39,19 @@ function NewAddressForm() {
     try {
       if (!navigator.geolocation) {
         throw new Error("Geolocation is not supported by your browser");
+      }
+
+      if (navigator.permissions && navigator.permissions.query) {
+        try {
+          const permissionStatus = await navigator.permissions.query({ name: "geolocation" as PermissionName });
+          if (permissionStatus.state === "denied") {
+            locationStore.openPermissionModal("Location permission is blocked. Please click the tune icon next to the URL or check your site settings to enable it.");
+            setIsDetecting(false);
+            return;
+          }
+        } catch (e) {
+          // Ignored
+        }
       }
 
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
@@ -91,7 +105,11 @@ function NewAddressForm() {
       toast.success("Location auto-detected successfully!");
     } catch (err: any) {
       console.error(err);
-      toast.error(err.message || "Failed to auto-detect location. Please enter manually.");
+      if (err instanceof GeolocationPositionError && err.code === err.PERMISSION_DENIED) {
+        locationStore.openPermissionModal("Location access denied. Please enable it in your browser settings.");
+      } else {
+        toast.error(err.message || "Failed to auto-detect location. Please enter manually.");
+      }
     } finally {
       setIsDetecting(false);
     }

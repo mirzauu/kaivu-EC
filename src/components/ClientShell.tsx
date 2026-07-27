@@ -7,8 +7,11 @@ import { BottomNav } from "./BottomNav";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, Suspense } from "react";
 import { tracker } from "@/lib/tracking/tracker";
+import { LocationPermissionModal } from "./LocationPermissionModal";
 
 import { InstallPrompt } from "./InstallPrompt";
+
+import { FlyToCartProvider } from "./FlyToCartProvider";
 
 const queryClient = new QueryClient();
 
@@ -30,20 +33,23 @@ function TrackingWatcher() {
 export function ClientShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const hideNavRoutes = ["/profile/addresses/new"];
-  const shouldHideNav = hideNavRoutes.includes(pathname);
+  const shouldHideNav = hideNavRoutes.includes(pathname) || pathname?.startsWith("/csuite");
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Suspense fallback={null}>
-        <TrackingWatcher />
-      </Suspense>
-      <Toaster position="top-center" />
-      {children}
-      {!shouldHideNav && <BottomNav />}
-      <Suspense fallback={null}>
-        <AuthModal />
-      </Suspense>
-      <InstallPrompt />
+      <FlyToCartProvider>
+        <Suspense fallback={null}>
+          <TrackingWatcher />
+        </Suspense>
+        <Toaster position="top-center" />
+        {children}
+        {!shouldHideNav && <BottomNav />}
+        <Suspense fallback={null}>
+          <AuthModal />
+        </Suspense>
+        <InstallPrompt />
+        <LocationPermissionModal />
+      </FlyToCartProvider>
     </QueryClientProvider>
   );
 }

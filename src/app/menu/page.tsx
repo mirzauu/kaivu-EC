@@ -9,6 +9,9 @@ import { cart } from "@/lib/cart-store";
 import { auth, useAuth } from "@/lib/auth-store";
 import { getImageUrl } from "@/lib/utils";
 
+import { motion } from "framer-motion";
+import { useFlyToCart } from "@/components/FlyToCartProvider";
+
 export default function Menu() {
   const menu = useMenu((s) => s.menu);
   const [active, setActive] = useState<(typeof categories)[number]>("All");
@@ -17,15 +20,10 @@ export default function Menu() {
     (m) => (active === "All" || m.category === active) && m.name.toLowerCase().includes(q.toLowerCase()),
   );
   const isAuthenticated = useAuth((s) => s.isAuthenticated);
+  const { flyToCart } = useFlyToCart();
 
-  const handleAdd = (item: any) => {
-    if (!isAuthenticated) {
-      auth.openModal(() => {
-        cart.add(item);
-      });
-    } else {
-      cart.add(item);
-    }
+  const handleAdd = (e: React.MouseEvent<HTMLButtonElement>, item: any) => {
+    flyToCart(e, item);
   };
 
   return (
@@ -103,13 +101,14 @@ export default function Menu() {
                   <p className="mt-0.5 line-clamp-2 text-[11px] text-muted-foreground">{item.desc}</p>
                   <div className="mt-auto grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 pt-3">
                     <span className="text-base font-bold">₹{item.price.toFixed(2)}</span>
-                    <button
-                      onClick={() => handleAdd({ id: item.id, name: item.name, price: item.price, image: getImageUrl(item.image) })}
+                    <motion.button
+                      whileTap={{ scale: 0.75, rotate: 90 }}
+                      onClick={(e) => handleAdd(e, { id: item.id, name: item.name, price: item.price, image: getImageUrl(item.image) })}
                       aria-label={`Add ${item.name}`}
-                      className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand text-brand-foreground"
+                      className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand text-brand-foreground shadow-sm"
                     >
                       <Plus className="h-4 w-4" strokeWidth={3} />
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
               </article>
