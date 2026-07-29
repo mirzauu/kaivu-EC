@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Award, Gift, Ticket, Wallet, Magnet, Loader2, Coins } from "lucide-react";
 import { MobileShell } from "@/components/MobileShell";
 import { useAuth, auth } from "@/lib/auth-store";
+import { usePublicSettings } from "@/lib/public-settings-store";
 import { toast } from "sonner";
 
 type RewardItem = {
@@ -28,6 +29,7 @@ type LoyaltyProgress = {
 
 export default function Reward() {
   const user = useAuth((s) => s.user);
+  const rewardSectionEnabled = usePublicSettings((s) => s.rewardSectionEnabled);
   const [rewards, setRewards] = useState<RewardItem[]>([]);
   const [loyalty, setLoyalty] = useState<LoyaltyProgress>({
     current: 0,
@@ -110,6 +112,28 @@ export default function Reward() {
       console.error("Share failed", e);
     }
   };
+
+  if (!rewardSectionEnabled) {
+    return (
+      <MobileShell>
+        <div className="flex min-h-[70vh] flex-col items-center justify-center p-6 text-center animate-fadeIn">
+          <div className="grid h-16 w-16 place-items-center rounded-3xl bg-amber-500/10 text-amber-600 mb-4 shadow-sm">
+            <Gift className="h-8 w-8" />
+          </div>
+          <h2 className="text-xl font-bold text-foreground">Rewards Currently Disabled</h2>
+          <p className="mt-2 text-xs text-muted-foreground max-w-xs">
+            The reward program is currently paused or inactive. Please check back later!
+          </p>
+          <Link
+            href="/"
+            className="mt-6 rounded-2xl bg-brand px-6 py-3 text-xs font-bold text-brand-foreground shadow-lg shadow-brand/20 transition-transform active:scale-95"
+          >
+            Back to Home
+          </Link>
+        </div>
+      </MobileShell>
+    );
+  }
 
   return (
     <MobileShell>

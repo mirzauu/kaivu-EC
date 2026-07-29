@@ -107,6 +107,14 @@ async function main() {
 
     // Rewards Settings
     {
+      key: "reward_section_enabled",
+      value: "false",
+      type: "boolean",
+      label: "Reward Section Enabled",
+      description: "Toggle the user-facing rewards section and navbar icon on/off.",
+      group: "rewards",
+    },
+    {
       key: "loyalty_orders_for_free_burger",
       value: "8",
       type: "number",
@@ -265,7 +273,8 @@ async function main() {
     },
   ];
 
-  // Delete existing rewards and recreate
+  // Delete existing user rewards and rewards before recreating
+  await prisma.userReward.deleteMany();
   await prisma.reward.deleteMany();
   for (const reward of rewards) {
     await prisma.reward.create({ data: reward });

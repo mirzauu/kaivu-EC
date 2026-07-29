@@ -7,6 +7,7 @@ import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react
 import { useCart } from "@/lib/cart-store";
 import { cn } from "@/lib/utils";
 import { auth, useAuth } from "@/lib/auth-store";
+import { usePublicSettings } from "@/lib/public-settings-store";
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useFlyToCart } from "./FlyToCartProvider";
@@ -44,6 +45,7 @@ export function BottomNav() {
   const pathname = usePathname() || "/";
   const count = useCart((s) => s.items.reduce((n, i) => n + i.qty, 0));
   const isAuthenticated = useAuth((s) => s.isAuthenticated);
+  const rewardSectionEnabled = usePublicSettings((s) => s.rewardSectionEnabled);
   const router = useRouter();
 
   let flyContext: ReturnType<typeof useFlyToCart> | null = null;
@@ -59,6 +61,9 @@ export function BottomNav() {
   const visibleTabs = tabs.filter((tab) => {
     if (tab.to === "/cart") {
       return isAuthenticated && count > 0;
+    }
+    if (tab.to === "/reward") {
+      return rewardSectionEnabled;
     }
     return true;
   });

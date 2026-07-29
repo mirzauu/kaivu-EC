@@ -49,27 +49,20 @@ export const PATCH = withAdmin(async (req: AuthenticatedRequest) => {
       );
     }
 
-    // Validate all keys exist before updating
-    const existingKeys = await db.systemSetting.findMany({
-      where: { key: { in: updates.map((u) => u.key) } },
-      select: { key: true },
-    });
-    const existingKeySet = new Set(existingKeys.map((k) => k.key));
-
-    const invalidKeys = updates.filter((u) => !existingKeySet.has(u.key));
-    if (invalidKeys.length > 0) {
-      return NextResponse.json(
-        apiError(`Unknown settings: ${invalidKeys.map((k) => k.key).join(", ")}`),
-        { status: 400 }
-      );
-    }
-
-    // Update all settings in a transaction
+    // Upsert all settings in a transaction so new setting keys are created automatically if missing
     await db.$transaction(
       updates.map((update) =>
-        db.systemSetting.update({
+        db.systemSetting.upsert({
           where: { key: update.key },
-          data: { value: update.value },
+          update: { value: update.value },
+          create: {
+            key: update.key,
+            value: update.value,
+            label: update.key === "reward_section_enabled" ? "Reward Section Enabled" : update.key,
+            description: update.key === "reward_section_enabled" ? "Toggle the user-facing rewards section and navbar icon on/off." : null,
+            type: update.value === "true" || update.value === "false" ? "boolean" : "string",
+            group: update.key.includes("reward") ? "rewards" : "general",
+          },
         })
       )
     );

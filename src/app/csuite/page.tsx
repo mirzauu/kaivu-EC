@@ -24,12 +24,15 @@ import {
   Activity,
   MenuSquare,
   MapPin,
-  ExternalLink
+  ExternalLink,
+  Camera,
+  Gift
 } from "lucide-react";
 import { adminAuth, useAdminAuth } from "@/lib/admin-store";
 import { ordersStore, useOrders, Order } from "@/lib/orders-store";
 import { menuStore, useMenu } from "@/lib/menu-store";
 import { MenuItem } from "@/lib/menu-data";
+import { getStories, addDynamicStory, deleteDynamicStory, clearAllStories, isStoriesEnabled, setStoriesEnabled, KaivuStory } from "@/lib/stories-data";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -160,7 +163,7 @@ function AdminLogin() {
 
 // --- ADMIN CONSOLE COMPONENT ---
 function AdminConsole() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "orders" | "menu" | "users" | "settings" | "activity">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "orders" | "menu" | "users" | "settings" | "activity" | "instagram">("dashboard");
   const orders = useOrders((s) => s.orders);
   const menuItems = useMenu((s) => s.menu);
 
@@ -229,6 +232,17 @@ function AdminConsole() {
           </button>
 
           <button
+            onClick={() => setActiveTab("instagram")}
+            className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all cursor-pointer ${activeTab === "instagram"
+                ? "bg-brand text-brand-foreground shadow-lg shadow-brand/15"
+                : "text-[oklch(0.5_0.02_60)] hover:bg-[oklch(0.94_0.018_75)] hover:text-[oklch(0.18_0.02_50)]"
+              }`}
+          >
+            <Camera className="h-5 w-5 shrink-0" />
+            <span>Instagram Stories</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab("users")}
             className={`flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all cursor-pointer ${activeTab === "users"
                 ? "bg-brand text-brand-foreground shadow-lg shadow-brand/15"
@@ -284,8 +298,10 @@ function AdminConsole() {
               {activeTab === "dashboard" && "Dashboard Overview"}
               {activeTab === "orders" && "Order Management"}
               {activeTab === "menu" && "Menu Management"}
+              {activeTab === "instagram" && "Instagram Story Importer"}
               {activeTab === "users" && "User Management"}
               {activeTab === "settings" && "Settings & Simulator"}
+              {activeTab === "activity" && "User Activity Stream"}
             </h2>
             <p className="text-xs text-[oklch(0.5_0.02_60)]">
               Welcome back, Admin · Systems operational.
@@ -319,6 +335,7 @@ function AdminConsole() {
           )}
           {activeTab === "orders" && <OrdersTab orders={orders} />}
           {activeTab === "menu" && <MenuTab menuItems={menuItems} />}
+          {activeTab === "instagram" && <InstagramTab menuItems={menuItems} />}
           {activeTab === "users" && <UsersTab />}
           {activeTab === "settings" && <SettingsTab />}
           {activeTab === "activity" && <ActivityTab />}
@@ -1317,6 +1334,54 @@ function UsersTab() {
   const [notifyBody, setNotifyBody] = useState("");
   const [sendingNotify, setSendingNotify] = useState(false);
 
+  // Reward Section Toggle State (Default OFF)
+  const [rewardEnabled, setRewardEnabled] = useState(false);
+  const [rewardLoading, setRewardLoading] = useState(false);
+
+  // Fetch reward section setting
+  useEffect(() => {
+    const fetchRewardSetting = async () => {
+      try {
+        const res = await fetch("/api/settings/public");
+        const data = await res.json();
+        if (data.success && data.data) {
+          setRewardEnabled(Boolean(data.data.rewardSectionEnabled));
+        }
+      } catch (err) {
+        console.error("Failed to fetch reward setting", err);
+      }
+    };
+    fetchRewardSetting();
+  }, []);
+
+  const handleToggleRewardSection = async (nextValue: boolean) => {
+    try {
+      setRewardLoading(true);
+      const res = await fetch("/api/admin/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          updates: [{ key: "reward_section_enabled", value: String(nextValue) }],
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRewardEnabled(nextValue);
+        toast.success(
+          nextValue
+            ? "Reward section is now ACTIVE for users!"
+            : "Reward section is now DISABLED for users!"
+        );
+      } else {
+        toast.error(data.error || "Failed to update setting");
+      }
+    } catch (err) {
+      toast.error("Error updating reward section setting");
+    } finally {
+      setRewardLoading(false);
+    }
+  };
+
   // Fetch users list
   useEffect(() => {
     const fetchUsers = async () => {
@@ -1416,6 +1481,46 @@ function UsersTab() {
     <div className="grid grid-cols-3 gap-8 animate-fadeIn">
       {/* USERS LIST PANEL (LEFT 2/3) */}
       <div className="col-span-2 space-y-6">
+
+        {/* REWARD SECTION TOGGLE CONTROL CARD */}
+        <div className="rounded-[2rem] bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-amber-500/10 border border-amber-500/20 p-6 shadow-sm flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-amber-500/15 text-amber-600 font-bold shrink-0">
+              <Gift className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2.5">
+                <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">User Reward Program</h3>
+                <span className={`text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full ${
+                  rewardEnabled
+                    ? "bg-emerald-100 text-emerald-700 border border-emerald-300"
+                    : "bg-slate-200 text-slate-600 border border-slate-300"
+                }`}>
+                  {rewardEnabled ? "ACTIVE (ON)" : "DISABLED (OFF)"}
+                </span>
+              </div>
+              <p className="text-xs text-[oklch(0.5_0.02_60)] mt-0.5">
+                Toggle the Reward section & navbar icon for users. Default is OFF.
+              </p>
+            </div>
+          </div>
+
+          <button
+            disabled={rewardLoading}
+            onClick={() => handleToggleRewardSection(!rewardEnabled)}
+            className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              rewardEnabled ? "bg-amber-500" : "bg-slate-300"
+            } ${rewardLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+            title="Toggle Reward Section"
+          >
+            <span
+              className={`pointer-events-none inline-block h-7 w-7 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                rewardEnabled ? "translate-x-6" : "translate-x-0"
+              }`}
+            />
+          </button>
+        </div>
+
         <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6 border-b border-[oklch(0.9_0.015_75)] pb-3">
             <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">Customer Accounts</h3>
@@ -1664,6 +1769,474 @@ function UsersTab() {
         ) : (
           <div className="sticky top-28 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-8 shadow-sm text-center text-sm text-[oklch(0.5_0.02_60)]">
             Select a customer from the table to view their database profile.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// --- INSTAGRAM TAB COMPONENT ---
+function InstagramTab({ menuItems }: { menuItems: MenuItem[] }) {
+  const [url, setUrl] = useState("");
+  const [customUsername, setCustomUsername] = useState("");
+  const [customMediaUrl, setCustomMediaUrl] = useState("");
+  const [featuredProductId, setFeaturedProductId] = useState(menuItems[0]?.id || "");
+  const [reactionEmoji, setReactionEmoji] = useState("😍");
+  const [loading, setLoading] = useState(false);
+  const [previewStory, setPreviewStory] = useState<KaivuStory | null>(null);
+  const [candidates, setCandidates] = useState<KaivuStory[]>([]);
+  const [stories, setStories] = useState<KaivuStory[]>([]);
+  const [storiesEnabled, setStoriesEnabledState] = useState(true);
+
+  useEffect(() => {
+    setStories(getStories());
+    setStoriesEnabledState(isStoriesEnabled());
+  }, []);
+
+  const handleToggleEnabled = () => {
+    const nextState = !storiesEnabled;
+    setStoriesEnabledState(nextState);
+    setStoriesEnabled(nextState);
+    if (nextState) {
+      toast.success("Kaivu IRL section is now ENABLED on user homepage");
+    } else {
+      toast.info("Kaivu IRL section is now DISABLED and hidden from user homepage");
+    }
+  };
+
+  const handleClearAll = () => {
+    if (confirm("Are you sure you want to clear all published stories from Kaivu IRL?")) {
+      const updated = clearAllStories();
+      setStories(updated);
+      toast.success("All stories removed. Section is now hidden from homepage.");
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setCustomMediaUrl(event.target.result as string);
+          toast.success(`Story file "${file.name}" loaded!`);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleFetch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!url && !customMediaUrl) {
+      toast.error("Please enter an Instagram story link or select a media file");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/instagram/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url,
+          customMediaUrl,
+          featuredProductId: featuredProductId || menuItems[0]?.id,
+          reactionEmoji,
+          customUsername: customUsername.startsWith("@") ? customUsername : customUsername ? `@${customUsername}` : "",
+        }),
+      });
+      const data = await res.json();
+      setLoading(false);
+
+      if (data.success && data.data) {
+        setPreviewStory(data.data);
+        if (data.candidates && data.candidates.length > 0) {
+          setCandidates(data.candidates);
+        } else {
+          setCandidates([data.data]);
+        }
+        toast.success(data.message || "Story extracted successfully! Check preview.");
+      } else {
+        toast.error(data.error || "Failed to process Instagram URL");
+      }
+    } catch (err: any) {
+      setLoading(false);
+      toast.error(err.message || "Failed to connect to import server");
+    }
+  };
+
+  const handlePublish = () => {
+    if (!previewStory) return;
+    const updated = addDynamicStory(previewStory);
+    setStories(updated);
+    setPreviewStory(null);
+    setCandidates([]);
+    setUrl("");
+    setCustomUsername("");
+    toast.success(`Published @${previewStory.username.replace("@", "")}'s story to Kaivu IRL!`);
+  };
+
+  const handleDelete = (id: string) => {
+    const updated = deleteDynamicStory(id);
+    setStories(updated);
+    toast.success("Story removed from Kaivu IRL");
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Header Banner & Section Switch */}
+      <div className="rounded-[2rem] bg-gradient-to-r from-purple-900 via-purple-800 to-indigo-900 p-8 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div className="relative z-10 max-w-xl">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-400/20 px-3.5 py-1 text-xs font-bold text-yellow-300 backdrop-blur-sm">
+            <Camera className="h-3.5 w-3.5" /> Shoppable UGC Importer
+          </span>
+          <h3 className="mt-3 text-2xl font-display font-extrabold tracking-tight">
+            Instagram Story & UGC Importer
+          </h3>
+          <p className="mt-1 text-sm text-white/80 leading-relaxed">
+            Paste any Instagram user story or post link to extract profile details, download story media locally, tag menu items, and publish live to <strong>Kaivu IRL</strong> on the homepage.
+          </p>
+        </div>
+
+        {/* ON / OFF Switch Control Box */}
+        <div className="relative z-10 shrink-0 bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-3xl space-y-2 min-w-[240px] text-center">
+          <p className="text-xs font-bold uppercase tracking-wider text-purple-200">Homepage Section Visibility</p>
+          <button
+            type="button"
+            onClick={handleToggleEnabled}
+            className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl font-extrabold text-xs transition-all shadow-md cursor-pointer ${
+              storiesEnabled
+                ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+            }`}
+          >
+            <span>Kaivu IRL Status</span>
+            <span className={`px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-widest ${
+              storiesEnabled ? "bg-white text-emerald-700" : "bg-red-500 text-white"
+            }`}>
+              {storiesEnabled ? "ON" : "OFF"}
+            </span>
+          </button>
+          <p className="text-[10px] text-white/60">
+            {storiesEnabled ? "Visible when stories exist" : "Completely hidden from homepage"}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Import Form */}
+        <div className="lg:col-span-7 space-y-6">
+          <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm">
+            <h4 className="text-base font-bold text-[oklch(0.18_0.02_50)] flex items-center gap-2">
+              <Camera className="h-5 w-5 text-purple-600" /> Import Story Link
+            </h4>
+
+            <form onSubmit={handleFetch} className="mt-5 space-y-4">
+              <div>
+                <label className="text-xs font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">
+                  Instagram Story / Post Link
+                </label>
+                <input
+                  type="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="e.g. https://www.instagram.com/stories/ar_un_das_/"
+                  className="mt-1.5 w-full rounded-2xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] px-4 py-3 text-sm focus:border-brand focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">
+                    Or Upload Story Video / Photo File (Optional)
+                  </label>
+                  {customMediaUrl && (
+                    <span className="text-[10px] text-emerald-600 font-bold">File Attached ✓</span>
+                  )}
+                </div>
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  onChange={handleFileUpload}
+                  className="mt-1.5 w-full rounded-2xl border border-dashed border-[oklch(0.85_0.02_75)] bg-[oklch(0.98_0.005_75)] px-4 py-2.5 text-xs text-slate-600 file:mr-3 file:rounded-xl file:border-0 file:bg-purple-100 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-purple-700 cursor-pointer"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">
+                    Custom Handle (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={customUsername}
+                    onChange={(e) => setCustomUsername(e.target.value)}
+                    placeholder="e.g. @nihal"
+                    className="mt-1.5 w-full rounded-2xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] px-4 py-3 text-sm focus:border-brand focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">
+                    Tag Featured Burger
+                  </label>
+                  <select
+                    value={featuredProductId}
+                    onChange={(e) => setFeaturedProductId(e.target.value)}
+                    className="mt-1.5 w-full rounded-2xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] px-4 py-3 text-sm focus:border-brand focus:outline-none transition-colors"
+                  >
+                    {menuItems.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.name} (₹{item.price})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">
+                  Reaction Badge Emoji
+                </label>
+                <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+                  {["😍", "🔥", "🍔", "❤️", "⚡", "🤤", "✨", "🌶️"].map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setReactionEmoji(emoji)}
+                      className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl text-lg font-bold transition-transform ${
+                        reactionEmoji === emoji
+                          ? "bg-purple-600 text-white scale-110 shadow-md"
+                          : "bg-gray-100 text-slate-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 rounded-full bg-purple-700 py-3.5 text-sm font-bold text-white hover:bg-purple-800 transition-all disabled:opacity-75 cursor-pointer shadow-md"
+              >
+                {loading ? (
+                  <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : (
+                  <>
+                    <Camera className="h-4 w-4" />
+                    <span>Fetch & Process Instagram Story</span>
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* Live Preview & Publish Box */}
+        <div className="lg:col-span-5">
+          <div className="rounded-[2rem] bg-slate-900 border border-slate-800 p-6 text-white shadow-lg space-y-4 sticky top-28">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-bold uppercase tracking-wider text-purple-300">
+                Story Preview & Publish
+              </h4>
+              {previewStory && (
+                <span className="rounded-full bg-green-500/20 text-green-300 text-[10px] font-bold px-2.5 py-0.5 border border-green-500/30">
+                  Ready to Publish
+                </span>
+              )}
+            </div>
+
+            {/* Candidates Chooser Bar if multiple stories/media items extracted */}
+            {candidates.length > 1 && (
+              <div className="space-y-2 bg-slate-950/80 p-3 rounded-2xl border border-white/10">
+                <label className="text-[10px] font-bold text-yellow-300 uppercase tracking-wider">
+                  Extracted Media Items ({candidates.length}) — Click to choose:
+                </label>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {candidates.map((cand, idx) => (
+                    <button
+                      key={cand.id}
+                      type="button"
+                      onClick={() => setPreviewStory(cand)}
+                      className={`relative h-14 w-14 shrink-0 rounded-xl overflow-hidden border-2 transition-transform ${
+                        previewStory?.mediaUrl === cand.mediaUrl
+                          ? "border-yellow-400 scale-105 shadow-md"
+                          : "border-slate-700 opacity-60 hover:opacity-100"
+                      }`}
+                    >
+                      {cand.mediaType === "video" || cand.mediaUrl.match(/\.(mp4|webm)($|\?)/i) ? (
+                        <video src={cand.mediaUrl} className="h-full w-full object-cover" />
+                      ) : (
+                        <img src={cand.mediaUrl} alt={`Item ${idx + 1}`} className="h-full w-full object-cover" />
+                      )}
+                      <span className="absolute bottom-0 right-0 bg-black/80 text-white text-[9px] font-bold px-1 rounded-tl">
+                        #{idx + 1}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {previewStory ? (
+              <div className="space-y-4">
+                <div className="relative rounded-2xl overflow-hidden bg-slate-950 aspect-[9/16] max-h-[380px] w-full border border-white/10 flex flex-col justify-between p-3">
+                  {previewStory.mediaType === "video" || previewStory.mediaUrl.match(/\.(mp4|webm)($|\?)/i) ? (
+                    <video
+                      src={previewStory.mediaUrl}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  ) : (
+                    <img
+                      src={previewStory.mediaUrl}
+                      alt={previewStory.username}
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  )}
+                  {/* Top user bar */}
+                  <div className="relative z-10 flex items-center gap-2.5 bg-black/50 backdrop-blur-sm p-2 rounded-xl border border-white/10">
+                    <img
+                      src={previewStory.avatar}
+                      alt={previewStory.username}
+                      className="h-8 w-8 rounded-full object-cover border border-yellow-400"
+                    />
+                    <div>
+                      <p className="text-xs font-bold text-white">{previewStory.username}</p>
+                      <p className="text-[10px] text-white/70">{previewStory.timestamp}</p>
+                    </div>
+                    <span className="ml-auto text-sm">{previewStory.reactionEmoji}</span>
+                  </div>
+
+                  {/* Bottom tagged product */}
+                  {previewStory.featuredProduct && (
+                    <div className="relative z-10 bg-white/20 backdrop-blur-md rounded-xl p-2.5 border border-white/20 flex items-center justify-between text-xs">
+                      <div>
+                        <p className="text-[10px] font-bold text-yellow-300 uppercase">Featured Item</p>
+                        <p className="font-bold text-white truncate">{previewStory.featuredProduct.name}</p>
+                      </div>
+                      <span className="font-extrabold text-white">₹{previewStory.featuredProduct.price}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-3 bg-slate-950/80 p-3 rounded-2xl border border-white/10 text-xs">
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Username Handle</label>
+                    <input
+                      type="text"
+                      value={previewStory.username}
+                      onChange={(e) => setPreviewStory({ ...previewStory, username: e.target.value })}
+                      className="mt-1 w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-1.5 text-xs text-white focus:border-purple-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Media URL</label>
+                    <input
+                      type="text"
+                      value={previewStory.mediaUrl}
+                      onChange={(e) => setPreviewStory({ ...previewStory, mediaUrl: e.target.value })}
+                      className="mt-1 w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-1.5 text-xs text-white focus:border-purple-500 focus:outline-none font-mono text-[11px]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Story Caption</label>
+                    <input
+                      type="text"
+                      value={previewStory.caption || ""}
+                      onChange={(e) => setPreviewStory({ ...previewStory, caption: e.target.value })}
+                      className="mt-1 w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-1.5 text-xs text-white focus:border-purple-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handlePublish}
+                    className="w-full rounded-full bg-gradient-to-r from-amber-400 to-yellow-400 py-3 text-sm font-bold text-slate-950 hover:from-amber-300 hover:to-yellow-300 transition-all shadow-lg cursor-pointer mt-2"
+                  >
+                    Publish to Kaivu IRL Live Feed ✨
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-center text-slate-400 space-y-2">
+                <Camera className="h-10 w-10 text-slate-600" />
+                <p className="text-xs">Paste an Instagram link on the left to extract story media & user details.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Published Stories Table / List */}
+      <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="text-base font-bold text-[oklch(0.18_0.02_50)]">
+              Published Kaivu IRL Stories ({stories.length})
+            </h4>
+            <p className="text-xs text-[oklch(0.5_0.02_60)]">
+              {storiesEnabled && stories.length > 0
+                ? "Currently live on homepage feed"
+                : "Section is hidden from homepage"}
+            </p>
+          </div>
+          {stories.length > 0 && (
+            <button
+              type="button"
+              onClick={handleClearAll}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-destructive/20 text-destructive bg-destructive/5 hover:bg-destructive/10 text-xs font-bold transition-colors cursor-pointer"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Clear All Stories
+            </button>
+          )}
+        </div>
+
+        {stories.length === 0 ? (
+          <p className="text-sm text-[oklch(0.5_0.02_60)] italic">No published stories yet.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {stories.map((story) => (
+              <div
+                key={story.id}
+                className="rounded-2xl border border-[oklch(0.9_0.015_75)] p-3.5 flex items-center gap-3.5 bg-[oklch(0.98_0.005_75)] hover:shadow-md transition-shadow"
+              >
+                <div className="relative h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-slate-900 border border-gray-200">
+                  <img src={story.mediaUrl} alt={story.username} className="h-full w-full object-cover" />
+                  <span className="absolute bottom-0.5 right-0.5 text-xs">{story.reactionEmoji}</span>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <h5 className="text-sm font-bold text-[oklch(0.18_0.02_50)] truncate">{story.username}</h5>
+                    <span className="text-[10px] text-purple-700 bg-purple-100 font-bold px-1.5 py-0.5 rounded">IRL</span>
+                  </div>
+                  {story.featuredProduct && (
+                    <p className="text-xs text-[oklch(0.5_0.02_60)] truncate mt-0.5">
+                      🍔 {story.featuredProduct.name} · ₹{story.featuredProduct.price}
+                    </p>
+                  )}
+                  <p className="text-[10px] text-slate-400 mt-1">{story.timestamp}</p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleDelete(story.id)}
+                  className="p-2 text-destructive hover:bg-destructive/10 rounded-xl transition-colors shrink-0"
+                  title="Remove Story"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>

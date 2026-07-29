@@ -5,13 +5,13 @@ import { AuthModal } from "./AuthModal";
 import { Toaster } from "sonner";
 import { BottomNav } from "./BottomNav";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { tracker } from "@/lib/tracking/tracker";
 import { LocationPermissionModal } from "./LocationPermissionModal";
-
 import { InstallPrompt } from "./InstallPrompt";
-
 import { FlyToCartProvider } from "./FlyToCartProvider";
+import { KaivuLoadingScreen } from "./KaivuLoadingScreen";
+import { AnimatePresence, motion } from "framer-motion";
 
 const queryClient = new QueryClient();
 
@@ -34,10 +34,31 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const hideNavRoutes = ["/profile/addresses/new"];
   const shouldHideNav = hideNavRoutes.includes(pathname) || pathname?.startsWith("/csuite");
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false);
+    }, 850);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <FlyToCartProvider>
+        <AnimatePresence>
+          {isInitialLoading && (
+            <motion.div
+              key="reload-splash"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: "easeInOut" }}
+              className="fixed inset-0 z-[9999]"
+            >
+              <KaivuLoadingScreen fullScreen={true} />
+            </motion.div>
+          )}
+        </AnimatePresence>
         <Suspense fallback={null}>
           <TrackingWatcher />
         </Suspense>
@@ -53,3 +74,4 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
     </QueryClientProvider>
   );
 }
+

@@ -54,6 +54,13 @@ export async function getSettingBoolean(
 }
 
 /**
+ * Check if the reward section is enabled (default: false).
+ */
+export async function isRewardSectionEnabled(): Promise<boolean> {
+  return getSettingBoolean("reward_section_enabled", false);
+}
+
+/**
  * Get a single setting value as string.
  */
 export async function getSettingString(

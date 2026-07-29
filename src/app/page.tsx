@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   MapPin,
@@ -21,8 +21,13 @@ import { useMenu } from "@/lib/menu-store";
 import { useAuth } from "@/lib/auth-store";
 import { PushingHandBanner } from "@/components/PushingHandBanner";
 import { useLocation, locationStore } from "@/lib/location-store";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useFlyToCart } from "@/components/FlyToCartProvider";
+import { KaivuIRLSection } from "@/components/KaivuIRLSection";
+import { KaivuStoryModal } from "@/components/KaivuStoryModal";
+import { getStories, isStoriesEnabled, KaivuStory } from "@/lib/stories-data";
+
+import { HeroCarousel } from "@/components/HeroCarousel";
 
 import { menu as defaultMenu } from "@/lib/menu-data";
 
@@ -52,9 +57,32 @@ export default function Home() {
 
   const [mounted, setMounted] = useState(false);
   const [selectedDetailItem, setSelectedDetailItem] = useState<any>(null);
+  const [activeStoryIndex, setActiveStoryIndex] = useState<number | null>(null);
+  const [stories, setStories] = useState<KaivuStory[]>([]);
+  const [storiesEnabled, setStoriesEnabled] = useState(true);
+
+  const categorySentinelRef = useRef<HTMLDivElement>(null);
+  const [isCategoriesSticky, setIsCategoriesSticky] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    setStories(getStories());
+    setStoriesEnabled(isStoriesEnabled());
+  }, []);
+
+  useEffect(() => {
+    const sentinel = categorySentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsCategoriesSticky(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+      },
+      { threshold: 0 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
   }, []);
 
   const handleAdd = (e: React.MouseEvent<HTMLButtonElement>, item: any) => {
@@ -64,47 +92,8 @@ export default function Home() {
 
   return (
     <MobileShell>
-      {/* Top Hero Screen (Dark Plum Theme) */}
-      <div className="bg-[#2B0642] text-white px-5 pt-5 pb-8 space-y-4">
-        {/* Location Header Bar */}
-        <div className="flex items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={() => locationStore.refresh()}
-            className="min-w-0 text-left flex-1"
-            aria-label="Refresh location"
-          >
-            <div className="flex items-center gap-1 text-[11px] font-medium text-white/70">
-              <span className="font-bold text-white flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5 text-yellow-300" />
-                Deliver to <ChevronRight className="h-3 w-3 inline" />
-              </span>
-            </div>
-            {!mounted || locationLoading ? (
-              <div className="mt-0.5 h-4 w-36 animate-pulse rounded bg-white/20" />
-            ) : locationError && !locationAddress ? (
-              <p className="flex items-center gap-1 truncate text-xs font-medium text-white/80">
-                Tap to set location <RefreshCw className="h-3 w-3" />
-              </p>
-            ) : (
-              <p className="truncate text-xs font-bold text-white">
-                {locationAddress || "Malappuram, Kerala 676307"}
-              </p>
-            )}
-          </button>
-        </div>
-
-        {/* KAIVU Brand Title & Cooking Animation */}
-        <div className="pt-2 pb-1 text-center flex flex-col items-center">
-          <h1 className="text-4xl font-extrabold uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-white to-purple-200 font-display drop-shadow-md">
-            KAIVU
-          </h1>
-          <p className="text-[10px] font-bold tracking-widest text-white/60 uppercase mt-0.5 mb-2">
-            Smashed Burgers & Eats
-          </p>
-          <CookingAnimation />
-        </div>
-      </div>
+      {/* Top Hero Carousel Screen with Full-Bleed Background Images */}
+      <HeroCarousel mounted={mounted} />
 
       {/* Floating White Content Sheet */}
       <div className="relative z-10 -mt-6 rounded-t-[32px] bg-white pt-5 pb-28 shadow-[0_-10px_25px_rgba(0,0,0,0.12)] min-h-screen">
@@ -151,75 +140,85 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {/* Main Discount Card */}
-            <div className="rounded-2xl bg-sky-50 p-4 border border-sky-100 flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <span className="inline-block text-[11px] font-extrabold text-sky-700 tracking-wide">FLAT ₹100 OFF</span>
-                <p className="text-xs text-slate-600 font-medium mt-0.5 line-clamp-2">
-                  No minimum order value on any meal, big or small!
-                </p>
-                <button
-                  type="button"
-                  className="mt-2.5 rounded-full bg-orange-600 px-3.5 py-1.5 text-[11px] font-bold text-white hover:bg-orange-700 transition-colors"
-                >
-                  CLAIM DEAL
-                </button>
-              </div>
-              <div className="h-16 w-16 shrink-0 rounded-2xl bg-sky-100 flex items-center justify-center text-3xl">
-                🍔
-              </div>
-            </div>
-
-            {/* Quick Action Cards */}
-            <div className="grid grid-cols-2 gap-2.5">
-              <div className="rounded-2xl bg-white p-3 border border-gray-200 flex items-center gap-2.5">
-                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-purple-100 text-purple-700 font-bold text-sm">
-                  <Percent className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-900">OFFER ZONE</p>
-                  <p className="text-[10px] text-slate-500">Up to 60% OFF</p>
-                </div>
-              </div>
-
-              <div className="rounded-2xl bg-white p-3 border border-gray-200 flex items-center gap-2.5">
-                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-orange-100 text-orange-700 font-bold text-sm">
-                  <Truck className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-900">EXPRESS</p>
-                  <p className="text-[10px] text-slate-500">Fast Delivery</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Kaivu IRL Shoppable Customer Stories (Only shown if ON and stories exist) */}
+          {storiesEnabled && mounted && stories.length > 0 && (
+            <KaivuIRLSection
+              stories={stories}
+              onOpenStory={(index) => setActiveStoryIndex(index)}
+            />
+          )}
         </div>
 
-        {/* Categories ("What's on your mind?") */}
-        <section className="pt-6">
-          <div className="flex items-center justify-between px-5">
-            <h3 className="text-base font-bold text-slate-900 flex items-center gap-1.5">
-              <Sparkles className="h-4 w-4 text-purple-600" /> What's on your mind?
-            </h3>
-            <Link href="/menu" className="text-xs font-semibold text-purple-700 hover:underline">
-              See all
-            </Link>
-          </div>
-          <ul className="mt-3.5 flex gap-3 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {/* Sentinel element to detect when Categories section locks sticky to header */}
+        <div ref={categorySentinelRef} className="h-0 w-full pointer-events-none" />
+
+        {/* Categories ("What's on your mind?") - Sticky Header on Scroll */}
+        <motion.section
+          layout
+          transition={{ type: "spring", stiffness: 300, damping: 28 }}
+          className={
+            isCategoriesSticky
+              ? "sticky top-0 z-30 bg-white/95 backdrop-blur-md py-2 border-b border-gray-200/80 shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition-all duration-300 ease-out"
+              : "pt-6 pb-2 transition-all duration-300 ease-out"
+          }
+        >
+          <AnimatePresence mode="wait">
+            {!isCategoriesSticky && (
+              <motion.div
+                key="categories-header-title"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
+                className="flex items-center justify-between px-5 mb-3 overflow-hidden"
+              >
+                <h3 className="text-base font-bold text-slate-900 flex items-center gap-1.5">
+                  <Sparkles className="h-4 w-4 text-purple-600" /> What's on your mind?
+                </h3>
+                <Link href="/menu" className="text-xs font-semibold text-purple-700 hover:underline">
+                  See all
+                </Link>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <motion.ul
+            layout
+            transition={{ type: "spring", stiffness: 350, damping: 30 }}
+            className={
+              isCategoriesSticky
+                ? "flex gap-2 overflow-x-auto px-4 py-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                : "flex gap-3 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            }
+          >
             {categories.map((c) => (
-              <li key={c.key} className="shrink-0">
+              <motion.li key={c.key} layout className="shrink-0">
                 <Link
                   href="/menu"
-                  className="flex w-20 flex-col items-center gap-2 rounded-2xl bg-white px-3 py-3 border border-gray-200 hover:scale-105 transition-transform"
+                  className={
+                    isCategoriesSticky
+                      ? "flex items-center gap-1.5 rounded-full bg-slate-100/90 px-3 py-1.5 border border-gray-200/80 hover:bg-slate-200 transition-all text-xs font-semibold text-slate-800 shadow-2xs"
+                      : "flex w-20 flex-col items-center gap-2 rounded-2xl bg-white px-3 py-3 border border-gray-200 hover:scale-105 transition-all shadow-xs"
+                  }
                 >
-                  <span className="text-2xl">{c.emoji}</span>
-                  <span className="text-[11px] font-semibold text-slate-800">{c.key}</span>
+                  <motion.span
+                    layout
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    className={isCategoriesSticky ? "text-sm" : "text-2xl"}
+                  >
+                    {c.emoji}
+                  </motion.span>
+                  <motion.span
+                    layout
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    className={isCategoriesSticky ? "text-xs font-bold text-slate-800" : "text-[11px] font-semibold text-slate-800"}
+                  >
+                    {c.key}
+                  </motion.span>
                 </Link>
-              </li>
+              </motion.li>
             ))}
-          </ul>
-        </section>
+          </motion.ul>
+        </motion.section>
 
         {/* Popular burgers */}
         <section className="pt-6">
@@ -327,6 +326,15 @@ export default function Home() {
       <ProductDetailModal
         item={selectedDetailItem}
         onClose={() => setSelectedDetailItem(null)}
+      />
+
+      {/* Kaivu IRL Shoppable UGC Story Modal */}
+      <KaivuStoryModal
+        stories={stories.length > 0 ? stories : getStories()}
+        initialIndex={activeStoryIndex ?? 0}
+        isOpen={activeStoryIndex !== null}
+        onClose={() => setActiveStoryIndex(null)}
+        onSelectProduct={(product) => setSelectedDetailItem(product)}
       />
     </MobileShell>
   );

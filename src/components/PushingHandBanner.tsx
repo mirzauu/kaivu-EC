@@ -235,7 +235,7 @@ export function PushingHandBanner() {
       <motion.div
         ref={containerRef}
         id="pushing-hand-banner"
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#7B1FA2] via-[#512DA8] to-[#2B0642] text-white shadow-xl cursor-pointer touch-none"
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#523326] via-[#40271D] to-[#261711] text-white shadow-xl cursor-pointer touch-none"
         onPointerMove={handlePointerMove}
         onPointerEnter={handlePointerEnter}
         onPointerLeave={handlePointerLeave}
@@ -251,23 +251,25 @@ export function PushingHandBanner() {
           perspective: 1200,
         }}
       >
-        {/* Giant KAIVU Background Text */}
+        {/* Giant KAIVU Brand Logo Background Image (KAIVU - The og smash house) */}
         <motion.div
-          className="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
+          className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 p-4"
           style={{
             z: -40,
             x: useTransform(textX, (v) => v * -1.2),
             y: useTransform(textY, (v) => v * -1.2),
           }}
         >
-          <span className="text-[140px] font-black uppercase tracking-tighter leading-none opacity-20 mix-blend-overlay blur-[2px]">
-            KAIVU
-          </span>
+          <img
+            src="/kaivu-brand-logo-cropped.png"
+            alt="KAIVU - The og smash house"
+            className="w-[280px] sm:w-[320px] h-auto object-contain opacity-30 select-none filter drop-shadow-sm"
+          />
         </motion.div>
 
         {/* Dynamic Warm Highlights */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-white/20 pointer-events-none z-0" />
-        <div className="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-yellow-400/40 blur-3xl pointer-events-none z-0" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-black/20 via-transparent to-white/15 pointer-events-none z-0" />
+        <div className="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-amber-500/25 blur-3xl pointer-events-none z-0" />
 
         {/* Content Layout */}
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-5 relative z-10 pointer-events-none">
@@ -297,7 +299,7 @@ export function PushingHandBanner() {
                 <div>
                   <Link
                     href={OFFERS[currentIndex].link}
-                    className="mt-3 inline-flex items-center rounded-full bg-white px-4 py-2 text-xs font-bold text-[#93322C] shadow-lg hover:scale-105 transition-transform pointer-events-auto"
+                    className="mt-3 inline-flex items-center rounded-full bg-white px-4 py-2 text-xs font-bold text-[#40271D] shadow-lg hover:scale-105 transition-transform pointer-events-auto"
                   >
                     {OFFERS[currentIndex].btnText}
                   </Link>

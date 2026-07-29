@@ -73,7 +73,6 @@ export function ProductDetailModal({ item, onClose }: Props) {
       name: item.name,
       price: item.price + addonTotal,
       image: imageSrc,
-      quantity,
     });
     onClose();
   };

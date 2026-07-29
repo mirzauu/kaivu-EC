@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { apiError, apiSuccess } from "@/lib/api-utils";
 import { withAuth, type AuthenticatedRequest } from "@/lib/auth/middleware";
 import { redeemReward } from "@/lib/services/reward-engine";
+import { isRewardSectionEnabled } from "@/lib/services/settings-service";
 
 /**
  * POST /api/rewards/redeem
@@ -9,6 +10,11 @@ import { redeemReward } from "@/lib/services/reward-engine";
  */
 export const POST = withAuth(async (req: AuthenticatedRequest) => {
   try {
+    const enabled = await isRewardSectionEnabled();
+    if (!enabled) {
+      return NextResponse.json(apiError("Reward section is currently disabled."), { status: 400 });
+    }
+
     const body = await req.json();
     const { rewardId } = body;
 

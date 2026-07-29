@@ -8,6 +8,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { cart, useCart } from "@/lib/cart-store";
 import { ordersStore } from "@/lib/orders-store";
 import { auth, useAuth } from "@/lib/auth-store";
+import { usePublicSettings } from "@/lib/public-settings-store";
 import { getImageUrl } from "@/lib/utils";
 
 import { Minus, Plus, Trash2, ShoppingBag, Coins, Loader2, ChevronDown } from "lucide-react";
@@ -16,6 +17,7 @@ export default function Cart() {
   const items = useCart((s) => s.items);
   const router = useRouter();
   const user = useAuth((s) => s.user);
+  const rewardSectionEnabled = usePublicSettings((s) => s.rewardSectionEnabled);
   
   const [redeemCoins, setRedeemCoins] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
@@ -240,7 +242,7 @@ export default function Cart() {
           </section>
 
           {/* Kaivu Coins Rewards Section */}
-          {user && user.kaivuCoins > 0 && (
+          {rewardSectionEnabled && user && user.kaivuCoins > 0 && (
             <section className="mx-5 mt-4 rounded-3xl bg-surface p-4 shadow-sm border border-brand/10">
               <label className="flex items-center justify-between cursor-pointer">
                 <div className="flex items-center gap-3">
