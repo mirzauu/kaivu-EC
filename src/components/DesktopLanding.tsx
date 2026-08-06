@@ -244,7 +244,7 @@ export function DesktopLanding() {
                     <span className="text-xl font-black text-brand">₹{popularItems[0]?.price || 299}</span>
                   </div>
                   <p className="text-xs text-slate-300 line-clamp-2">
-                    {popularItems[0]?.description || "Double smashed artisanal patty, caramelised onions, truffle mayo & aged cheddar."}
+                    {popularItems[0]?.desc || popularItems[0]?.description || "Double smashed artisanal patty, caramelised onions, truffle mayo & aged cheddar."}
                   </p>
                   <button
                     onClick={(e) => handleAddToCart(e, popularItems[0] || defaultMenu[0])}
@@ -367,9 +367,9 @@ export function DesktopLanding() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60" />
 
-                  {item.badge && (
+                  {(item.badge || item.tag) && (
                     <div className="absolute top-3 left-3 bg-brand text-slate-950 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
-                      {item.badge}
+                      {item.badge || item.tag}
                     </div>
                   )}
 
@@ -390,7 +390,7 @@ export function DesktopLanding() {
                   </div>
 
                   <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
-                    {item.description || "Prepared with fresh premium ingredients and signature Kaivu seasonings."}
+                    {item.desc || item.description || "Prepared with fresh premium ingredients and signature Kaivu seasonings."}
                   </p>
                 </div>
               </div>
