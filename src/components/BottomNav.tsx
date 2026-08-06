@@ -90,13 +90,13 @@ export function BottomNav() {
     prevCountRef.current = count;
   }, [count]);
 
-  // Animate 'kaivu' text on the active nav icon every 10 seconds
+  // Animate 'kaivu' text on the active nav icon every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setShowKaivu(true);
       const timer = setTimeout(() => setShowKaivu(false), 2200);
       return () => clearTimeout(timer);
-    }, 10000);
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -104,7 +104,10 @@ export function BottomNav() {
 
   const lastVibratedRef = useRef(-1);
   const pathnameRef = useRef(pathname);
-  pathnameRef.current = pathname;
+
+  useEffect(() => {
+    pathnameRef.current = pathname;
+  }, [pathname]);
 
   /** Always read live width from DOM — never rely on cached value */
   const getWidth = useCallback(() => containerRef.current?.clientWidth ?? 0, []);
@@ -123,15 +126,19 @@ export function BottomNav() {
 
   // Set initial position immediately after DOM is ready (no flash on load)
   useLayoutEffect(() => {
-    centerOn(safeActive, false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const w = containerRef.current?.clientWidth ?? 0;
+    if (w > 0) {
+      setTranslateX(calcTranslate(safeActive, w));
+    }
+  }, [safeActive]);
 
   // Keep centered whenever route changes (back/forward navigation, etc.)
   useEffect(() => {
-    setCenteredIndex(safeActive);
-    centerOn(safeActive, true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const w = containerRef.current?.clientWidth ?? 0;
+    if (w > 0) {
+      setTranslateX(calcTranslate(safeActive, w));
+      setAnimate(true);
+    }
   }, [safeActive]);
 
   // ── Drag / swipe ────────────────────────────────────────────────────────────
@@ -236,7 +243,7 @@ export function BottomNav() {
   }, [closestIndex, snapTo, translateX]);
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 bg-transparent pt-6 pb-2">
+    <nav className="fixed inset-x-0 bottom-0 z-40 bg-transparent pt-6 pb-2 lg:hidden">
       <div
         className="mx-auto max-w-md px-4 pb-[max(env(safe-area-inset-bottom),0.5rem)] overflow-hidden"
       >
@@ -274,12 +281,19 @@ export function BottomNav() {
                             scale: [1, 1.35, 0.85, 1.15, 1],
                             rotate: [0, -14, 10, -5, 0],
                           }
-                        : { scale: 1, rotate: 0 }
+                        : isCenter && showKaivu
+                        ? {
+                            x: [0, -6, 6, -5, 5, -3, 3, 0],
+                            rotate: [0, -9, 9, -6, 6, -3, 3, 0],
+                            scale: [1, 1.12, 1.05, 1.1, 1],
+                          }
+                        : { scale: 1, rotate: 0, x: 0 }
                     }
-                    transition={{
-                      duration: 0.55,
-                      ease: "easeInOut",
-                    }}
+                    transition={
+                      isCenter && showKaivu
+                        ? { duration: 0.6, ease: "easeInOut" }
+                        : { duration: 0.55, ease: "easeInOut" }
+                    }
                     className="relative"
                   >
                     <Link

@@ -34,20 +34,21 @@
   --color-surface: var(--surface);
   --font-display: var(--font-display), system-ui, sans-serif;
   --font-sans: var(--font-sans), system-ui, sans-serif;
+  --font-brand: var(--font-brand), display;
 }
 
 :root {
   --radius: 1.25rem;
-  --background: #FFFFFF;
+  --background: #FAF8F5;
   --foreground: #1E293B;
   --surface: #FFFFFF;
   --card: #FFFFFF;
   --card-foreground: #1E293B;
   --popover: #FFFFFF;
   --popover-foreground: #1E293B;
-  --primary: #40271D;
+  --primary: #661E28;
   --primary-foreground: #FFFFFF;
-  --brand: #40271D;
+  --brand: #661E28;
   --brand-foreground: #FFFFFF;
   --secondary: #F1F5F9;
   --secondary-foreground: #1E293B;
@@ -59,7 +60,7 @@
   --destructive-foreground: #FFFFFF;
   --border: #E2E8F0;
   --input: #E2E8F0;
-  --ring: #40271D;
+  --ring: #661E28;
 }
 
 @layer base {
@@ -69,7 +70,7 @@
 
   html,
   body {
-    background-color: #FFFFFF !important;
+    background-color: var(--color-background) !important;
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;

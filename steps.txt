@@ -1,0 +1,151 @@
+SWITCH CASE
+
+├── 01 Base Block
+│
+├── 02 Overall Draft
+│
+├── 03 Front Recess
+│
+├── 04 Corner Chamfers
+│
+├── 05 Side Facets
+│
+├── 06 Upper Switch Pocket
+│
+├── 07 Lower Switch Pocket
+│
+├── 08 Switch Ring
+│
+├── 09 Inner Ring
+│
+├── 10 Button Seat
+│
+├── 11 LED Groove
+│
+├── 12 Logo Pocket
+│
+├── 13 Bottom Pocket
+│
+├── 14 Decorative Cuts
+│
+├── 15 Variable Fillets
+│
+└── 16 Texture
+
+
+
+REDOUT Switch Case Reverse Engineering Blueprint v1.0
+
+Purpose:
+This document is a CAD construction guide for recreating the REDOUT two-button switch housing from a reference image. It focuses on feature order, estimated dimensions, and modeling strategy rather than exact manufacturing drawings.
+
+Estimated Overall Dimensions
+
+Parameter
+
+Value
+
+Height
+
+59 mm
+
+Width
+
+34.8 mm (estimated)
+
+Thickness
+
+11.5 mm (estimated)
+
+Corner Radius
+
+R4
+
+Draft
+
+2°
+
+Recommended CAD Feature Order
+
+1. Create base rounded rectangle and extrude.
+
+2. Apply overall body draft.
+
+3. Cut the recessed front pocket.
+
+4. Create large corner chamfers.
+
+5. Add secondary decorative facets.
+
+6. Create upper and lower circular switch pockets.
+
+7. Build outer switch rings.
+
+8. Cut decorative ring grooves.
+
+9. Cut button openings.
+
+10. Create LED groove.
+
+11. Create logo pocket.
+
+12. Create bottom branding pocket.
+
+13. Apply variable fillets.
+
+14. Shell the body and add internal bosses/ribs.
+
+Estimated Feature Dimensions
+
+Front pocket depth: 1.2 mm
+
+Switch pocket depth: 1.0 mm
+
+Outer ring height: 0.7 mm
+
+Ring groove depth: 0.4–0.5 mm
+
+LED groove width: 1.2 mm
+
+LED groove depth: 0.6 mm
+
+Logo pocket depth: 0.5 mm
+
+Bottom pocket depth: 0.8 mm
+
+Recommended wall thickness (ABS): 2.5 mm
+
+Recommended screw size: M3
+
+Variable Fillets
+
+Outer edges: R1.0
+Pocket corners: R2.0
+Switch rings: R0.8
+LED groove: R0.4
+Small decorative cuts: R0.3
+
+Parametric Variables
+
+#height = 59 mm
+
+#width = 34.8 mm
+
+#thickness = 11.5 mm
+
+#ringDiameter = 22 mm
+
+#buttonDiameter = 16 mm
+
+#ledWidth = 1.2 mm
+
+#cornerRadius = 4 mm
+
+#largeChamfer = 2 mm
+
+#smallChamfer = 0.8 mm
+
+Notes
+
+Model the design as a sequence of simple features. Avoid creating one complex sketch. Use chamfers, lofts, drafts, pockets, and variable fillets to reproduce the industrial styling.
+

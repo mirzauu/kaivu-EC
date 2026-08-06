@@ -12,12 +12,12 @@ export function KaivuAnimatedLogo() {
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          {/* Mask to cut out the bite from the letter 'A' */}
+          {/* Mask to cut out the bite from the letter 'a' */}
           <mask id="kaivu-bite-mask">
             {/* Base white rectangle keeps the letter visible */}
             <rect x="0" y="0" width="380" height="120" fill="white" />
 
-            {/* Black bite shapes chomp into the letter 'A' */}
+            {/* Black bite shapes chomp into the letter 'a' */}
             <motion.g
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -26,35 +26,39 @@ export function KaivuAnimatedLogo() {
                 delay: 0.25,
                 ease: [0.34, 1.56, 0.64, 1],
               }}
-              style={{ transformOrigin: "142px 46px" }}
+              style={{ transformOrigin: "140px 60px" }}
             >
               {/* Scalloped bite marks matching teeth impressions */}
-              <circle cx="145" cy="40" r="7.5" fill="black" />
-              <circle cx="138" cy="48" r="7" fill="black" />
-              <circle cx="147" cy="50" r="6.5" fill="black" />
+              <circle cx="143" cy="55" r="7.5" fill="black" />
+              <circle cx="136" cy="63" r="7" fill="black" />
+              <circle cx="145" cy="65" r="6.5" fill="black" />
             </motion.g>
           </mask>
         </defs>
 
-        {/* --- LETTER K --- */}
-        <g stroke="#24060A" strokeWidth="18" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="38" y1="36" x2="38" y2="94" />
-          <path d="M72 36 L38 65 L74 94" />
+        {/* --- FOREGROUND LAYER (Solid Flat Pale Yellow) --- */}
+        <g
+          fontFamily="var(--font-brand)"
+          fontSize="110"
+          fontWeight="700"
+          fill="#ECEAB4"
+        >
+          <text x="45" y="98" transform="rotate(-6 75 80)">k</text>
+          <g mask="url(#kaivu-bite-mask)">
+            <text x="105" y="98" transform="rotate(3 145 80)">a</text>
+          </g>
+          <text x="175" y="98" transform="rotate(-3 195 80)">i</text>
+          <text x="210" y="98" transform="rotate(5 245 80)">v</text>
+          <text x="270" y="98" transform="rotate(-4 305 80)">u</text>
         </g>
 
-        {/* --- LETTER A (WITH ANIMATED BITE CUTOUT) --- */}
-        <g mask="url(#kaivu-bite-mask)" stroke="#24060A" strokeWidth="18" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M102 94 L127 36 L152 94" />
-          <line x1="112" y1="74" x2="142" y2="74" strokeWidth="15" />
-        </g>
-
-        {/* --- 3 ANIMATED CRUMB DOTS ABOVE THE 'A' BITE --- */}
+        {/* --- 3 ANIMATED CRUMB DOTS ABOVE THE 'a' BITE --- */}
         {/* Bottom Left Dot */}
         <motion.circle
           cx="120"
-          cy="26"
+          cy="40"
           r="3.5"
-          fill="#24060A"
+          fill="#ECEAB4"
           initial={{ x: 20, y: 20, scale: 0, opacity: 0 }}
           animate={{ x: [20, 0], y: [20, 0, -2, 0], scale: 1, opacity: 1 }}
           transition={{
@@ -68,9 +72,9 @@ export function KaivuAnimatedLogo() {
         {/* Top Middle Dot */}
         <motion.circle
           cx="128"
-          cy="15"
+          cy="28"
           r="3"
-          fill="#24060A"
+          fill="#ECEAB4"
           initial={{ x: 14, y: 28, scale: 0, opacity: 0 }}
           animate={{ x: [14, 0], y: [28, 0, -3, 0], scale: 1, opacity: 1 }}
           transition={{
@@ -84,9 +88,9 @@ export function KaivuAnimatedLogo() {
         {/* Top Right Dot */}
         <motion.circle
           cx="137"
-          cy="20"
+          cy="33"
           r="3"
-          fill="#24060A"
+          fill="#ECEAB4"
           initial={{ x: 8, y: 24, scale: 0, opacity: 0 }}
           animate={{ x: [8, 0], y: [24, 0, -2, 0], scale: 1, opacity: 1 }}
           transition={{
@@ -96,21 +100,6 @@ export function KaivuAnimatedLogo() {
             opacity: { duration: 0.2, delay: 0.34 },
           }}
         />
-
-        {/* --- LETTER I --- */}
-        <g stroke="#24060A" strokeWidth="18" strokeLinecap="round">
-          <line x1="188" y1="36" x2="188" y2="94" />
-        </g>
-
-        {/* --- LETTER V --- */}
-        <g stroke="#24060A" strokeWidth="18" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M222 36 L245 94 L268 36" />
-        </g>
-
-        {/* --- LETTER U --- */}
-        <g stroke="#24060A" strokeWidth="18" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M302 36 L302 74 C302 94, 342 94, 342 74 L342 36" />
-        </g>
       </svg>
     </div>
   );

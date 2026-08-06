@@ -70,6 +70,7 @@ if (typeof window !== "undefined") {
       if (res.success && res.data?.user) {
         localStorage.setItem("kaivu_user", JSON.stringify(res.data.user));
         state = {
+          ...state,
           isAuthenticated: true,
           isAuthModalOpen: false,
           user: res.data.user,
@@ -78,8 +79,8 @@ if (typeof window !== "undefined") {
       } else {
         localStorage.removeItem("kaivu_user");
         state = {
+          ...state,
           isAuthenticated: false,
-          isAuthModalOpen: false,
           user: null,
           isLoading: false,
         };
@@ -127,7 +128,7 @@ export const auth = {
     lat?: number;
     lng?: number;
     isDefault?: boolean;
-  }): Promise<{ success: boolean; error?: string; data?: any }> {
+  }): Promise<{ success: boolean; error?: string; data?: unknown }> {
     try {
       const res = await fetch("/api/user/addresses", {
         method: "POST",
@@ -140,7 +141,7 @@ export const auth = {
       }
       await this.refreshUser();
       return { success: true, data: data.data };
-    } catch (e) {
+    } catch {
       return { success: false, error: "Network error saving address" };
     }
   },
@@ -159,7 +160,7 @@ export const auth = {
       }
       await this.refreshUser();
       return { success: true };
-    } catch (e) {
+    } catch {
       return { success: false, error: "Network error deleting address" };
     }
   },
@@ -179,7 +180,7 @@ export const auth = {
         return { success: false, error: data.error || "Failed to send OTP" };
       }
       return { success: true };
-    } catch (e) {
+    } catch {
       return { success: false, error: "Network error. Please try again." };
     }
   },
@@ -229,7 +230,7 @@ export const auth = {
       }
 
       return { success: true };
-    } catch (e) {
+    } catch {
       return { success: false, error: "Network error. Please try again." };
     }
   },
@@ -250,7 +251,7 @@ export const auth = {
       }
       await this.refreshUser();
       return { success: true };
-    } catch (e) {
+    } catch {
       return { success: false, error: "Network error updating profile" };
     }
   },

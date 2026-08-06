@@ -34,20 +34,23 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const hideNavRoutes = ["/profile/addresses/new"];
   const shouldHideNav = hideNavRoutes.includes(pathname) || pathname?.startsWith("/csuite");
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  
+  const isHomePage = pathname === "/";
+  const [isInitialLoading, setIsInitialLoading] = useState(isHomePage);
 
   useEffect(() => {
+    if (!isHomePage) return;
     const timer = setTimeout(() => {
       setIsInitialLoading(false);
     }, 850);
     return () => clearTimeout(timer);
-  }, []);
+  }, [isHomePage]);
 
   return (
     <QueryClientProvider client={queryClient}>
       <FlyToCartProvider>
         <AnimatePresence>
-          {isInitialLoading && (
+          {isHomePage && isInitialLoading && (
             <motion.div
               key="reload-splash"
               initial={{ opacity: 1 }}

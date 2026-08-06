@@ -5,12 +5,12 @@
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FAF8F5",
-  "theme_color": "#e05318",
+  "theme_color": "#ffffff",
   "icons": [
     {
-      "src": "/images/menu/burger-classic.jpg",
+      "src": "/images/kaivu-pwa-logo.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

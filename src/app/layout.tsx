@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Inter } from "next/font/google";
+import { Bricolage_Grotesque, Inter, DynaPuff } from "next/font/google";
 import "./globals.css";
 import { ClientShell } from "@/components/ClientShell";
 
@@ -13,6 +13,12 @@ const sansFont = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
+});
+
+const brandFont = DynaPuff({
+  subsets: ["latin"],
+  weight: ["500", "700"],
+  variable: "--font-brand",
 });
 
 export const metadata: Metadata = {
@@ -34,7 +40,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${displayFont.variable} ${sansFont.variable}`}
+      className={`${displayFont.variable} ${sansFont.variable} ${brandFont.variable}`}
     >
       <body>
         <ClientShell>{children}</ClientShell>

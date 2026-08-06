@@ -10,6 +10,8 @@ import { AlertCircle, Loader2 } from "lucide-react";
 
 export function AuthModal() {
   const isOpen = useAuth((s) => s.isAuthModalOpen);
+  const isAuthenticated = useAuth((s) => s.isAuthenticated);
+  const isLoading = useAuth((s) => s.isLoading);
   const searchParams = useSearchParams();
   
   const [step, setStep] = useState<"phone" | "otp">("phone");
@@ -17,18 +19,29 @@ export function AuthModal() {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [refCode, setRefCode] = useState<string | null>(null);
+  const urlRefCode = searchParams.get("ref");
+  const [storedRefCode] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("kaivu_ref_code");
+    }
+    return null;
+  });
+  const refCode = urlRefCode || storedRefCode;
 
-  // Capture referral code from URL search parameter on mount or when URL changes
+  // Persist referral code from URL & handle auth query parameter
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const code = searchParams.get("ref") || localStorage.getItem("kaivu_ref_code");
+      const code = searchParams.get("ref");
       if (code) {
-        setRefCode(code);
         localStorage.setItem("kaivu_ref_code", code);
       }
+
+      const authParam = searchParams.get("auth");
+      if (authParam && !isAuthenticated && !isLoading) {
+        auth.openModal();
+      }
     }
-  }, [searchParams]);
+  }, [searchParams, isAuthenticated, isLoading]);
 
   const handleNext = async () => {
     if (phone.length < 10) return;
