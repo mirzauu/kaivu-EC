@@ -25,8 +25,6 @@ import { getStories, isStoriesEnabled, KaivuStory } from "@/lib/stories-data";
 
 import { HeroCarousel } from "@/components/HeroCarousel";
 
-import { DesktopLanding } from "@/components/DesktopLanding";
-
 import { menu as defaultMenu, MenuItem } from "@/lib/menu-data";
 
 const categories = [
@@ -189,17 +187,9 @@ export default function Home() {
   };
 
   return (
-    <>
-      {/* Desktop Computer View: Full Brand Landing Page */}
-      <div className="hidden lg:block">
-        <DesktopLanding />
-      </div>
-
-      {/* Mobile & Tablet View: Compact Mobile Shell */}
-      <div className="block lg:hidden">
-        <MobileShell>
-          {/* Top Hero Carousel Screen with Full-Bleed Background Images */}
-          <HeroCarousel mounted={mounted} />
+    <MobileShell>
+      {/* Top Hero Carousel Screen with Full-Bleed Background Images */}
+      <HeroCarousel mounted={mounted} />
 
           {/* Floating White Content Sheet */}
           <div className="relative z-10 -mt-6 rounded-t-[32px] bg-background pt-5 pb-28 shadow-[0_-10px_25px_rgba(0,0,0,0.12)] min-h-screen">
@@ -331,50 +321,30 @@ export default function Home() {
 
 
 
-        {/* Categories ("What's on your mind?") */}
-        <motion.section
-          layout
-          transition={{ type: "spring", stiffness: 300, damping: 28 }}
-          className="pt-6 pb-2 transition-all duration-300 ease-out"
-        >
-          <div className="flex items-center justify-between px-5 mb-3 overflow-hidden">
-            <h3 className="text-base font-bold text-slate-900 flex items-center gap-1.5">
+        {/* Sticky Categories Bar ("What's on your mind?") */}
+        <section className="sticky top-0 z-40 bg-background/95 backdrop-blur-md pt-3 pb-3 border-b border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.03)] transition-all">
+          <div className="flex items-center justify-between px-5 mb-2.5 overflow-hidden">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
               <Sparkles className="h-4 w-4 text-primary" /> What&apos;s on your mind?
             </h3>
             <Link href="/menu" className="text-xs font-semibold text-primary hover:underline">
               See all
             </Link>
           </div>
-          <motion.ul
-            layout
-            transition={{ type: "spring", stiffness: 350, damping: 30 }}
-            className="flex gap-3 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          >
+          <ul className="flex gap-3 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {categories.map((c) => (
-              <motion.li key={c.key} layout className="shrink-0">
+              <li key={c.key} className="shrink-0">
                 <Link
                   href="/menu"
-                  className="flex w-20 flex-col items-center gap-2 rounded-2xl bg-white px-3 py-3 border border-gray-200 hover:scale-105 transition-all shadow-xs"
+                  className="flex w-20 flex-col items-center gap-2 rounded-2xl bg-white px-3 py-3 border border-gray-200 hover:scale-105 active:scale-95 transition-all shadow-xs"
                 >
-                  <motion.span
-                    layout
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                    className="text-2xl"
-                  >
-                    {c.emoji}
-                  </motion.span>
-                  <motion.span
-                    layout
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                    className="text-[11px] font-semibold text-slate-800"
-                  >
-                    {c.key}
-                  </motion.span>
+                  <span className="text-2xl">{c.emoji}</span>
+                  <span className="text-[11px] font-semibold text-slate-800">{c.key}</span>
                 </Link>
-              </motion.li>
+              </li>
             ))}
-          </motion.ul>
-        </motion.section>
+          </ul>
+        </section>
 
 
         {/* Recommended for you */}
@@ -434,7 +404,5 @@ export default function Home() {
         onSelectProduct={(product) => setSelectedDetailItem(product)}
       />
     </MobileShell>
-  </div>
-</>
-);
+  );
 }

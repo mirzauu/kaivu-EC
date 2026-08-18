@@ -60,7 +60,7 @@ export function BottomNav() {
 
   const visibleTabs = tabs.filter((tab) => {
     if (tab.to === "/cart") {
-      return isAuthenticated && count > 0;
+      return count > 0;
     }
     if (tab.to === "/reward") {
       return rewardSectionEnabled;
@@ -164,7 +164,8 @@ export function BottomNav() {
       );
       if (index !== current) {
         const target = visibleTabs[index].to;
-        if (target !== "/" && !isAuthenticated) {
+        const publicRoutes = ["/", "/menu", "/cart"];
+        if (!publicRoutes.includes(target) && !isAuthenticated) {
           auth.openModal(() => {
             router.push(target);
           });

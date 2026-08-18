@@ -80,20 +80,6 @@ export function FlyToCartProvider({ children }: { children: React.ReactNode }) {
 
   const flyToCart = useCallback(
     (e: React.MouseEvent<HTMLElement> | React.TouchEvent<HTMLElement>, item: FlyItemOptions) => {
-      // Check auth first if needed or handle auth modal
-      const isAuth = auth.getState().isAuthenticated;
-      if (!isAuth) {
-        auth.openModal(() => {
-          cart.add({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            image: item.image || "",
-          });
-        });
-        return;
-      }
-
       // Find click origin
       const targetBtn = e.currentTarget as HTMLElement;
       const rect = targetBtn.getBoundingClientRect();

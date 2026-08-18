@@ -86,9 +86,41 @@ export async function updateSetting(
   cachedSettings = null;
 }
 
+import { NotificationBannersConfig, DEFAULT_NOTIFICATION_BANNERS_CONFIG } from "@/lib/types/banners";
+export * from "@/lib/types/banners";
+
+/**
+ * Check and get notification banners configuration.
+ */
+export async function getNotificationBannersConfig(): Promise<NotificationBannersConfig> {
+  const settings = await getSettings();
+  const raw = settings["notification_banners_config"];
+  if (!raw) return DEFAULT_NOTIFICATION_BANNERS_CONFIG;
+  try {
+    const parsed = JSON.parse(raw);
+    return {
+      fullScreenInstall: {
+        ...DEFAULT_NOTIFICATION_BANNERS_CONFIG.fullScreenInstall,
+        ...(parsed.fullScreenInstall || {}),
+      },
+      idleSmallBanner: {
+        ...DEFAULT_NOTIFICATION_BANNERS_CONFIG.idleSmallBanner,
+        ...(parsed.idleSmallBanner || {}),
+      },
+      halfScreenOffer: {
+        ...DEFAULT_NOTIFICATION_BANNERS_CONFIG.halfScreenOffer,
+        ...(parsed.halfScreenOffer || {}),
+      },
+    };
+  } catch {
+    return DEFAULT_NOTIFICATION_BANNERS_CONFIG;
+  }
+}
+
 /**
  * Invalidate the settings cache (e.g., after admin updates).
  */
 export function invalidateSettingsCache(): void {
   cachedSettings = null;
 }
+

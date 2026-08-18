@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { apiSuccess } from "@/lib/api-utils";
-import { isRewardSectionEnabled } from "@/lib/services/settings-service";
+import { isRewardSectionEnabled, getNotificationBannersConfig, DEFAULT_NOTIFICATION_BANNERS_CONFIG } from "@/lib/services/settings-service";
 
 export const dynamic = "force-dynamic";
 
@@ -10,11 +10,15 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   try {
-    const rewardSectionEnabled = await isRewardSectionEnabled();
+    const [rewardSectionEnabled, notificationBanners] = await Promise.all([
+      isRewardSectionEnabled(),
+      getNotificationBannersConfig(),
+    ]);
 
     return NextResponse.json(
       apiSuccess({
         rewardSectionEnabled,
+        notificationBanners,
       })
     );
   } catch (error) {
@@ -22,6 +26,7 @@ export async function GET() {
     return NextResponse.json(
       apiSuccess({
         rewardSectionEnabled: false,
+        notificationBanners: DEFAULT_NOTIFICATION_BANNERS_CONFIG,
       })
     );
   }

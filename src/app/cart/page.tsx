@@ -52,7 +52,12 @@ export default function Cart() {
 
   const handleCheckout = async () => {
     if (items.length === 0 || checkingOut) return;
-    
+
+    if (!user) {
+      auth.openModal();
+      return;
+    }
+
     let deliveryAddress = "";
     let deliveryLat: number | undefined;
     let deliveryLng: number | undefined;

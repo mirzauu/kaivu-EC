@@ -6,7 +6,7 @@ const JWT_SECRET = new TextEncoder().encode(
 );
 
 // Routes that require authentication
-const protectedRoutes = ["/cart", "/orders", "/profile", "/reward", "/wallet"];
+const protectedRoutes = ["/orders", "/profile", "/reward", "/wallet"];
 
 // Routes that require admin role
 const adminRoutes: string[] = [];
@@ -79,7 +79,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/cart/:path*",
     "/orders/:path*",
     "/profile/:path*",
     "/reward/:path*",

@@ -1,12 +1,15 @@
 import { useSyncExternalStore } from "react";
+import { NotificationBannersConfig, DEFAULT_NOTIFICATION_BANNERS_CONFIG } from "./types/banners";
 
 type PublicSettingsState = {
   rewardSectionEnabled: boolean;
+  notificationBanners: NotificationBannersConfig;
   isLoading: boolean;
 };
 
 let state: PublicSettingsState = {
   rewardSectionEnabled: false,
+  notificationBanners: DEFAULT_NOTIFICATION_BANNERS_CONFIG,
   isLoading: true,
 };
 
@@ -27,17 +30,20 @@ async function loadPublicSettings() {
     if (data.success && data.data) {
       state = {
         rewardSectionEnabled: Boolean(data.data.rewardSectionEnabled),
+        notificationBanners: data.data.notificationBanners || DEFAULT_NOTIFICATION_BANNERS_CONFIG,
         isLoading: false,
       };
     } else {
       state = {
         rewardSectionEnabled: false,
+        notificationBanners: DEFAULT_NOTIFICATION_BANNERS_CONFIG,
         isLoading: false,
       };
     }
   } catch (e) {
     state = {
       rewardSectionEnabled: false,
+      notificationBanners: DEFAULT_NOTIFICATION_BANNERS_CONFIG,
       isLoading: false,
     };
   }
@@ -54,6 +60,10 @@ export const publicSettingsStore = {
     state = { ...state, rewardSectionEnabled: enabled };
     emit();
   },
+  updateLocalNotificationBanners: (config: NotificationBannersConfig) => {
+    state = { ...state, notificationBanners: config };
+    emit();
+  },
   subscribe: (cb: () => void) => {
     listeners.add(cb);
     return () => {
@@ -67,6 +77,6 @@ export function usePublicSettings<T>(selector: (state: PublicSettingsState) => T
   return useSyncExternalStore(
     publicSettingsStore.subscribe,
     () => selector(publicSettingsStore.getSnapshot()),
-    () => selector({ rewardSectionEnabled: false, isLoading: false })
+    () => selector({ rewardSectionEnabled: false, notificationBanners: DEFAULT_NOTIFICATION_BANNERS_CONFIG, isLoading: false })
   );
 }

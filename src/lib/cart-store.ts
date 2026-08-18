@@ -16,12 +16,29 @@ type State = {
   isLoading: boolean;
 };
 
-let state: State = {
-  items: [],
-  subtotal: 0,
-  itemCount: 0,
-  isLoading: false,
-};
+const CART_STORAGE_KEY = "kaivu_cart";
+
+function getInitialState(): State {
+  if (typeof window === "undefined") {
+    return { items: [], subtotal: 0, itemCount: 0, isLoading: false };
+  }
+  try {
+    const raw = localStorage.getItem(CART_STORAGE_KEY);
+    if (raw) {
+      const items: CartItem[] = JSON.parse(raw);
+      if (Array.isArray(items)) {
+        const subtotal = items.reduce((sum, i) => sum + (i.price || 0) * (i.qty || 1), 0);
+        const itemCount = items.reduce((sum, i) => sum + (i.qty || 1), 0);
+        return { items, subtotal, itemCount, isLoading: false };
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return { items: [], subtotal: 0, itemCount: 0, isLoading: false };
+}
+
+let state: State = getInitialState();
 
 const listeners = new Set<() => void>();
 
@@ -29,10 +46,45 @@ function emit() {
   listeners.forEach((l) => l());
 }
 
+function setAndPersistItems(items: CartItem[], isLoading = false) {
+  const subtotal = items.reduce((sum, i) => sum + (i.price || 0) * (i.qty || 1), 0);
+  const itemCount = items.reduce((sum, i) => sum + (i.qty || 1), 0);
+  state = { items, subtotal, itemCount, isLoading };
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    } catch {
+      // ignore
+    }
+  }
+  emit();
+}
+
 /**
- * Loads the cart items from the database.
+ * Loads the cart items (from DB if authenticated, or from local storage if guest).
  */
 async function loadCart() {
+  const isAuth = typeof window !== "undefined" && auth.getState().isAuthenticated;
+
+  if (!isAuth) {
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem(CART_STORAGE_KEY);
+        if (raw) {
+          const items: CartItem[] = JSON.parse(raw);
+          if (Array.isArray(items)) {
+            setAndPersistItems(items, false);
+            return;
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+    setAndPersistItems([], false);
+    return;
+  }
+
   try {
     state = { ...state, isLoading: true };
     emit();
@@ -42,47 +94,54 @@ async function loadCart() {
 
     if (data.success && data.data) {
       const items = data.data.items.map((item: any) => ({
-        id: item.menuItemId, // use menuItemId as id for frontend pages
+        id: item.menuItemId,
         name: item.name,
         price: item.price,
         image: item.imageUrl,
         qty: item.quantity,
       }));
 
-      state = {
-        items,
-        subtotal: data.data.subtotal,
-        itemCount: data.data.itemCount,
-        isLoading: false,
-      };
+      setAndPersistItems(items, false);
     } else {
       state = { ...state, isLoading: false };
+      emit();
     }
-  } catch (e) {
+  } catch {
     state = { ...state, isLoading: false };
+    emit();
   }
-  emit();
 }
 
-// Watch authentication changes to reload cart
+// Watch authentication changes to sync/reload cart
 if (typeof window !== "undefined") {
-  let wasAuthenticated = false;
+  let wasAuthenticated = auth.getState().isAuthenticated;
 
-  auth.subscribe(() => {
+  auth.subscribe(async () => {
     const isAuth = auth.getState().isAuthenticated;
     if (isAuth && !wasAuthenticated) {
-      loadCart();
       wasAuthenticated = true;
+      // If there were items stored locally as a guest, sync them to the database
+      const guestItems = [...state.items];
+      if (guestItems.length > 0) {
+        try {
+          await Promise.allSettled(
+            guestItems.map((item) =>
+              fetch("/api/cart", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ menuItemId: item.id, quantity: item.qty }),
+              })
+            )
+          );
+        } catch {
+          // ignore
+        }
+      }
+      await loadCart();
     } else if (!isAuth && wasAuthenticated) {
-      // Logged out, clear cart
-      state = {
-        items: [],
-        subtotal: 0,
-        itemCount: 0,
-        isLoading: false,
-      };
-      emit();
       wasAuthenticated = false;
+      // Logged out, clear cart
+      setAndPersistItems([]);
     }
   });
 
@@ -97,19 +156,19 @@ if (typeof window !== "undefined") {
 
 export const cart = {
   /**
-   * Refreshes the cart from the server.
+   * Refreshes the cart.
    */
   async refresh() {
     await loadCart();
   },
 
   /**
-   * Add item to the server-backed cart.
+   * Add item to cart (local first + DB if authenticated).
    */
   async add(item: Omit<CartItem, "qty">) {
     // Add haptic feedback
     if (typeof window !== "undefined" && window.navigator && window.navigator.vibrate) {
-      window.navigator.vibrate(50); // short vibration for haptic feedback
+      window.navigator.vibrate(50);
     }
 
     // Add tracking event
@@ -120,23 +179,34 @@ export const cart = {
       console.error("Tracking failed", e);
     }
 
-    try {
-      const res = await fetch("/api/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ menuItemId: item.id, quantity: 1 }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        await loadCart();
+    // Optimistic local update
+    const existingIndex = state.items.findIndex((i) => i.id === item.id);
+    let updated: CartItem[];
+    if (existingIndex > -1) {
+      updated = state.items.map((i, idx) =>
+        idx === existingIndex ? { ...i, qty: i.qty + 1 } : i
+      );
+    } else {
+      updated = [...state.items, { ...item, qty: 1 }];
+    }
+    setAndPersistItems(updated);
+
+    // Sync with server if authenticated
+    if (typeof window !== "undefined" && auth.getState().isAuthenticated) {
+      try {
+        await fetch("/api/cart", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ menuItemId: item.id, quantity: 1 }),
+        });
+      } catch (e) {
+        console.error("Failed to sync add to cart", e);
       }
-    } catch (e) {
-      console.error("Failed to add to cart", e);
     }
   },
 
   /**
-   * Remove item from the server-backed cart.
+   * Remove item from cart.
    */
   async remove(id: string) {
     // Add tracking event
@@ -147,54 +217,60 @@ export const cart = {
       console.error("Tracking failed", e);
     }
 
-    try {
-      const res = await fetch(`/api/cart/${id}`, {
-        method: "DELETE",
-      });
-      const data = await res.json();
-      if (data.success) {
-        await loadCart();
+    // Optimistic local update
+    const updated = state.items.filter((i) => i.id !== id);
+    setAndPersistItems(updated);
+
+    // Sync with server if authenticated
+    if (typeof window !== "undefined" && auth.getState().isAuthenticated) {
+      try {
+        await fetch(`/api/cart/${id}`, {
+          method: "DELETE",
+        });
+      } catch (e) {
+        console.error("Failed to sync remove from cart", e);
       }
-    } catch (e) {
-      console.error("Failed to remove from cart", e);
     }
   },
 
   /**
-   * Set item quantity in the server-backed cart.
+   * Set item quantity in cart.
    */
   async setQty(id: string, qty: number) {
     if (qty <= 0) return cart.remove(id);
 
-    try {
-      const res = await fetch(`/api/cart/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quantity: qty }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        await loadCart();
+    // Optimistic local update
+    const updated = state.items.map((i) => (i.id === id ? { ...i, qty } : i));
+    setAndPersistItems(updated);
+
+    // Sync with server if authenticated
+    if (typeof window !== "undefined" && auth.getState().isAuthenticated) {
+      try {
+        await fetch(`/api/cart/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quantity: qty }),
+        });
+      } catch (e) {
+        console.error("Failed to sync update cart quantity", e);
       }
-    } catch (e) {
-      console.error("Failed to update cart quantity", e);
     }
   },
 
   /**
-   * Clear the server-backed cart.
+   * Clear the cart.
    */
   async clear() {
-    try {
-      const res = await fetch("/api/cart", {
-        method: "DELETE",
-      });
-      const data = await res.json();
-      if (data.success) {
-        await loadCart();
+    setAndPersistItems([]);
+
+    if (typeof window !== "undefined" && auth.getState().isAuthenticated) {
+      try {
+        await fetch("/api/cart", {
+          method: "DELETE",
+        });
+      } catch (e) {
+        console.error("Failed to sync clear cart", e);
       }
-    } catch (e) {
-      console.error("Failed to clear cart", e);
     }
   },
 };

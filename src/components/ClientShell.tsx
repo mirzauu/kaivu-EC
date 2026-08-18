@@ -13,6 +13,8 @@ import { FlyToCartProvider } from "./FlyToCartProvider";
 import { KaivuLoadingScreen } from "./KaivuLoadingScreen";
 import { AnimatePresence, motion } from "framer-motion";
 
+import { NotificationBannerManager } from "./banners/NotificationBannerManager";
+
 const queryClient = new QueryClient();
 
 // Tracker watcher component to log page views
@@ -32,7 +34,7 @@ function TrackingWatcher() {
 
 export function ClientShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const hideNavRoutes = ["/profile/addresses/new"];
+  const hideNavRoutes = ["/", "/profile/addresses/new"];
   const shouldHideNav = hideNavRoutes.includes(pathname) || pathname?.startsWith("/csuite");
   
   const isHomePage = pathname === "/";
@@ -73,6 +75,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
         </Suspense>
         <InstallPrompt />
         <LocationPermissionModal />
+        <NotificationBannerManager />
       </FlyToCartProvider>
     </QueryClientProvider>
   );

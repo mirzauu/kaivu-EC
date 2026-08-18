@@ -26,13 +26,24 @@ import {
   MapPin,
   ExternalLink,
   Camera,
-  Gift
+  Gift,
+  Smartphone,
+  Clock,
+  Percent,
+  Flame,
+  BellRing,
+  Layers,
+  Eye,
 } from "lucide-react";
+import { FullScreenInstallBanner } from "@/components/banners/FullScreenInstallBanner";
+import { IdleNavBanner } from "@/components/banners/IdleNavBanner";
+import { HalfScreenOfferBanner } from "@/components/banners/HalfScreenOfferBanner";
 import { adminAuth, useAdminAuth } from "@/lib/admin-store";
 import { ordersStore, useOrders, Order } from "@/lib/orders-store";
 import { menuStore, useMenu } from "@/lib/menu-store";
 import { MenuItem } from "@/lib/menu-data";
 import { getStories, addDynamicStory, deleteDynamicStory, clearAllStories, isStoriesEnabled, setStoriesEnabled, KaivuStory } from "@/lib/stories-data";
+import { NotificationBannersConfig, DEFAULT_NOTIFICATION_BANNERS_CONFIG, TargetAudience } from "@/lib/types/banners";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -1334,25 +1345,59 @@ function UsersTab() {
   const [notifyBody, setNotifyBody] = useState("");
   const [sendingNotify, setSendingNotify] = useState(false);
 
+  // Live Interactive Modal Preview State
+  const [livePreviewBanner, setLivePreviewBanner] = useState<"fullscreen" | "idle" | "offer" | null>(null);
+
   // Reward Section Toggle State (Default OFF)
   const [rewardEnabled, setRewardEnabled] = useState(false);
   const [rewardLoading, setRewardLoading] = useState(false);
 
-  // Fetch reward section setting
+  // Notification Banners State
+  const [bannersConfig, setBannersConfig] = useState<NotificationBannersConfig>(DEFAULT_NOTIFICATION_BANNERS_CONFIG);
+  const [savingBanners, setSavingBanners] = useState(false);
+  const [activeBannerTab, setActiveBannerTab] = useState<"fullscreen" | "idle" | "offer">("fullscreen");
+
+  // Fetch reward section & banner settings
   useEffect(() => {
-    const fetchRewardSetting = async () => {
+    const fetchSettings = async () => {
       try {
         const res = await fetch("/api/settings/public");
         const data = await res.json();
         if (data.success && data.data) {
           setRewardEnabled(Boolean(data.data.rewardSectionEnabled));
+          if (data.data.notificationBanners) {
+            setBannersConfig(data.data.notificationBanners);
+          }
         }
       } catch (err) {
-        console.error("Failed to fetch reward setting", err);
+        console.error("Failed to fetch settings", err);
       }
     };
-    fetchRewardSetting();
+    fetchSettings();
   }, []);
+
+  const handleSaveBannersConfig = async () => {
+    try {
+      setSavingBanners(true);
+      const res = await fetch("/api/admin/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          updates: [{ key: "notification_banners_config", value: JSON.stringify(bannersConfig) }],
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Notification banners & triggers saved successfully!");
+      } else {
+        toast.error(data.error || "Failed to save banner settings");
+      }
+    } catch {
+      toast.error("Network error saving banner settings");
+    } finally {
+      setSavingBanners(false);
+    }
+  };
 
   const handleToggleRewardSection = async (nextValue: boolean) => {
     try {
@@ -1479,8 +1524,780 @@ function UsersTab() {
 
   return (
     <div className="grid grid-cols-3 gap-8 animate-fadeIn">
-      {/* USERS LIST PANEL (LEFT 2/3) */}
+      {/* USERS LIST & BANNER CONTROLS PANEL (LEFT 2/3) */}
       <div className="col-span-2 space-y-6">
+
+        {/* DYNAMIC NOTIFICATION BANNERS CONFIGURATION CARD */}
+        <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-5 border-b border-[oklch(0.9_0.015_75)] pb-4">
+            <div className="flex items-center gap-3">
+              <div className="grid h-10 w-10 place-items-center rounded-2xl bg-brand/10 text-brand font-bold">
+                <BellRing className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">Dynamic Notification Banners & Smart Triggers</h3>
+                <p className="text-xs text-[oklch(0.5_0.02_60)]">
+                  Configure when, where, and whom to show fullscreen, idle, and half-screen offer banners with live previews.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => setLivePreviewBanner(activeBannerTab)}
+                className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+              >
+                <Eye className="h-3.5 w-3.5 text-brand" />
+                <span>Test Live Modal</span>
+              </button>
+
+              <button
+                disabled={savingBanners}
+                onClick={handleSaveBannersConfig}
+                className="px-4 py-2 rounded-xl bg-brand text-slate-950 text-xs font-black shadow-md hover:bg-brand/90 active:scale-95 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+              >
+                <Check className="h-3.5 w-3.5" />
+                <span>{savingBanners ? "Saving..." : "Save Banners"}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Banner Tabs */}
+          <div className="flex gap-2 p-1 bg-[oklch(0.96_0.01_75)] rounded-2xl mb-6">
+            <button
+              onClick={() => setActiveBannerTab("fullscreen")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeBannerTab === "fullscreen"
+                  ? "bg-white text-[oklch(0.18_0.02_50)] shadow-sm"
+                  : "text-[oklch(0.5_0.02_60)] hover:text-slate-900"
+              }`}
+            >
+              <Smartphone className="h-4 w-4 text-brand" />
+              <span>1. Fullscreen App Install</span>
+              <span className={`h-2 w-2 rounded-full ${bannersConfig.fullScreenInstall.enabled ? "bg-emerald-500" : "bg-slate-300"}`} />
+            </button>
+
+            <button
+              onClick={() => setActiveBannerTab("idle")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeBannerTab === "idle"
+                  ? "bg-white text-[oklch(0.18_0.02_50)] shadow-sm"
+                  : "text-[oklch(0.5_0.02_60)] hover:text-slate-900"
+              }`}
+            >
+              <Clock className="h-4 w-4 text-amber-500" />
+              <span>2. Idle (1-Min Inactivity)</span>
+              <span className={`h-2 w-2 rounded-full ${bannersConfig.idleSmallBanner.enabled ? "bg-emerald-500" : "bg-slate-300"}`} />
+            </button>
+
+            <button
+              onClick={() => setActiveBannerTab("offer")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeBannerTab === "offer"
+                  ? "bg-white text-[oklch(0.18_0.02_50)] shadow-sm"
+                  : "text-[oklch(0.5_0.02_60)] hover:text-slate-900"
+              }`}
+            >
+              <Percent className="h-4 w-4 text-rose-500" />
+              <span>3. Half-Screen Offer</span>
+              <span className={`h-2 w-2 rounded-full ${bannersConfig.halfScreenOffer.enabled ? "bg-emerald-500" : "bg-slate-300"}`} />
+            </button>
+          </div>
+
+          {/* TAB 1: FULLSCREEN APP INSTALL */}
+          {activeBannerTab === "fullscreen" && (
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 animate-fadeIn">
+              {/* Form Column */}
+              <div className="xl:col-span-7 space-y-4">
+                <div className="flex items-center justify-between bg-[oklch(0.98_0.005_75)] p-4 rounded-2xl border border-[oklch(0.9_0.015_75)]">
+                  <div>
+                    <h4 className="text-sm font-bold text-[oklch(0.18_0.02_50)]">Enable Fullscreen App Install Prompt</h4>
+                    <p className="text-xs text-[oklch(0.5_0.02_60)]">Show immersive full-screen install modal with 1-tap PWA and iOS guide.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setBannersConfig((prev) => ({
+                        ...prev,
+                        fullScreenInstall: {
+                          ...prev.fullScreenInstall,
+                          enabled: !prev.fullScreenInstall.enabled,
+                        },
+                      }))
+                    }
+                    className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                      bannersConfig.fullScreenInstall.enabled ? "bg-brand" : "bg-slate-300"
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${
+                        bannersConfig.fullScreenInstall.enabled ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[oklch(0.3_0.02_50)] mb-1">Whom to Show (Target Audience)</label>
+                    <select
+                      value={bannersConfig.fullScreenInstall.targetAudience}
+                      onChange={(e) =>
+                        setBannersConfig((prev) => ({
+                          ...prev,
+                          fullScreenInstall: {
+                            ...prev.fullScreenInstall,
+                            targetAudience: e.target.value as TargetAudience,
+                          },
+                        }))
+                      }
+                      className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] p-2.5 text-xs font-semibold focus:border-brand focus:outline-none"
+                    >
+                      <option value="ALL">All Users (Guests & Registered)</option>
+                      <option value="GUEST">Guests Only (Not logged in)</option>
+                      <option value="FIRST_ORDER">First-Time Customers (0 orders)</option>
+                      <option value="REGULAR">Regular Customers (1+ orders)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[oklch(0.3_0.02_50)] mb-1">When to Show (Delay in Seconds)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={120}
+                      value={bannersConfig.fullScreenInstall.delaySeconds}
+                      onChange={(e) =>
+                        setBannersConfig((prev) => ({
+                          ...prev,
+                          fullScreenInstall: {
+                            ...prev.fullScreenInstall,
+                            delaySeconds: Math.max(0, parseInt(e.target.value) || 0),
+                          },
+                        }))
+                      }
+                      className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] p-2.5 text-xs font-semibold focus:border-brand focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[oklch(0.3_0.02_50)] mb-1.5">Where to Show (Target Routes)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: "Home Page (/)", path: "/" },
+                      { label: "Menu (/menu)", path: "/menu" },
+                      { label: "Cart (/cart)", path: "/cart" },
+                    ].map((r) => {
+                      const isSelected = bannersConfig.fullScreenInstall.routes?.includes(r.path);
+                      return (
+                        <button
+                          key={r.path}
+                          type="button"
+                          onClick={() => {
+                            const current = bannersConfig.fullScreenInstall.routes || [];
+                            const updated = isSelected
+                              ? current.filter((p) => p !== r.path)
+                              : [...current, r.path];
+                            setBannersConfig((prev) => ({
+                              ...prev,
+                              fullScreenInstall: {
+                                ...prev.fullScreenInstall,
+                                routes: updated.length > 0 ? updated : ["/"],
+                              },
+                            }));
+                          }}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-brand/10 border-brand text-brand"
+                              : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                          }`}
+                        >
+                          {isSelected ? "✓ " : "+ "} {r.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 pt-1">
+                  <div>
+                    <label className="block text-xs font-bold text-[oklch(0.3_0.02_50)] mb-1">Headline Title</label>
+                    <input
+                      type="text"
+                      value={bannersConfig.fullScreenInstall.title}
+                      onChange={(e) =>
+                        setBannersConfig((prev) => ({
+                          ...prev,
+                          fullScreenInstall: {
+                            ...prev.fullScreenInstall,
+                            title: e.target.value,
+                          },
+                        }))
+                      }
+                      className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] p-2.5 text-xs focus:border-brand focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[oklch(0.3_0.02_50)] mb-1">Badge Tag</label>
+                    <input
+                      type="text"
+                      value={bannersConfig.fullScreenInstall.badgeText}
+                      onChange={(e) =>
+                        setBannersConfig((prev) => ({
+                          ...prev,
+                          fullScreenInstall: {
+                            ...prev.fullScreenInstall,
+                            badgeText: e.target.value,
+                          },
+                        }))
+                      }
+                      className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] p-2.5 text-xs focus:border-brand focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[oklch(0.3_0.02_50)] mb-1">Description / Subtitle</label>
+                  <textarea
+                    rows={2}
+                    value={bannersConfig.fullScreenInstall.description}
+                    onChange={(e) =>
+                      setBannersConfig((prev) => ({
+                        ...prev,
+                        fullScreenInstall: {
+                          ...prev.fullScreenInstall,
+                          description: e.target.value,
+                        },
+                      }))
+                    }
+                    className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] p-2.5 text-xs focus:border-brand focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Real-Time Visual Preview Card */}
+              <div className="xl:col-span-5 flex flex-col items-center">
+                <div className="w-full flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                    <Eye className="h-3.5 w-3.5 text-brand" /> Live Customer Screen Preview
+                  </span>
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    Real-time
+                  </span>
+                </div>
+
+                <div className="w-full max-w-[320px] rounded-[32px] bg-gradient-to-b from-[#1c1214] via-[#120a0c] to-[#0a0507] border border-amber-500/30 p-5 text-white shadow-xl text-center space-y-3">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand/20 border border-brand/40 text-brand text-[10px] font-black uppercase tracking-wider">
+                    <Sparkles className="h-3 w-3" />
+                    <span>{bannersConfig.fullScreenInstall.badgeText || "100% Free"}</span>
+                  </div>
+
+                  <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-brand via-amber-500 to-amber-600 p-0.5 shadow-lg flex items-center justify-center">
+                    <div className="w-full h-full rounded-[14px] bg-slate-950 flex flex-col items-center justify-center">
+                      <span className="text-2xl">🍔</span>
+                    </div>
+                  </div>
+
+                  <h5 className="text-base font-black text-white leading-tight">
+                    {bannersConfig.fullScreenInstall.title || "Experience Kaivu on the App"}
+                  </h5>
+                  <p className="text-[10px] text-slate-300 line-clamp-2 leading-relaxed">
+                    {bannersConfig.fullScreenInstall.description || "Install Kaivu for lightning-fast 1-tap orders."}
+                  </p>
+
+                  <div className="space-y-1.5 text-left bg-white/5 rounded-xl p-2.5 border border-white/10 text-[10px]">
+                    <div className="flex items-center gap-2 text-white font-medium">
+                      <span className="text-brand">⚡</span> Instant 1-Tap Ordering
+                    </div>
+                    <div className="flex items-center gap-2 text-white font-medium">
+                      <span className="text-amber-400">🔔</span> Real-Time Kitchen Updates
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setLivePreviewBanner("fullscreen")}
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-brand to-amber-500 text-slate-950 font-extrabold text-xs shadow-md"
+                  >
+                    {bannersConfig.fullScreenInstall.buttonText || "Install App Now"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: IDLE SMALL BANNER */}
+          {activeBannerTab === "idle" && (
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 animate-fadeIn">
+              {/* Form Column */}
+              <div className="xl:col-span-7 space-y-4">
+                <div className="flex items-center justify-between bg-[oklch(0.98_0.005_75)] p-4 rounded-2xl border border-[oklch(0.9_0.015_75)]">
+                  <div>
+                    <h4 className="text-sm font-bold text-[oklch(0.18_0.02_50)]">Enable Inactivity / Idle Mini-Banner</h4>
+                    <p className="text-xs text-[oklch(0.5_0.02_60)]">Shows a compact floating banner near navigation when the user is idle without ordering.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setBannersConfig((prev) => ({
+                        ...prev,
+                        idleSmallBanner: {
+                          ...prev.idleSmallBanner,
+                          enabled: !prev.idleSmallBanner.enabled,
+                        },
+                      }))
+                    }
+                    className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                      bannersConfig.idleSmallBanner.enabled ? "bg-amber-500" : "bg-slate-300"
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${
+                        bannersConfig.idleSmallBanner.enabled ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[oklch(0.3_0.02_50)] mb-1">Whom to Show (Target Audience)</label>
+                    <select
+                      value={bannersConfig.idleSmallBanner.targetAudience}
+                      onChange={(e) =>
+                        setBannersConfig((prev) => ({
+                          ...prev,
+                          idleSmallBanner: {
+                            ...prev.idleSmallBanner,
+                            targetAudience: e.target.value as TargetAudience,
+                          },
+                        }))
+                      }
+                      className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] p-2.5 text-xs font-semibold focus:border-brand focus:outline-none"
+                    >
+                      <option value="ALL">All Users (Guests & Registered)</option>
+                      <option value="GUEST">Guests Only</option>
+                      <option value="FIRST_ORDER">First-Time Customers (0 orders)</option>
+                      <option value="REGULAR">Regular Customers (1+ orders)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[oklch(0.3_0.02_50)] mb-1">When to Show (Idle Inactivity Seconds)</label>
+                    <input
+                      type="number"
+                      min={10}
+                      max={600}
+                      value={bannersConfig.idleSmallBanner.idleSeconds}
+                      onChange={(e) =>
+                        setBannersConfig((prev) => ({
+                          ...prev,
+                          idleSmallBanner: {
+                            ...prev.idleSmallBanner,
+                            idleSeconds: Math.max(10, parseInt(e.target.value) || 60),
+                          },
+                        }))
+                      }
+                      className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] p-2.5 text-xs font-semibold focus:border-brand focus:outline-none"
+                    />
+                    <span className="text-[10px] text-slate-400">Default is 60s (1 minute of no user activity).</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[oklch(0.3_0.02_50)] mb-1.5">Where to Show (Target Routes)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: "Home Page (/)", path: "/" },
+                      { label: "Menu (/menu)", path: "/menu" },
+                      { label: "Cart (/cart)", path: "/cart" },
+                    ].map((r) => {
+                      const isSelected = bannersConfig.idleSmallBanner.routes?.includes(r.path);
+                      return (
+                        <button
+                          key={r.path}
+                          type="button"
+                          onClick={() => {
+                            const current = bannersConfig.idleSmallBanner.routes || [];
+                            const updated = isSelected
+                              ? current.filter((p) => p !== r.path)
+                              : [...current, r.path];
+                            setBannersConfig((prev) => ({
+                              ...prev,
+                              idleSmallBanner: {
+                                ...prev.idleSmallBanner,
+                                routes: updated.length > 0 ? updated : ["/"],
+                              },
+                            }));
+                          }}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-amber-500/15 border-amber-500 text-amber-700"
+                              : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                          }`}
+                        >
+                          {isSelected ? "✓ " : "+ "} {r.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 pt-1">
+                  <div>
+                    <label className="block text-xs font-bold text-[oklch(0.3_0.02_50)] mb-1">Banner Title</label>
+                    <input
+                      type="text"
+                      value={bannersConfig.idleSmallBanner.title}
+                      onChange={(e) =>
+                        setBannersConfig((prev) => ({
+                          ...prev,
+                          idleSmallBanner: {
+                            ...prev.idleSmallBanner,
+                            title: e.target.value,
+                          },
+                        }))
+                      }
+                      className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] p-2.5 text-xs focus:border-brand focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[oklch(0.3_0.02_50)] mb-1">Button Text</label>
+                    <input
+                      type="text"
+                      value={bannersConfig.idleSmallBanner.buttonText}
+                      onChange={(e) =>
+                        setBannersConfig((prev) => ({
+                          ...prev,
+                          idleSmallBanner: {
+                            ...prev.idleSmallBanner,
+                            buttonText: e.target.value,
+                          },
+                        }))
+                      }
+                      className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] p-2.5 text-xs focus:border-brand focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[oklch(0.3_0.02_50)] mb-1">Description</label>
+                  <input
+                    type="text"
+                    value={bannersConfig.idleSmallBanner.description}
+                    onChange={(e) =>
+                      setBannersConfig((prev) => ({
+                        ...prev,
+                        idleSmallBanner: {
+                          ...prev.idleSmallBanner,
+                          description: e.target.value,
+                        },
+                      }))
+                    }
+                    className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] p-2.5 text-xs focus:border-brand focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Real-Time Visual Preview Card */}
+              <div className="xl:col-span-5 flex flex-col items-center">
+                <div className="w-full flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                    <Eye className="h-3.5 w-3.5 text-amber-500" /> Live Floating Capsule Preview
+                  </span>
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    Real-time
+                  </span>
+                </div>
+
+                <div className="w-full max-w-[340px] rounded-2xl bg-gradient-to-r from-[#1c0f12] via-[#241217] to-[#1a0c10] border border-amber-500/40 p-4 text-white shadow-xl space-y-2">
+                  <div className="flex items-start gap-3">
+                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand to-amber-500 text-slate-950 font-bold">
+                      <Flame className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider">
+                        Express Kitchen Priority
+                      </span>
+                      <h5 className="text-xs font-black text-white truncate">
+                        {bannersConfig.idleSmallBanner.title || "Still thinking?"}
+                      </h5>
+                      <p className="text-[10px] text-slate-300 line-clamp-2 mt-0.5">
+                        {bannersConfig.idleSmallBanner.description || "Our kitchen is fired up! Order now for express prep."}
+                      </p>
+                      <div className="mt-2.5 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setLivePreviewBanner("idle")}
+                          className="px-3 py-1 rounded-full bg-brand text-slate-950 text-[10px] font-black"
+                        >
+                          {bannersConfig.idleSmallBanner.buttonText || "Explore Menu"}
+                        </button>
+                        <span className="text-[10px] text-slate-400">Dismiss</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: HALF-SCREEN OFFER DRAWER */}
+          {activeBannerTab === "offer" && (
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 animate-fadeIn">
+              {/* Form Column */}
+              <div className="xl:col-span-7 space-y-4">
+                <div className="flex items-center justify-between bg-[oklch(0.98_0.005_75)] p-4 rounded-2xl border border-[oklch(0.9_0.015_75)]">
+                  <div>
+                    <h4 className="text-sm font-bold text-[oklch(0.18_0.02_50)]">Enable Half-Screen Offer Drawer</h4>
+                    <p className="text-xs text-[oklch(0.5_0.02_60)]">Shows a 50% slide-up bottom sheet with coupon code copy & promotion CTA.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setBannersConfig((prev) => ({
+                        ...prev,
+                        halfScreenOffer: {
+                          ...prev.halfScreenOffer,
+                          enabled: !prev.halfScreenOffer.enabled,
+                        },
+                      }))
+                    }
+                    className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                      bannersConfig.halfScreenOffer.enabled ? "bg-rose-500" : "bg-slate-300"
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${
+                        bannersConfig.halfScreenOffer.enabled ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[oklch(0.3_0.02_50)] mb-1">Whom to Show (Target Audience)</label>
+                    <select
+                      value={bannersConfig.halfScreenOffer.targetAudience}
+                      onChange={(e) =>
+                        setBannersConfig((prev) => ({
+                          ...prev,
+                          halfScreenOffer: {
+                            ...prev.halfScreenOffer,
+                            targetAudience: e.target.value as TargetAudience,
+                          },
+                        }))
+                      }
+                      className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] p-2.5 text-xs font-semibold focus:border-brand focus:outline-none"
+                    >
+                      <option value="FIRST_ORDER">First-Time Customers (0 orders)</option>
+                      <option value="ALL">All Users (Everyone)</option>
+                      <option value="GUEST">Guests Only</option>
+                      <option value="REGULAR">Regular Customers (1+ orders)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[oklch(0.3_0.02_50)] mb-1">When to Show (Delay in Seconds)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={120}
+                      value={bannersConfig.halfScreenOffer.delaySeconds}
+                      onChange={(e) =>
+                        setBannersConfig((prev) => ({
+                          ...prev,
+                          halfScreenOffer: {
+                            ...prev.halfScreenOffer,
+                            delaySeconds: Math.max(0, parseInt(e.target.value) || 0),
+                          },
+                        }))
+                      }
+                      className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] p-2.5 text-xs font-semibold focus:border-brand focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[oklch(0.3_0.02_50)] mb-1.5">Where to Show (Target Routes)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: "Home Page (/)", path: "/" },
+                      { label: "Menu (/menu)", path: "/menu" },
+                      { label: "Cart (/cart)", path: "/cart" },
+                    ].map((r) => {
+                      const isSelected = bannersConfig.halfScreenOffer.routes?.includes(r.path);
+                      return (
+                        <button
+                          key={r.path}
+                          type="button"
+                          onClick={() => {
+                            const current = bannersConfig.halfScreenOffer.routes || [];
+                            const updated = isSelected
+                              ? current.filter((p) => p !== r.path)
+                              : [...current, r.path];
+                            setBannersConfig((prev) => ({
+                              ...prev,
+                              halfScreenOffer: {
+                                ...prev.halfScreenOffer,
+                                routes: updated.length > 0 ? updated : ["/"],
+                              },
+                            }));
+                          }}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-rose-500/15 border-rose-500 text-rose-700"
+                              : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                          }`}
+                        >
+                          {isSelected ? "✓ " : "+ "} {r.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 pt-1">
+                  <div>
+                    <label className="block text-xs font-bold text-[oklch(0.3_0.02_50)] mb-1">Headline Title</label>
+                    <input
+                      type="text"
+                      value={bannersConfig.halfScreenOffer.title}
+                      onChange={(e) =>
+                        setBannersConfig((prev) => ({
+                          ...prev,
+                          halfScreenOffer: {
+                            ...prev.halfScreenOffer,
+                            title: e.target.value,
+                          },
+                        }))
+                      }
+                      className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] p-2.5 text-xs focus:border-brand focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[oklch(0.3_0.02_50)] mb-1">Promo Coupon Code</label>
+                    <input
+                      type="text"
+                      value={bannersConfig.halfScreenOffer.promoCode}
+                      onChange={(e) =>
+                        setBannersConfig((prev) => ({
+                          ...prev,
+                          halfScreenOffer: {
+                            ...prev.halfScreenOffer,
+                            promoCode: e.target.value.toUpperCase(),
+                          },
+                        }))
+                      }
+                      placeholder="e.g. FIRSTFEAST"
+                      className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] p-2.5 text-xs font-mono font-bold uppercase focus:border-brand focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[oklch(0.3_0.02_50)] mb-1">Description / Subtitle</label>
+                  <textarea
+                    rows={2}
+                    value={bannersConfig.halfScreenOffer.description}
+                    onChange={(e) =>
+                      setBannersConfig((prev) => ({
+                        ...prev,
+                        halfScreenOffer: {
+                          ...prev.halfScreenOffer,
+                          description: e.target.value,
+                        },
+                      }))
+                    }
+                    className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] p-2.5 text-xs focus:border-brand focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Real-Time Visual Preview Card */}
+              <div className="xl:col-span-5 flex flex-col items-center">
+                <div className="w-full flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                    <Eye className="h-3.5 w-3.5 text-rose-500" /> Live Half-Screen Drawer Preview
+                  </span>
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    Real-time
+                  </span>
+                </div>
+
+                <div className="w-full max-w-[320px] rounded-t-[28px] rounded-b-[20px] bg-gradient-to-b from-[#180e11] via-[#100709] to-[#080305] border border-amber-500/30 p-4 text-white shadow-xl space-y-3">
+                  <div className="w-8 h-1 bg-white/20 rounded-full mx-auto" />
+
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-[9px] font-black uppercase tracking-wider">
+                    <Sparkles className="h-2.5 w-2.5" />
+                    <span>{bannersConfig.halfScreenOffer.badgeText || "Special Exclusive Deal"}</span>
+                  </div>
+
+                  <div className="flex items-start gap-2.5">
+                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand to-rose-600 text-white font-bold">
+                      <Percent className="h-4 w-4 stroke-[2.5]" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h5 className="text-xs font-black text-white leading-tight">
+                        {bannersConfig.halfScreenOffer.title || "Flat ₹200 OFF Your Feast!"}
+                      </h5>
+                      <p className="text-[10px] text-slate-300 line-clamp-2 mt-0.5">
+                        {bannersConfig.halfScreenOffer.description || "Use coupon code on orders above ₹499."}
+                      </p>
+                    </div>
+                  </div>
+
+                  {bannersConfig.halfScreenOffer.promoCode && (
+                    <div className="rounded-xl bg-white/5 border border-dashed border-amber-500/40 p-2 flex items-center justify-between">
+                      <div>
+                        <span className="text-[8px] uppercase text-slate-400 font-bold block">Coupon Code</span>
+                        <span className="text-xs font-black text-amber-400 font-mono">{bannersConfig.halfScreenOffer.promoCode}</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-md bg-white/10 text-[9px] font-bold text-white">Copy</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => setLivePreviewBanner("offer")}
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-brand to-amber-500 text-slate-950 font-extrabold text-xs shadow-md"
+                  >
+                    {bannersConfig.halfScreenOffer.buttonText || "Claim Offer Now"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* INTERACTIVE FULL MODAL PREVIEWS */}
+        {livePreviewBanner === "fullscreen" && (
+          <FullScreenInstallBanner
+            config={bannersConfig.fullScreenInstall}
+            isOpen={true}
+            onClose={() => setLivePreviewBanner(null)}
+          />
+        )}
+        {livePreviewBanner === "idle" && (
+          <IdleNavBanner
+            config={bannersConfig.idleSmallBanner}
+            isOpen={true}
+            onClose={() => setLivePreviewBanner(null)}
+          />
+        )}
+        {livePreviewBanner === "offer" && (
+          <HalfScreenOfferBanner
+            config={bannersConfig.halfScreenOffer}
+            isOpen={true}
+            onClose={() => setLivePreviewBanner(null)}
+          />
+        )}
 
         {/* REWARD SECTION TOGGLE CONTROL CARD */}
         <div className="rounded-[2rem] bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-amber-500/10 border border-amber-500/20 p-6 shadow-sm flex items-center justify-between">
