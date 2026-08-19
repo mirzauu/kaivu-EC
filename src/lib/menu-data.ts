@@ -18,14 +18,19 @@ export type MenuItem = {
 };
 
 export const menu: MenuItem[] = [
-  { id: "buffalo-flamin-hot", name: "Buffalo Flami'n Hot", desc: "Crispy chicken glazed in bold buffalo heat, cooled down with ranch and finished with fresh crunch", price: 260, image: burgerSpicy, category: "Burgers", tag: "Spicy", rating: 4.8 },
-  { id: "nashville-fried", name: "Nashville Fried & Creamy Slaw", desc: "Nashville-spiced fried chicken layered with creamy slaw, roasted garlic aioli and a touch of tang.", price: 240, image: burgerSpicy, category: "Burgers", tag: "New", rating: 4.7 },
-  { id: "smoky-bbq-comfort", name: "Smoky BBQ Comfort", desc: "Flame-grilled chicken, smoky honey BBQ, crispy onions and melted cheese on a toasted potato bun.", price: 210, image: burgerBacon, category: "Burgers", rating: 4.6 },
-  { id: "the-smashed", name: "The Smashed", desc: "Double smashed beef, melted cheese, grilled onions and pickled tang. Nothing extra. Nothing missing.", price: 330, image: burgerClassic, category: "Burgers", tag: "Bestseller", rating: 4.9 },
-  { id: "shroomland", name: "Shroomland", desc: "Juicy beef, melted cheese and rich mushroom demi-glace inspired by old-school steakhouse flavours.", price: 390, image: burgerClassic, category: "Burgers", rating: 4.8 },
-  { id: "smoke-jam", name: "Smoke & Jam", desc: "Double smashed beef loaded with bacon jam, caramelized onions, melted cheese and smoky indulgence", price: 360, image: burgerBacon, category: "Burgers", rating: 4.9 },
-  { id: "golden-fries", name: "Golden Fries", desc: "Hand-cut, sea salt, rosemary", price: 120, image: fries, category: "Sides", rating: 4.6 },
-  { id: "choco-shake", name: "Choco Velvet Shake", desc: "Belgian chocolate, whipped cream", price: 150, image: shake, category: "Drinks", rating: 4.8 },
+  { id: "og-smash-beef", name: "OG Smash (Beef)", desc: "Classic beef smash burger", price: 210, image: burgerClassic, category: "Burgers", tag: "Bestseller", rating: 4.8 },
+  { id: "classic-smash-burger-beef", name: "Classic Smash Burger (Beef)", desc: "Classic-style beef smash burger", price: 320, image: burgerClassic, category: "Burgers", rating: 4.7 },
+  { id: "jalapeno-jam-beef", name: "Jalapeño Jam (Beef)", desc: "Beef smash burger with jalapeño jam", price: 220, image: burgerSpicy, category: "Burgers", tag: "Spicy", rating: 4.9 },
+  { id: "the-dirty-shroom-beef", name: "The Dirty Shroom (Beef)", desc: "Beef burger featuring mushrooms", price: 340, image: burgerBacon, category: "Burgers", rating: 4.8 },
+  { id: "nashville-cluck-chicken", name: "Nashville Cluck (Chicken)", desc: "Nashville-style chicken burger", price: 210, image: burgerSpicy, category: "Burgers", tag: "Spicy", rating: 4.7 },
+  { id: "mac-and-rooster-chicken", name: "Mac & Rooster (Chicken)", desc: "Chicken burger with mac & cheese", price: 240, image: burgerClassic, category: "Burgers", rating: 4.8 },
+  { id: "hot-bird-tenders-box-of-4", name: "Hot Bird Tenders — Box of 4", desc: "4 pieces of hot chicken tenders", price: 270, image: burgerSpicy, category: "Sides", tag: "Spicy", rating: 4.8 },
+  { id: "hot-bird-tenders-box-of-6", name: "Hot Bird Tenders — Box of 6", desc: "6 pieces of hot chicken tenders", price: 380, image: burgerSpicy, category: "Sides", tag: "Spicy", rating: 4.9 },
+  { id: "honey-hot-bird-tenders-4", name: "Honey Hot Bird Tenders — 4", desc: "4 pieces of chicken tenders with honey", price: 390, image: burgerSpicy, category: "Sides", rating: 4.9 },
+  { id: "honey-hot-bird-tenders-6", name: "Honey Hot Bird Tenders — 6", desc: "6 pieces of chicken tenders with honey", price: 520, image: burgerSpicy, category: "Sides", tag: "Bestseller", rating: 5.0 },
+  { id: "nashville-loaded", name: "Nashville Loaded", desc: "Nashville-style loaded dish", price: 230, image: fries, category: "Sides", tag: "Spicy", rating: 4.7 },
+  { id: "beef-loaded", name: "Beef Loaded", desc: "Beef loaded dish", price: 240, image: fries, category: "Sides", rating: 4.8 },
+  { id: "mac-and-cheese", name: "Mac & Cheese", desc: "Creamy mac & cheese", price: 215, image: fries, category: "Sides", rating: 4.6 },
 ];
 
-export const categories = ["All", "Burgers", "Burrito", "Pasta", "Side", "Drink", "Combo"] as const;
+export const categories = ["All", "Burgers", "Sides", "Drinks", "Combos"] as const;

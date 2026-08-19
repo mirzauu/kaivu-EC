@@ -188,8 +188,13 @@ export default function Home() {
 
   return (
     <MobileShell>
-      {/* Top Hero Carousel Screen with Full-Bleed Background Images */}
-      <HeroCarousel mounted={mounted} />
+      {/* Top Hero Screen with Big Scrollable Product Cards */}
+      <HeroCarousel
+        mounted={mounted}
+        items={displayPopular}
+        onSelectProduct={(item) => setSelectedDetailItem(item)}
+        onAddToCart={(e, item) => handleAdd(e, item)}
+      />
 
           {/* Floating White Content Sheet */}
           <div className="relative z-10 -mt-6 rounded-t-[32px] bg-background pt-5 pb-28 shadow-[0_-10px_25px_rgba(0,0,0,0.12)] min-h-screen">

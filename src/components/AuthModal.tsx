@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { auth, useAuth } from "@/lib/auth-store";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, MessageSquare } from "lucide-react";
 
 export function AuthModal() {
   const isOpen = useAuth((s) => s.isAuthModalOpen);
@@ -103,13 +103,18 @@ export function AuthModal() {
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="w-[90%] max-w-md rounded-[32px] p-6 sm:rounded-[32px]">
         <DialogHeader>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-emerald-500/10 text-emerald-600 px-2.5 py-1 rounded-full border border-emerald-500/20">
+              <MessageSquare className="h-3 w-3" /> WhatsApp Verification
+            </span>
+          </div>
           <DialogTitle className="text-2xl font-bold">
-            {step === "phone" ? "Welcome to Kaivu" : "Verify Phone"}
+            {step === "phone" ? "Welcome to Kaivu" : "Verify WhatsApp OTP"}
           </DialogTitle>
           <DialogDescription>
             {step === "phone"
-              ? "Enter your mobile number to get started or login."
-              : `We sent a code to ${phone}.`}
+              ? "Enter your WhatsApp mobile number to receive a verification code."
+              : `We sent a 4-digit code to your WhatsApp at +91 ${phone}.`}
           </DialogDescription>
         </DialogHeader>
 
@@ -152,21 +157,21 @@ export function AuthModal() {
                 disabled={phone.length < 10 || loading}
                 className="h-14 rounded-2xl text-base font-bold bg-brand text-brand-foreground hover:bg-brand/90 transition-all cursor-pointer"
               >
-                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Send OTP"}
+                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Send OTP via WhatsApp"}
               </Button>
             </>
           ) : (
             <>
               <Input
                 type="text"
-                placeholder="Enter OTP (e.g. 1234)"
+                placeholder="Enter 4-digit OTP"
                 value={otp}
                 onChange={(e) => {
                   const val = e.target.value.replace(/\D/g, "");
                   setOtp(val);
                 }}
-                className="h-14 rounded-2xl px-4 text-center text-xl tracking-widest font-black"
-                maxLength={6}
+                className="h-14 rounded-2xl px-4 text-center text-2xl tracking-[0.3em] font-black"
+                maxLength={4}
                 autoFocus
                 disabled={loading}
               />

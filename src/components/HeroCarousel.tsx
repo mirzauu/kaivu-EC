@@ -1,125 +1,248 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import Link from "next/link";
-import { MapPin, ChevronRight, RefreshCw, ArrowRight } from "lucide-react";
-import gsap from "gsap";
+import { useState, useRef } from "react";
+import {
+  MapPin,
+  ChevronDown,
+  RefreshCw,
+  Star,
+  Plus,
+} from "lucide-react";
+import { motion } from "framer-motion";
 import { useLocation, locationStore } from "@/lib/location-store";
+import { MenuItem, menu as defaultMenu } from "@/lib/menu-data";
+import { useFlyToCart } from "@/components/FlyToCartProvider";
 
 interface HeroCarouselProps {
   mounted: boolean;
+  items?: MenuItem[];
+  onSelectProduct?: (item: MenuItem) => void;
+  onAddToCart?: (e: React.MouseEvent<HTMLButtonElement>, item: MenuItem) => void;
 }
 
-export function HeroCarousel({ mounted }: HeroCarouselProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+// Studio themes and their fixed screen background colors for smooth transitions
+const cardThemes = [
+  {
+    gradient: "from-[#4B5563] via-[#374151] to-[#1F2937]", // Slate studio
+    bgColor: "#8292A1", // Fixed smooth cool slate background
+    accent: "#E5E7EB",
+  },
+  {
+    gradient: "from-[#7F1D1D] via-[#5C1313] to-[#2B0909]", // Deep Crimson
+    bgColor: "#B83232", // Fixed smooth rich crimson background
+    accent: "#FECACA",
+  },
+  {
+    gradient: "from-[#854D0E] via-[#5E3406] to-[#2A1602]", // Warm Amber
+    bgColor: "#C27803", // Fixed smooth warm golden amber background
+    accent: "#FEF08A",
+  },
+  {
+    gradient: "from-[#4C1D95] via-[#34116D] to-[#19073B]", // Royal Smoke
+    bgColor: "#633B82", // Fixed smooth deep plum / violet background
+    accent: "#E9D5FF",
+  },
+  {
+    gradient: "from-[#14532D] via-[#0D381E] to-[#051C0E]", // Forest Emerald
+    bgColor: "#2D6A4F", // Fixed smooth emerald forest background
+    accent: "#BBF7D0",
+  },
+  {
+    gradient: "from-[#1E3A8A] via-[#172554] to-[#0B132B]", // Midnight Ocean
+    bgColor: "#3A5A80", // Fixed smooth steel ocean background
+    accent: "#BFDBFE",
+  },
+];
+
+export function HeroCarousel({
+  mounted,
+  items,
+  onSelectProduct,
+  onAddToCart,
+}: HeroCarouselProps) {
+  const scrollContainerRef = useRef<HTMLUListElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const { flyToCart } = useFlyToCart();
 
   const locationAddress = useLocation((s) => s.address);
   const locationLoading = useLocation((s) => s.isLoading);
   const locationError = useLocation((s) => s.error);
 
-  /* GSAP Intro Animation */
-  useEffect(() => {
-    if (!containerRef.current) return;
+  const displayItems = items && items.length > 0 ? items : defaultMenu;
 
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "back.out(1.7)" } });
+  // Active theme based on currently scrolled/selected card
+  const currentTheme = cardThemes[activeIndex % cardThemes.length];
 
-      gsap.set(["#html-headline", "#html-subtitle", "#html-button"], { y: 25, opacity: 0 });
+  // Dynamically detect which card is centered while scrolling to update the background color smoothly
+  const handleScroll = () => {
+    if (!scrollContainerRef.current) return;
+    const container = scrollContainerRef.current;
+    const scrollLeft = container.scrollLeft;
+    // Calculate card width + gap (78vw / sm:310px + 14px gap)
+    const cardEl = container.firstElementChild as HTMLElement | null;
+    const itemWidth = cardEl ? cardEl.offsetWidth + 14 : container.offsetWidth * 0.78 + 14;
+    const index = Math.round(scrollLeft / itemWidth);
+    const clampedIndex = Math.min(Math.max(0, index), displayItems.length - 1);
+    if (clampedIndex !== activeIndex) {
+      setActiveIndex(clampedIndex);
+    }
+  };
 
-      // 0.3s: HTML headlines, subtitle & button stagger in from left
-      tl.to(["#html-headline", "#html-subtitle", "#html-button"], {
-        y: 0,
-        opacity: 1,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: "power3.out",
-      }, 0.6);
-    }, containerRef);
+  const handleCardClick = (item: MenuItem, index: number) => {
+    setActiveIndex(index);
+    onSelectProduct?.(item);
+  };
 
-    return () => ctx.revert();
-  }, []);
+  const handleAdd = (e: React.MouseEvent<HTMLButtonElement>, item: MenuItem) => {
+    e.stopPropagation();
+    if (onAddToCart) {
+      onAddToCart(e, item);
+    } else {
+      flyToCart(e, item);
+    }
+  };
 
   return (
     <div
-      ref={containerRef}
-      className="relative w-full overflow-hidden bg-[#111] pt-4 pb-7 shadow-lg min-h-[310px] flex flex-col justify-between select-none"
+      className="relative w-full overflow-hidden pt-2 pb-6 select-none"
+      style={{
+        backgroundColor: currentTheme.bgColor,
+        transition: "background-color 0.7s cubic-bezier(0.4, 0, 0.2, 1)",
+      }}
     >
-      {/* Full-Bleed Animated Background */}
-      <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
-        <video
-          src="/Character_raises_the_spatula_a.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover object-center pointer-events-none"
-        />
-
-        {/* Gradient Overlay Mask for Crisp Text & Location Readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 via-40% to-transparent to-60% w-full pointer-events-none z-10" />
-        <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-black/60 to-transparent w-full pointer-events-none z-10" />
-      </div>
-
-      {/* Top Location Bar */}
-      <div className="relative z-30 px-5 flex items-center justify-between gap-3">
+      {/* Top Location Bar (Amazon-style deliver pill from screenshot) */}
+      <div className="relative z-30 px-4 pt-2 pb-3">
         <button
           type="button"
           onClick={() => locationStore.refresh()}
-          className="min-w-0 text-left flex-1 group"
-          aria-label="Refresh location"
+          className="w-full flex items-center justify-between gap-2 px-3.5 py-2 rounded-xl bg-white/90 backdrop-blur-md shadow-sm border border-black/10 active:scale-[0.99] transition-all text-left"
+          aria-label="Deliver to location"
         >
-          <div className="flex items-center gap-1 text-[11px] font-medium text-white">
-            <span className="font-bold text-white flex items-center gap-1 bg-[rgba(0,0,0,0.55)] px-2.5 py-0.5 rounded-full backdrop-blur-md border border-white/20 shadow-md">
-              <MapPin className="h-3.5 w-3.5 text-yellow-400" />
-              Deliver to <ChevronRight className="h-3 w-3 inline text-white/80 group-hover:translate-x-0.5 transition-transform" />
-            </span>
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <MapPin className="h-4 w-4 text-slate-800 shrink-0" />
+            {!mounted || locationLoading ? (
+              <div className="h-3.5 w-44 animate-pulse rounded bg-gray-200" />
+            ) : locationError && !locationAddress ? (
+              <span className="truncate text-xs font-semibold text-slate-700 flex items-center gap-1">
+                Tap to set location <RefreshCw className="h-3 w-3 text-slate-500" />
+              </span>
+            ) : (
+              <span className="truncate text-xs font-bold text-slate-800">
+                Deliver to {locationAddress ? locationAddress.split(",")[0] : "Malappuram 676307"}
+              </span>
+            )}
           </div>
-          {!mounted || locationLoading ? (
-            <div className="mt-1 h-4 w-36 animate-pulse rounded bg-black/40 backdrop-blur-md" />
-          ) : locationError && !locationAddress ? (
-            <p className="flex items-center gap-1 truncate text-xs font-medium text-white drop-shadow-sm mt-0.5 pl-0.5">
-              Tap to set location <RefreshCw className="h-3 w-3" />
-            </p>
-          ) : (
-            <p className="truncate text-xs font-extrabold text-white drop-shadow-md mt-0.5 pl-0.5">
-              {locationAddress || "Malappuram, Kerala 676307"}
-            </p>
-          )}
+          <ChevronDown className="h-4 w-4 text-slate-500 shrink-0" />
         </button>
       </div>
 
-      {/* Real HTML Content (Left Aligned for Headlines & Buttons) */}
-      <div className="relative z-30 px-6 pt-3 pb-2 flex flex-col justify-center my-auto min-h-[170px]">
-        <div className="flex flex-col items-start text-left max-w-[56%] sm:max-w-[50%]">
-          
-          {/* HTML Headline */}
-          <div id="html-headline">
-            <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white leading-[1.05] drop-shadow-md">
-              SMASHED
-              <br />
-              <span className="text-[#FF5500]">TO PERFECTION.</span>
-            </h2>
-          </div>
+      {/* Big Product Cards Horizontal Carousel with Center Snapping and Side Peeking */}
+      <div className="relative z-30">
+        <ul
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="flex gap-3.5 overflow-x-auto px-7 pb-2 pt-1 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {!mounted
+            ? null
+            : displayItems.map((item, idx) => {
+                const theme = cardThemes[idx % cardThemes.length];
 
-          {/* HTML Subtitle */}
-          <div id="html-subtitle">
-            <p className="text-[11px] font-semibold leading-snug text-white/95 mt-1.5 max-w-[195px] drop-shadow-sm">
-              Crafted with real ingredients. Delivered to your door.
-            </p>
-          </div>
+                return (
+                  <li
+                    key={item.id || idx}
+                    className="w-[78vw] sm:w-[310px] max-w-[330px] shrink-0 snap-center"
+                  >
+                    <div
+                      onClick={() => handleCardClick(item, idx)}
+                      className={`group relative h-[430px] sm:h-[450px] w-full overflow-hidden rounded-[26px] bg-gradient-to-b ${theme.gradient} p-5 shadow-[0_18px_38px_rgba(0,0,0,0.28)] cursor-pointer flex flex-col justify-between transition-transform duration-300 hover:scale-[1.01]`}
+                    >
+                      {/* Subtle ambient lighting on card */}
+                      <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+                      <div className="absolute bottom-10 -left-10 w-44 h-44 bg-black/30 rounded-full blur-2xl pointer-events-none" />
 
-          {/* HTML Interactive Button */}
-          <div id="html-button" className="mt-3.5 flex items-center gap-3">
-            <Link
-              href="/menu"
-              className="group inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black bg-[#2A0812] text-white shadow-xl hover:bg-[#3D0C1A] active:scale-95 transition-all"
-            >
-              <span>Order now</span>
-              <ArrowRight className="h-3.5 w-3.5 text-[#FF7733] group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
+                      {/* TOP TEXT OVERLAY */}
+                      <div className="relative z-10 space-y-1">
+                        {/* Big Headline */}
+                        <h2 className="text-2xl sm:text-[28px] font-black tracking-tight text-white leading-tight capitalize">
+                          {item.name}
+                        </h2>
 
-        </div>
+                        {/* Subtitle / Product Highlights */}
+                        <p className="text-xs font-medium text-white/80 leading-snug line-clamp-2 max-w-[95%]">
+                          {item.desc || "Artisanal pressed patty, melted cheese & house glaze"}
+                        </p>
+                      </div>
+
+                      {/* CENTER PRODUCT IMAGE (Hero Showcase on Studio Base) */}
+                      <div className="relative z-10 flex-1 flex items-center justify-center my-auto py-2">
+                        {/* Circular Studio Podium / Shadow Effect */}
+                        <div className="absolute bottom-2 w-48 sm:w-56 h-14 bg-black/40 rounded-full blur-lg scale-90 pointer-events-none" />
+                        <div className="absolute bottom-4 w-44 sm:w-52 h-6 bg-white/10 rounded-full blur-md pointer-events-none" />
+
+                        {/* Main Product Image */}
+                        <div className="relative w-44 h-44 sm:w-52 sm:h-52 overflow-hidden rounded-2xl drop-shadow-[0_15px_25px_rgba(0,0,0,0.5)] group-hover:scale-105 transition-transform duration-500">
+                          <img
+                            src={item.image?.src || item.image || ""}
+                            alt={item.name}
+                            loading="lazy"
+                            width={768}
+                            height={768}
+                            className="h-full w-full object-cover object-center"
+                          />
+                        </div>
+
+                        {/* Floating Rating Pill */}
+                        <div className="absolute top-2 right-0 flex items-center gap-1 rounded-full bg-black/60 backdrop-blur-md px-2.5 py-1 text-xs font-bold text-amber-300 border border-white/15 shadow-sm">
+                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          {item.rating || 4.9}
+                        </div>
+                      </div>
+
+                      {/* BOTTOM BAR: Buy 2 Offer Price, *T&C Apply, and Add Button */}
+                      <div className="relative z-10 flex items-end justify-between pt-2">
+                        <div className="flex flex-col">
+                          {/* Offer Badge & Strikethrough Original 2x Price */}
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className="rounded-sm bg-amber-400 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-slate-950 shadow-xs">
+                              OFFER
+                            </span>
+                            <span className="text-[11px] font-semibold text-white/50 line-through">
+                              ₹{(item.price * 2).toFixed(0)}
+                            </span>
+                          </div>
+
+                          {/* Buy 2 at Price Row */}
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-xs sm:text-sm font-extrabold uppercase tracking-tight text-amber-200">
+                              BUY 2 AT
+                            </span>
+                            <span className="text-xl sm:text-2xl font-black text-white">
+                              ₹{item.price.toFixed(2)}
+                            </span>
+                          </div>
+
+                          <span className="text-[9.5px] text-white/50 block font-medium mt-0.5">
+                            *Limited time deal • T&C Apply
+                          </span>
+                        </div>
+
+                        <motion.button
+                          whileTap={{ scale: 0.85 }}
+                          whileHover={{ scale: 1.05 }}
+                          onClick={(e) => handleAdd(e, item)}
+                          aria-label={`Add ${item.name}`}
+                          className="flex items-center gap-1.5 rounded-full bg-white text-slate-950 font-black px-4 py-2 text-xs shadow-lg hover:bg-amber-300 active:scale-95 transition-all shrink-0"
+                        >
+                          <Plus className="h-3.5 w-3.5 stroke-[3]" />
+                          <span>ADD</span>
+                        </motion.button>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+        </ul>
       </div>
     </div>
   );

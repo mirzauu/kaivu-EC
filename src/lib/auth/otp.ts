@@ -1,24 +1,25 @@
 import { db } from "@/lib/db";
+import { sendWhatsAppOtp } from "@/lib/whatsapp/client";
 
 const OTP_EXPIRY_MINUTES = 5;
 const MAX_ATTEMPTS = 5;
 
 /**
  * Generate a random 4-digit OTP.
- * In development mode, always returns "1234" for easy testing.
  */
 function generateOtpCode(): string {
-  if (process.env.NODE_ENV === "development") {
+  // If explicitly requested dev bypass without WhatsApp tokens
+  if (process.env.NODE_ENV === "development" && !process.env.WHATSAPP_API_TOKEN && !process.env.WHATSAPP_ACCESS_TOKEN) {
     return "1234";
   }
   return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
 /**
- * Create and store a new OTP for the given phone number.
+ * Create, store, and send a new OTP via WhatsApp for the given phone number.
  * Invalidates any existing unused OTPs for that phone.
  */
-export async function createOtp(phone: string): Promise<{ code: string }> {
+export async function createOtp(phone: string): Promise<{ code: string; success: boolean }> {
   // Expire all previous OTPs for this phone
   await db.otpCode.updateMany({
     where: { phone, verified: false },
@@ -36,13 +37,16 @@ export async function createOtp(phone: string): Promise<{ code: string }> {
     },
   });
 
-  // TODO: In production, send OTP via SMS provider (Twilio/MSG91)
-  // For now, log it in development
-  if (process.env.NODE_ENV === "development") {
-    console.log(`📱 OTP for ${phone}: ${code}`);
+  // Always log for debug tracking
+  console.log(`📱 [WhatsApp OTP] Code for ${phone}: ${code}`);
+
+  // Dispatch OTP via WhatsApp Cloud API
+  const sendResult = await sendWhatsAppOtp(phone, code);
+  if (!sendResult.success) {
+    console.error(`❌ [WhatsApp OTP] Failed sending OTP to ${phone}:`, sendResult.error);
   }
 
-  return { code };
+  return { code, success: sendResult.success };
 }
 
 /**

@@ -23,7 +23,7 @@ export const INITIAL_STORIES: KaivuStory[] = [
     mediaUrl: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&auto=format&fit=crop&q=80",
     mediaType: "image",
     timestamp: "2h ago",
-    featuredProduct: menu[0], // Buffalo Flamin' Hot
+    featuredProduct: menu[0], // OG Smash (Beef)
     caption: "The cheese pull on this is unmatched 🤤🔥 Best late night craving!",
   },
   {
@@ -34,7 +34,7 @@ export const INITIAL_STORIES: KaivuStory[] = [
     mediaUrl: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=800&auto=format&fit=crop&q=80",
     mediaType: "image",
     timestamp: "4h ago",
-    featuredProduct: menu[3], // The Smashed
+    featuredProduct: menu[1], // Classic Smash Burger (Beef)
     caption: "Double smashed patties never fail. Crispy edges are perfection ✨",
   },
   {
@@ -45,8 +45,8 @@ export const INITIAL_STORIES: KaivuStory[] = [
     mediaUrl: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=800&auto=format&fit=crop&q=80",
     mediaType: "image",
     timestamp: "5h ago",
-    featuredProduct: menu[5], // Smoke & Jam
-    caption: "Bacon jam on a double smashed burger... mind officially blown 💥",
+    featuredProduct: menu[2], // Jalapeño Jam (Beef)
+    caption: "Jalapeño jam on a double smashed burger... mind officially blown 💥",
   },
   {
     id: "story-4",
@@ -56,8 +56,8 @@ export const INITIAL_STORIES: KaivuStory[] = [
     mediaUrl: "https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?w=800&auto=format&fit=crop&q=80",
     mediaType: "image",
     timestamp: "7h ago",
-    featuredProduct: menu[1], // Nashville Fried
-    caption: "Spicy chicken and creamy slaw combination is a 10/10 🌶️",
+    featuredProduct: menu[4], // Nashville Cluck (Chicken)
+    caption: "Spicy Nashville chicken is a 10/10 🌶️",
   },
   {
     id: "story-5",
@@ -67,8 +67,8 @@ export const INITIAL_STORIES: KaivuStory[] = [
     mediaUrl: "https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=800&auto=format&fit=crop&q=80",
     mediaType: "image",
     timestamp: "12h ago",
-    featuredProduct: menu[6], // Golden Fries
-    caption: "Rosemary salt fries are unmatched pairing with the burger combo 👌",
+    featuredProduct: menu[6], // Hot Bird Tenders — Box of 4
+    caption: "Hot bird tenders are unmatched pairing with the burger combo 👌",
   },
 ];
 
