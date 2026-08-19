@@ -158,10 +158,18 @@ export default function Home() {
   const storeMenu = useMenu((s) => s.menu);
   const allItems = storeMenu && storeMenu.length > 0 ? storeMenu : defaultMenu;
 
-  const popular = allItems.filter(
+  const loadedItem = allItems.find(
+    (m) => m.name?.toLowerCase().includes("loaded") || m.id?.toLowerCase().includes("loaded")
+  );
+  const heroBurgers = allItems.filter(
     (m) => !m.category || m.category.toLowerCase() === "burgers"
   );
-  const displayPopular = popular.length > 0 ? popular : allItems;
+  const heroItems = loadedItem
+    ? [...heroBurgers.slice(0, 2), loadedItem, ...heroBurgers.slice(2)]
+    : heroBurgers.length > 0
+    ? heroBurgers
+    : allItems;
+  const displayPopular = heroBurgers.length > 0 ? heroBurgers : allItems;
   const recommended = allItems.slice(0, 4);
   useAuth((s) => s.isAuthenticated);
   const { flyToCart } = useFlyToCart();
@@ -191,7 +199,7 @@ export default function Home() {
       {/* Top Hero Screen with Big Scrollable Product Cards */}
       <HeroCarousel
         mounted={mounted}
-        items={displayPopular}
+        items={heroItems}
         onSelectProduct={(item) => setSelectedDetailItem(item)}
         onAddToCart={(e, item) => handleAdd(e, item)}
       />
