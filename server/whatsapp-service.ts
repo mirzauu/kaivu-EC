@@ -341,7 +341,7 @@ app.post('/send-message', async (req: Request, res: Response) => {
   // If reconnecting, wait up to 4 seconds for socket to finish connection
   if (state.status !== 'connected' && sock) {
     for (let i = 0; i < 8; i++) {
-      if (state.status === 'connected') break;
+      if ((state.status as string) === 'connected') break;
       await new Promise((r) => setTimeout(r, 500));
     }
   }
@@ -412,8 +412,8 @@ app.post('/logout', async (_req: Request, res: Response) => {
 });
 
 // Start Express server and Baileys
-app.listen(PORT, () => {
-  console.log(`\n🚀 [Baileys WhatsApp Service] REST API listening on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`\n🚀 [Baileys WhatsApp Service] REST API listening on http://0.0.0.0:${PORT}`);
   console.log(`📁 [Baileys] Storing session credentials in: ${AUTH_DIR}\n`);
   startWhatsAppSocket();
 });

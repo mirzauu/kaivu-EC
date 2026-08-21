@@ -3,7 +3,7 @@ import { sendWhatsAppTextMessage } from "./client";
 export interface OrderNotificationPayload {
   orderNumber: string;
   total: number | string;
-  paymentMethod?: string;
+  paymentMethod?: string | null;
   deliveryAddress?: string | null;
   items: Array<{
     itemName: string;
