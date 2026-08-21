@@ -242,7 +242,7 @@ export function InstallPrompt() {
       <div className="overflow-hidden rounded-3xl bg-surface p-4 shadow-xl border border-brand/10 ring-1 ring-black/5">
         <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
           <img
-            src={getImageUrl("/images/menu/burger-classic.jpg")}
+            src="https://res.cloudinary.com/gohdctov/image/upload/v1787242046/kaivu/menu/burger-classic.jpg"
             alt="Kaivu Logo"
             className="h-12 w-12 rounded-2xl object-cover border border-accent/30"
           />

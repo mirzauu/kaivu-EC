@@ -1,6 +1,8 @@
-import kaivuMacBurger from "@/assets/kaivu-mac-burger.jpg";
-import kaivuCluckBurger from "@/assets/kaivu-cluck-burger.jpg";
-import kaivuLoadedBowl from "@/assets/kaivu-loaded-bowl.jpg";
+import assets from "./cloudinary-assets.json";
+
+const kaivuMacBurger = assets.menuImages["kaivu-mac-burger.jpg"];
+const kaivuCluckBurger = assets.menuImages["kaivu-cluck-burger.jpg"];
+const kaivuLoadedBowl = assets.menuImages["kaivu-loaded-bowl.jpg"];
 
 export type MenuItem = {
   id: string;
@@ -9,10 +11,14 @@ export type MenuItem = {
   description?: string;
   price: number;
   image: any;
-  category: "Burgers" | "Sides" | "Drinks" | "Combos";
+  imageUrl?: string;
+  videoUrl?: string;
+  category: "Burgers" | "Burrito" | "Sides" | "Drinks" | "Combos";
   tag?: string;
   badge?: string;
   rating: number;
+  isComingSoon?: boolean;
+  isFeatured?: boolean;
 };
 
 export const menu: MenuItem[] = [
@@ -29,6 +35,11 @@ export const menu: MenuItem[] = [
   { id: "nashville-loaded", name: "Nashville Loaded", desc: "Nashville-style loaded dish", price: 230, image: kaivuLoadedBowl, category: "Sides", tag: "Spicy", rating: 4.7 },
   { id: "beef-loaded", name: "Beef Loaded", desc: "Beef loaded dish", price: 240, image: kaivuLoadedBowl, category: "Sides", rating: 4.8 },
   { id: "mac-and-cheese", name: "Mac & Cheese", desc: "Creamy mac & cheese", price: 215, image: kaivuLoadedBowl, category: "Sides", rating: 4.6 },
+  
+  // COMBOS (Party Packs for 4, 6, 8 People)
+  { id: "squad-pack-feeds-4", name: "Squad Party Pack (Feeds 4)", desc: "4 Smash Burgers + 2 Loaded Bowls + 4 Cold Beverages. Perfect for 4 people!", price: 899, image: kaivuMacBurger, category: "Combos", tag: "Party Pack", rating: 4.9 },
+  { id: "mega-pack-feeds-6", name: "Mega Party Pack (Feeds 6)", desc: "6 Smash Burgers + 3 Hot Bird Tenders (6pc) + 6 Cold Beverages + Large Fries. Feeds 6 people!", price: 1299, image: kaivuCluckBurger, category: "Combos", tag: "Best Value", rating: 5.0 },
+  { id: "ultimate-feast-feeds-8", name: "Ultimate Feast Pack (Feeds 8)", desc: "8 Smash Burgers + 4 Loaded Bowls + 2 Tenders Boxes + 8 Cold Beverages. Grand feast for 8 people!", price: 1699, image: kaivuLoadedBowl, category: "Combos", tag: "Grand Feast", rating: 5.0 },
 ];
 
-export const categories = ["All", "Burgers", "Sides", "Drinks", "Combos"] as const;
+export const categories = ["All", "Burgers", "Burrito", "Sides", "Drinks", "Combos"] as const;

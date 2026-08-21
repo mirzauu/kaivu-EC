@@ -43,11 +43,49 @@ export async function placeOrder(params: {
       );
     }
 
-    // 2. Calculate totals
-    const subtotal = cartItems.reduce(
+    // Check if this is the user's first order
+    const priorOrderCount = await tx.order.count({
+      where: { userId, status: { not: "CANCELLED" } },
+    });
+    const isFirstOrder = priorOrderCount === 0;
+
+    // 2. Calculate totals with BOGO discount (First order only & Burgers category only)
+    const rawSubtotal = cartItems.reduce(
       (sum, ci) => sum + Number(ci.menuItem.price) * ci.quantity,
       0
     );
+
+    let bogoDiscount = 0;
+    if (isFirstOrder) {
+      const burgerPrices: number[] = [];
+      cartItems.forEach((ci) => {
+        const name = ci.menuItem.name?.toLowerCase() || "";
+        const category = (ci.menuItem as any).category?.toLowerCase() || "";
+        const isBurger =
+          category === "burgers" ||
+          category === "loaded" ||
+          name.includes("burger") ||
+          name.includes("smash") ||
+          name.includes("cluck") ||
+          name.includes("shroom") ||
+          name.includes("rooster") ||
+          name.includes("loaded");
+
+        if (isBurger) {
+          const price = Number(ci.menuItem.price);
+          for (let k = 0; k < ci.quantity; k++) {
+            burgerPrices.push(price);
+          }
+        }
+      });
+      burgerPrices.sort((a, b) => b - a);
+
+      for (let i = 0; i < burgerPrices.length - 1; i += 2) {
+        bogoDiscount += burgerPrices[i + 1];
+      }
+    }
+
+    const subtotal = rawSubtotal - bogoDiscount;
 
     // Get dynamic delivery fee and threshold from settings
     const deliveryFeeAmount = await getSettingNumber("delivery_fee", 29);

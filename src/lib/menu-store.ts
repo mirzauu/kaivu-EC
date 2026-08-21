@@ -98,9 +98,12 @@ export const menuStore = {
       const data = await res.json();
       if (data.success) {
         await loadMenu();
+        return data.data;
       }
+      return null;
     } catch (e) {
       console.error("Failed to update menu item", e);
+      return null;
     }
   },
 

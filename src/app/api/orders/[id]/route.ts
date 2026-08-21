@@ -140,7 +140,7 @@ export const PATCH = withAdmin(
               const payload = JSON.stringify({
                 title: "Order on the way! 🛵",
                 body: `Your order ${order.orderNumber} is dispatched. Keep your phone handy!`,
-                icon: "/images/menu/burger-classic.jpg",
+                icon: "https://res.cloudinary.com/gohdctov/image/upload/v1787242046/kaivu/menu/burger-classic.jpg",
                 url: "/orders",
               });
 

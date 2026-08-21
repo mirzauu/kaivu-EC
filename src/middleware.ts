@@ -20,7 +20,9 @@ export async function middleware(req: NextRequest) {
   // Check if route needs protection
   const isProtected = protectedRoutes.some((r) => pathname.startsWith(r));
   const isAdminPage = adminRoutes.some((r) => pathname.startsWith(r));
-  const isAdminApi = adminApiRoutes.some((r) => pathname.startsWith(r));
+  const isAdminApi =
+    adminApiRoutes.some((r) => pathname.startsWith(r)) &&
+    !pathname.startsWith("/api/admin/whatsapp");
 
   if (!isProtected && !isAdminPage && !isAdminApi) {
     return NextResponse.next();

@@ -30,7 +30,11 @@ export async function GET(
         price: Number(item.price),
         rating: Number(item.rating),
         image: item.imageUrl,
+        imageUrl: item.imageUrl,
+        videoUrl: item.videoUrl,
         desc: item.description,
+        isComingSoon: Boolean((item as any).isComingSoon) || item.tag?.toLowerCase() === "coming soon",
+        isFeatured: Boolean((item as any).isFeatured),
       })
     );
   } catch (error) {
@@ -57,14 +61,17 @@ export const PUT = withAdmin(async (req: AuthenticatedRequest, context) => {
       where: { id },
       data: {
         name: body.name ?? item.name,
-        description: body.description ?? item.description,
-        price: body.price ?? item.price,
-        imageUrl: body.imageUrl ?? item.imageUrl,
-        category: body.category ?? item.category,
+        description: body.description ?? (body.desc ?? item.description),
+        price: body.price !== undefined ? body.price : item.price,
+        imageUrl: body.imageUrl !== undefined ? body.imageUrl : (body.image !== undefined ? body.image : item.imageUrl),
+        videoUrl: body.videoUrl !== undefined ? body.videoUrl : item.videoUrl,
+        category: body.category ? body.category.toUpperCase() : item.category,
         tag: body.tag !== undefined ? body.tag : item.tag,
         rating: body.rating ?? item.rating,
-        isAvailable: body.isAvailable ?? item.isAvailable,
-        sortOrder: body.sortOrder ?? item.sortOrder,
+        isAvailable: body.isAvailable !== undefined ? body.isAvailable : item.isAvailable,
+        isComingSoon: body.isComingSoon !== undefined ? Boolean(body.isComingSoon) : (item as any).isComingSoon,
+        isFeatured: body.isFeatured !== undefined ? Boolean(body.isFeatured) : (item as any).isFeatured,
+        sortOrder: body.sortOrder !== undefined ? body.sortOrder : item.sortOrder,
       },
     });
 
@@ -73,6 +80,12 @@ export const PUT = withAdmin(async (req: AuthenticatedRequest, context) => {
         ...updated,
         price: Number(updated.price),
         rating: Number(updated.rating),
+        image: updated.imageUrl,
+        imageUrl: updated.imageUrl,
+        videoUrl: updated.videoUrl,
+        desc: updated.description,
+        isComingSoon: Boolean((updated as any).isComingSoon) || updated.tag?.toLowerCase() === "coming soon",
+        isFeatured: Boolean((updated as any).isFeatured),
       })
     );
   } catch (error) {

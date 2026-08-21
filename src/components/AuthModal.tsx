@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { auth, useAuth } from "@/lib/auth-store";
-import { AlertCircle, Loader2, MessageSquare } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 
 export function AuthModal() {
   const isOpen = useAuth((s) => s.isAuthModalOpen);
@@ -103,10 +103,12 @@ export function AuthModal() {
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="w-[90%] max-w-md rounded-[32px] p-6 sm:rounded-[32px]">
         <DialogHeader>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-emerald-500/10 text-emerald-600 px-2.5 py-1 rounded-full border border-emerald-500/20">
-              <MessageSquare className="h-3 w-3" /> WhatsApp Verification
-            </span>
+          <div className="flex items-center mb-2">
+            <img
+              src="/images/brand/kaivu-logo-black.png"
+              alt="kaivu."
+              className="h-9 w-auto object-contain rounded-lg"
+            />
           </div>
           <DialogTitle className="text-2xl font-bold">
             {step === "phone" ? "Welcome to Kaivu" : "Verify WhatsApp OTP"}
@@ -164,13 +166,13 @@ export function AuthModal() {
             <>
               <Input
                 type="text"
-                placeholder="Enter 4-digit OTP"
+                placeholder="enter your otp"
                 value={otp}
                 onChange={(e) => {
                   const val = e.target.value.replace(/\D/g, "");
                   setOtp(val);
                 }}
-                className="h-14 rounded-2xl px-4 text-center text-2xl tracking-[0.3em] font-black"
+                className="h-14 rounded-2xl px-4 text-center text-xl placeholder:text-sm placeholder:tracking-normal font-bold"
                 maxLength={4}
                 autoFocus
                 disabled={loading}

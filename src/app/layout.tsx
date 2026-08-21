@@ -25,6 +25,14 @@ export const metadata: Metadata = {
   title: "Kaivu — Smashed Burgers, Delivered",
   description: "Deliciously Yours Mobile is a food e-commerce application for mobile devices.",
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/images/brand/kaivu-logo-maroon.jpg", type: "image/jpeg" },
+    ],
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

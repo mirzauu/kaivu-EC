@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { generateReferralCode, generateOrderNumber, apiError, apiSuccess } from "@/lib/api-utils";
 import { withAdmin, type AuthenticatedRequest } from "@/lib/auth/middleware";
 import { Prisma } from "@prisma/client";
+import { notifyNewOrderToWhatsAppGroup } from "@/lib/whatsapp/order-notifier";
 
 /**
  * POST /api/admin/simulate-order
@@ -142,6 +143,29 @@ export const POST = withAdmin(async (_req: AuthenticatedRequest) => {
         sessionId: `sim_${Date.now()}`,
       },
     });
+
+    // Dispatch WhatsApp group notification
+    (async () => {
+      try {
+        await notifyNewOrderToWhatsAppGroup({
+          orderNumber,
+          total,
+          paymentMethod: "WALLET",
+          deliveryAddress: "Simulated Delivery Street, Bangalore",
+          items: selectedItems.map((si) => ({
+            itemName: si.item.name,
+            quantity: si.quantity,
+            itemPrice: Number(si.item.price),
+          })),
+          customer: {
+            name: randomName,
+            phone,
+          },
+        });
+      } catch (err) {
+        console.error("Simulated order WhatsApp alert failed:", err);
+      }
+    })();
 
     return NextResponse.json(
       apiSuccess(

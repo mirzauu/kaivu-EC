@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { auth } from "./auth-store";
 import { toast } from "sonner";
+import assets from "./cloudinary-assets.json";
 
 export type Order = {
   id: string;
@@ -144,7 +145,10 @@ async function loadOrders() {
         
         // Find first item's image URL or use fallback
         const firstItem = order.items?.[0];
-        const imageUrl = firstItem?.menuItem?.imageUrl || "/images/menu/burger-classic.jpg";
+        const imageUrl =
+          firstItem?.menuItem?.imageUrl ||
+          assets.menuImages["burger-classic.jpg"] ||
+          "https://res.cloudinary.com/gohdctov/image/upload/v1787242046/kaivu/menu/burger-classic.jpg";
         
         return {
           id: order.orderNumber, // Use Order number as ID for display (KV-XXXX)

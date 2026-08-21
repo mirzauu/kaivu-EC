@@ -44,7 +44,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
     if (!isHomePage) return;
     const timer = setTimeout(() => {
       setIsInitialLoading(false);
-    }, 850);
+    }, 1100);
     return () => clearTimeout(timer);
   }, [isHomePage]);
 

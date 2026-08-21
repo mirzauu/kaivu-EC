@@ -124,3 +124,96 @@ export function invalidateSettingsCache(): void {
   cachedSettings = null;
 }
 
+export type StoreStatus = {
+  isOpen: boolean;
+  closingTimerEndsAt: string | null;
+  closedMessage: string;
+};
+
+export const DEFAULT_STORE_STATUS: StoreStatus = {
+  isOpen: true,
+  closingTimerEndsAt: null,
+  closedMessage: "We are currently closed for orders. Check back soon!",
+};
+
+export async function setStoreSetting(
+  key: string,
+  value: string,
+  label: string,
+  group = "operations"
+): Promise<void> {
+  try {
+    await db.systemSetting.upsert({
+      where: { key },
+      update: { value },
+      create: {
+        key,
+        value,
+        type: "string",
+        label,
+        group,
+      },
+    });
+  } catch (err) {
+    console.error(`Error saving setting ${key}:`, err);
+  }
+  cachedSettings = null;
+}
+
+/**
+ * Get current store operational status and closing countdown timer.
+ */
+export async function getStoreStatus(): Promise<StoreStatus> {
+  try {
+    const settings = await getSettings();
+    const rawIsOpen = settings["store_is_open"];
+    const rawTimer = settings["store_closing_timer_ends_at"];
+    const closingTimerEndsAt = rawTimer && rawTimer.trim().length > 0 ? rawTimer : null;
+    const closedMessage = settings["store_closed_message"] || DEFAULT_STORE_STATUS.closedMessage;
+
+    let isOpen = rawIsOpen === undefined ? true : rawIsOpen === "true";
+
+    // Auto-close if timer has passed
+    if (closingTimerEndsAt) {
+      const endsAtMs = new Date(closingTimerEndsAt).getTime();
+      if (!isNaN(endsAtMs) && Date.now() >= endsAtMs) {
+        isOpen = false;
+      }
+    }
+
+    return {
+      isOpen,
+      closingTimerEndsAt,
+      closedMessage,
+    };
+  } catch (error) {
+    console.error("Error fetching store status:", error);
+    return DEFAULT_STORE_STATUS;
+  }
+}
+
+/**
+ * Update store open/close state, closing timer, and announcement message.
+ */
+export async function updateStoreStatus(status: Partial<StoreStatus>): Promise<StoreStatus> {
+  if (status.isOpen !== undefined) {
+    await setStoreSetting("store_is_open", status.isOpen ? "true" : "false", "Store Open Status");
+  }
+  if (status.closingTimerEndsAt !== undefined) {
+    await setStoreSetting(
+      "store_closing_timer_ends_at",
+      status.closingTimerEndsAt || "",
+      "Store Closing Timer Ends At"
+    );
+  }
+  if (status.closedMessage !== undefined) {
+    await setStoreSetting(
+      "store_closed_message",
+      status.closedMessage,
+      "Store Closed Announcement Message"
+    );
+  }
+  cachedSettings = null;
+  return getStoreStatus();
+}
+

@@ -1,6 +1,6 @@
 /**
- * WhatsApp Cloud API Client
- * Sends messages and authentication OTPs using Meta's Graph API.
+ * Baileys Open-Source WhatsApp Client Integration
+ * Communicates with the background Baileys WhatsApp microservice
  */
 
 export interface WhatsAppSendResult {
@@ -9,13 +9,21 @@ export interface WhatsAppSendResult {
   error?: string;
 }
 
+export interface WhatsAppStatusResult {
+  success: boolean;
+  status: 'connected' | 'qr_ready' | 'connecting' | 'disconnected';
+  user?: { id?: string; name?: string; phone?: string } | null;
+  lastConnectedAt?: string | null;
+  hasQr?: boolean;
+  error?: string;
+}
+
 /**
- * Format phone number to WhatsApp international standard digits-only format
- * e.g. "+91 98765 43210" -> "919876543210"
+ * Format phone number to digits only with country code (e.g. +91 85920 33444 -> "918592033444")
  */
 export function formatWhatsAppRecipient(phone: string): string {
   const digits = phone.replace(/\D/g, "");
-  // If user provided a 10-digit number without country code, default to India (+91)
+  // If 10 digits provided, default to India (+91)
   if (digits.length === 10) {
     return `91${digits}`;
   }
@@ -23,145 +31,184 @@ export function formatWhatsAppRecipient(phone: string): string {
 }
 
 /**
- * Sends a plain text WhatsApp message
+ * Base URL for the Baileys WhatsApp Microservice
+ */
+function getBaileysBaseUrl(): string {
+  return process.env.BAILEYS_SERVICE_URL || "http://localhost:3001";
+}
+
+/**
+ * Sends a WhatsApp text message via local Baileys service
+ * Endpoint: POST http://localhost:3001/send-message
  */
 export async function sendWhatsAppTextMessage(
   toPhone: string,
   messageText: string
 ): Promise<WhatsAppSendResult> {
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const accessToken = process.env.WHATSAPP_API_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
   const recipient = formatWhatsAppRecipient(toPhone);
-
-  if (!phoneNumberId || !accessToken) {
-    console.warn(
-      `[WhatsApp] WHATSAPP_PHONE_NUMBER_ID or WHATSAPP_API_TOKEN is missing. (Recipient: ${recipient}, Message: "${messageText}")`
-    );
-    return {
-      success: true,
-      error: "WhatsApp credentials not configured in .env",
-    };
-  }
-
-  const endpoint = `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`;
-
-  const payload = {
-    messaging_product: "whatsapp",
-    recipient_type: "individual",
-    to: recipient,
-    type: "text",
-    text: {
-      preview_url: false,
-      body: messageText,
-    },
-  };
+  const baseUrl = getBaileysBaseUrl();
+  const endpoint = `${baseUrl}/send-message`;
 
   try {
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        to: recipient,
+        message: messageText,
+      }),
+      // Set a short timeout so API routes don't hang if service is offline
+      signal: AbortSignal.timeout(10000),
     });
 
     const data = await response.json();
 
-    if (!response.ok) {
-      console.error("[WhatsApp] API error response:", data);
+    if (!response.ok || !data.success) {
+      console.error("[Baileys Client] Failed sending WhatsApp message:", data);
       return {
         success: false,
-        error: data.error?.message || "Failed to send WhatsApp message",
+        error: data.error || data.message || "Failed to send message via Baileys WhatsApp service",
       };
     }
 
-    const messageId = data.messages?.[0]?.id;
-    console.log(`[WhatsApp] Message successfully sent to ${recipient} (ID: ${messageId})`);
+    console.log(`[Baileys Client] ✅ Message sent to ${recipient} (ID: ${data.messageId || 'OK'})`);
 
     return {
       success: true,
-      messageId,
+      messageId: data.messageId,
     };
   } catch (error) {
-    console.error("[WhatsApp] Request failed:", error);
+    console.error("[Baileys Client] Service unreachable or request failed:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Network error calling WhatsApp API",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Baileys WhatsApp service is offline or unreachable on " + baseUrl,
     };
   }
 }
 
 /**
- * Sends an OTP verification code to a user via WhatsApp.
- * Supports Meta Authentication Template or Direct Text message.
+ * Sends an OTP verification code via WhatsApp
  */
 export async function sendWhatsAppOtp(
   toPhone: string,
   code: string
 ): Promise<WhatsAppSendResult> {
-  const templateName = process.env.WHATSAPP_OTP_TEMPLATE;
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const accessToken = process.env.WHATSAPP_API_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
-  const recipient = formatWhatsAppRecipient(toPhone);
-
-  // If a template is configured in Meta WhatsApp Manager (recommended for production authentication)
-  if (templateName && phoneNumberId && accessToken) {
-    const endpoint = `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`;
-    const payload = {
-      messaging_product: "whatsapp",
-      recipient_type: "individual",
-      to: recipient,
-      type: "template",
-      template: {
-        name: templateName,
-        language: { code: process.env.WHATSAPP_TEMPLATE_LANG || "en" },
-        components: [
-          {
-            type: "body",
-            parameters: [
-              {
-                type: "text",
-                text: code,
-              },
-            ],
-          },
-          {
-            type: "button",
-            sub_type: "url",
-            index: "0",
-            parameters: [
-              {
-                type: "text",
-                text: code,
-              },
-            ],
-          },
-        ],
-      },
-    };
-
-    try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        return { success: true, messageId: data.messages?.[0]?.id };
-      }
-      console.warn("[WhatsApp] Template send failed, falling back to text message:", data.error?.message);
-    } catch (err) {
-      console.warn("[WhatsApp] Template request error, falling back to text message:", err);
-    }
-  }
-
-  // Standard message body
   const messageBody = `*${code}* is your verification code for Kaivu.\n\nValid for 5 minutes. Please do not share this code with anyone.`;
   return await sendWhatsAppTextMessage(toPhone, messageBody);
 }
+
+/**
+ * Sends a WhatsApp message directly to a WhatsApp Group (e.g. "120363421953306400@g.us")
+ */
+export async function sendWhatsAppGroupMessage(
+  groupId: string,
+  messageText: string
+): Promise<WhatsAppSendResult> {
+  const baseUrl = getBaileysBaseUrl();
+  const endpoint = `${baseUrl}/send-message`;
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        to: groupId,
+        message: messageText,
+      }),
+      signal: AbortSignal.timeout(10000),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      return {
+        success: false,
+        error: data.error || "Failed to send message to group",
+      };
+    }
+
+    return {
+      success: true,
+      messageId: data.messageId,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to connect to WhatsApp service",
+    };
+  }
+}
+
+export interface WhatsAppGroupItem {
+  id: string;
+  subject: string;
+  owner?: string;
+  creation?: number;
+  participantsCount: number;
+}
+
+/**
+ * Fetch all WhatsApp groups the connected account belongs to
+ */
+export async function getWhatsAppGroups(): Promise<{ success: boolean; groups: WhatsAppGroupItem[]; error?: string }> {
+  const baseUrl = getBaileysBaseUrl();
+  try {
+    const res = await fetch(`${baseUrl}/groups`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) {
+      return { success: false, groups: [], error: `HTTP ${res.status}` };
+    }
+    const json = await res.json();
+    return {
+      success: true,
+      groups: json.groups || [],
+    };
+  } catch (err) {
+    return {
+      success: false,
+      groups: [],
+      error: err instanceof Error ? err.message : "Service unreachable",
+    };
+  }
+}
+
+/**
+ * Query current connection status of the Baileys WhatsApp service
+ */
+export async function getWhatsAppServiceStatus(): Promise<WhatsAppStatusResult> {
+  const baseUrl = getBaileysBaseUrl();
+  try {
+    const res = await fetch(`${baseUrl}/status`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) {
+      return { success: false, status: "disconnected", error: `HTTP ${res.status}` };
+    }
+    const json = await res.json();
+    return {
+      success: true,
+      status: json.data?.status || "disconnected",
+      user: json.data?.user,
+      lastConnectedAt: json.data?.lastConnectedAt,
+      hasQr: json.data?.hasQr,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      status: "disconnected",
+      error: err instanceof Error ? err.message : "Baileys service unreachable",
+    };
+  }
+}
+
+

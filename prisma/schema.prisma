@@ -109,10 +109,13 @@ model MenuItem {
   description String
   price       Decimal      @db.Decimal(10, 2)
   imageUrl    String?      @map("image_url")
+  videoUrl    String?      @map("video_url")
   category    MenuCategory
   tag         String?
   rating      Decimal      @default(5.0) @db.Decimal(2, 1)
   isAvailable Boolean      @default(true) @map("is_available")
+  isComingSoon Boolean     @default(false) @map("is_coming_soon")
+  isFeatured  Boolean      @default(false) @map("is_featured")
   sortOrder   Int          @default(0) @map("sort_order")
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
@@ -127,6 +130,7 @@ model MenuItem {
 
 enum MenuCategory {
   BURGERS
+  BURRITO
   SIDES
   DRINKS
   DESSERTS

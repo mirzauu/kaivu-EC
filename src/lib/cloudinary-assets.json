@@ -1,0 +1,25 @@
+{
+  "cloudName": "gohdctov",
+  "uploadedAt": "2026-08-20T16:07:23.100Z",
+  "menuImages": {
+    "burger-bacon.jpg": "https://res.cloudinary.com/gohdctov/image/upload/v1787242045/kaivu/menu/burger-bacon.jpg",
+    "burger-classic.jpg": "https://res.cloudinary.com/gohdctov/image/upload/v1787242046/kaivu/menu/burger-classic.jpg",
+    "burger-spicy.jpg": "https://res.cloudinary.com/gohdctov/image/upload/v1787242047/kaivu/menu/burger-spicy.jpg",
+    "fries.jpg": "https://res.cloudinary.com/gohdctov/image/upload/v1787242048/kaivu/menu/fries.jpg",
+    "hero-burger.jpg": "https://res.cloudinary.com/gohdctov/image/upload/v1787242049/kaivu/menu/hero-burger.jpg",
+    "kaivu-cluck-burger.jpg": "https://res.cloudinary.com/gohdctov/image/upload/v1787242050/kaivu/menu/kaivu-cluck-burger.jpg",
+    "kaivu-loaded-bowl.jpg": "https://res.cloudinary.com/gohdctov/image/upload/v1787242053/kaivu/menu/kaivu-loaded-bowl.jpg",
+    "kaivu-mac-burger.jpg": "https://res.cloudinary.com/gohdctov/image/upload/v1787242054/kaivu/menu/kaivu-mac-burger.jpg",
+    "shake.jpg": "https://res.cloudinary.com/gohdctov/image/upload/v1787242055/kaivu/menu/shake.jpg"
+  },
+  "videos": {
+    "animation-transparent-clean.webm": "https://res.cloudinary.com/gohdctov/video/upload/v1787242062/kaivu/videos/animation-transparent-clean.webm",
+    "A_professional_second_e_comm (1)_gwr_video_mvp.mp4": "https://res.cloudinary.com/gohdctov/video/upload/v1787242141/kaivu/videos/A_professional_second_e_comm__1__gwr_video_mvp.mp4",
+    "A_professional_second_e_comm (2)_gwr_video_mvp.mp4": "https://res.cloudinary.com/gohdctov/video/upload/v1787242160/kaivu/videos/A_professional_second_e_comm__2__gwr_video_mvp.mp4",
+    "A_professional_second_e_comm (4)_gwr_video_mvp.mp4": "https://res.cloudinary.com/gohdctov/video/upload/v1787242240/kaivu/videos/A_professional_second_e_comm__4__gwr_video_mvp.mp4",
+    "Character_raises_the_spatula_a.mp4": "https://res.cloudinary.com/gohdctov/video/upload/v1787242254/kaivu/videos/Character_raises_the_spatula_a.mp4",
+    "confirm.mp4": "https://res.cloudinary.com/gohdctov/video/upload/v1787242267/kaivu/videos/confirm.mp4",
+    "Recording 2026-07-22 211551.mp4": "https://res.cloudinary.com/gohdctov/video/upload/v1787242271/kaivu/videos/Recording_2026-07-22_211551.mp4",
+    "remove_the_baclground_of_this.mp4": "https://res.cloudinary.com/gohdctov/video/upload/v1787242280/kaivu/videos/remove_the_baclground_of_this.mp4"
+  }
+}

@@ -12,7 +12,7 @@ export function KaivuLoadingScreen({ fullScreen = true }: KaivuLoadingScreenProp
     <div
       className={`${
         fullScreen ? "fixed inset-0 z-[9999]" : "w-full h-full min-h-[300px]"
-      } flex items-center justify-center bg-[#83182C] px-6 text-center select-none overflow-hidden`}
+      } flex items-center justify-center bg-[#501B1D] select-none overflow-hidden`}
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.92 }}

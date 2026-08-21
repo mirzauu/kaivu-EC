@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { apiError, apiSuccess } from "@/lib/api-utils";
 import { withAuth, type AuthenticatedRequest } from "@/lib/auth/middleware";
 import { placeOrder } from "@/lib/services/order-service";
+import { notifyNewOrderToWhatsAppGroup } from "@/lib/whatsapp/order-notifier";
 
 /**
  * GET /api/orders
@@ -97,6 +98,30 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
       paymentMethod,
       redeemCoins: redeemCoins || 0,
     });
+
+    // Dispatch WhatsApp group notification asynchronously without blocking response
+    (async () => {
+      try {
+        const user = await db.user.findUnique({
+          where: { id: req.user.userId },
+          select: { name: true, phone: true },
+        });
+
+        await notifyNewOrderToWhatsAppGroup({
+          orderNumber: result.order.orderNumber,
+          total: result.order.total,
+          paymentMethod: result.order.paymentMethod,
+          deliveryAddress: result.order.deliveryAddress,
+          items: result.order.items,
+          customer: {
+            name: user?.name,
+            phone: user?.phone,
+          },
+        });
+      } catch (err) {
+        console.error("Failed to send order WhatsApp notification:", err);
+      }
+    })();
 
     return NextResponse.json(
       apiSuccess(result, "Order placed successfully"),

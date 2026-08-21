@@ -10,6 +10,7 @@ import {
   apiSuccess,
 } from "@/lib/api-utils";
 import { getSettingNumber } from "@/lib/services/settings-service";
+import { sendWhatsAppTextMessage } from "@/lib/whatsapp/client";
 
 /**
  * POST /api/auth/verify-otp
@@ -106,6 +107,18 @@ export async function POST(req: NextRequest) {
             status: "PENDING", // becomes COMPLETED when first order is placed
           },
         });
+      }
+
+      // Send WhatsApp notification to admin on new customer login / registration
+      try {
+        const adminAlertNumber = "9995939334";
+        const alertMessage = `🎉 *New Customer Alert!*\n\nA new customer just joined & logged in to Kaivu:\n📱 *Phone:* +91 ${normalized}\n🎁 *Referral Code:* ${userReferralCode}\n🪙 *Bonus Coins:* ${signupBonus}\n⏰ *Time:* ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}`;
+        
+        sendWhatsAppTextMessage(adminAlertNumber, alertMessage).catch((err) => {
+          console.error("Failed to send new customer WhatsApp alert:", err);
+        });
+      } catch (alertErr) {
+        console.error("Error creating new customer WhatsApp notification:", alertErr);
       }
     }
 

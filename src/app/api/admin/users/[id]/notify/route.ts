@@ -64,7 +64,7 @@ export const POST = withAdmin(
       const payload = JSON.stringify({
         title,
         body,
-        icon: "/images/menu/burger-classic.jpg",
+        icon: "https://res.cloudinary.com/gohdctov/image/upload/v1787242046/kaivu/menu/burger-classic.jpg",
         url: "/orders", // default destination
       });
 

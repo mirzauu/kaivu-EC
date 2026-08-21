@@ -71,6 +71,20 @@ export const POST = withAuth(async (req) => {
       },
     });
 
+    // If customer doesn't have a name set yet, save this address name as the customer's name
+    if (name && typeof name === "string" && name.trim().length > 0) {
+      const currentUser = await db.user.findUnique({
+        where: { id: userId },
+        select: { name: true },
+      });
+      if (!currentUser?.name || currentUser.name.trim() === "") {
+        await db.user.update({
+          where: { id: userId },
+          data: { name: name.trim() },
+        });
+      }
+    }
+
     return NextResponse.json(apiSuccess(newAddress));
   } catch (error) {
     console.error("POST addresses error:", error);

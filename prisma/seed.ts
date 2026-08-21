@@ -2,6 +2,7 @@ import { PrismaClient, MenuCategory, UserRole } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import "dotenv/config";
+import assets from "../src/lib/cloudinary-assets.json";
 
 const connectionString = process.env.DATABASE_URL;
 const pool = new Pool({ connectionString });
@@ -135,13 +136,17 @@ async function main() {
   console.log(`  ✅ ${settings.length} system settings created`);
 
   // ─── MENU ITEMS ────────────────────────────────────────────────────────────
+  const imgCluck = assets.menuImages["kaivu-cluck-burger.jpg"];
+  const imgMac = assets.menuImages["kaivu-mac-burger.jpg"];
+  const imgLoaded = assets.menuImages["kaivu-loaded-bowl.jpg"];
+
   const menuItems = [
     {
       slug: "og-smash-beef",
       name: "OG Smash (Beef)",
       description: "Classic beef smash burger",
       price: 210,
-      imageUrl: "/images/menu/kaivu-cluck-burger.jpg",
+      imageUrl: imgCluck,
       category: MenuCategory.BURGERS,
       tag: "Bestseller",
       rating: 4.8,
@@ -152,7 +157,7 @@ async function main() {
       name: "Classic Smash Burger (Beef)",
       description: "Classic-style beef smash burger",
       price: 320,
-      imageUrl: "/images/menu/kaivu-mac-burger.jpg",
+      imageUrl: imgMac,
       category: MenuCategory.BURGERS,
       rating: 4.7,
       sortOrder: 2,
@@ -162,7 +167,7 @@ async function main() {
       name: "Jalapeño Jam (Beef)",
       description: "Beef smash burger with jalapeño jam",
       price: 220,
-      imageUrl: "/images/menu/kaivu-cluck-burger.jpg",
+      imageUrl: imgCluck,
       category: MenuCategory.BURGERS,
       tag: "Spicy",
       rating: 4.9,
@@ -173,7 +178,7 @@ async function main() {
       name: "The Dirty Shroom (Beef)",
       description: "Beef burger featuring mushrooms",
       price: 340,
-      imageUrl: "/images/menu/kaivu-cluck-burger.jpg",
+      imageUrl: imgCluck,
       category: MenuCategory.BURGERS,
       rating: 4.8,
       sortOrder: 4,
@@ -183,7 +188,7 @@ async function main() {
       name: "Nashville Cluck (Chicken)",
       description: "Nashville-style chicken burger",
       price: 210,
-      imageUrl: "/images/menu/kaivu-cluck-burger.jpg",
+      imageUrl: imgCluck,
       category: MenuCategory.BURGERS,
       tag: "Spicy",
       rating: 4.7,
@@ -194,7 +199,7 @@ async function main() {
       name: "Mac & Rooster (Chicken)",
       description: "Chicken burger with mac & cheese",
       price: 240,
-      imageUrl: "/images/menu/kaivu-mac-burger.jpg",
+      imageUrl: imgMac,
       category: MenuCategory.BURGERS,
       rating: 4.8,
       sortOrder: 6,
@@ -204,7 +209,7 @@ async function main() {
       name: "Hot Bird Tenders — Box of 4",
       description: "4 pieces of hot chicken tenders",
       price: 270,
-      imageUrl: "/images/menu/kaivu-cluck-burger.jpg",
+      imageUrl: imgCluck,
       category: MenuCategory.SIDES,
       tag: "Spicy",
       rating: 4.8,
@@ -215,7 +220,7 @@ async function main() {
       name: "Hot Bird Tenders — Box of 6",
       description: "6 pieces of hot chicken tenders",
       price: 380,
-      imageUrl: "/images/menu/kaivu-cluck-burger.jpg",
+      imageUrl: imgCluck,
       category: MenuCategory.SIDES,
       tag: "Spicy",
       rating: 4.9,
@@ -226,7 +231,7 @@ async function main() {
       name: "Honey Hot Bird Tenders — 4",
       description: "4 pieces of chicken tenders with honey",
       price: 390,
-      imageUrl: "/images/menu/kaivu-loaded-bowl.jpg",
+      imageUrl: imgLoaded,
       category: MenuCategory.SIDES,
       rating: 4.9,
       sortOrder: 9,
@@ -236,7 +241,7 @@ async function main() {
       name: "Honey Hot Bird Tenders — 6",
       description: "6 pieces of chicken tenders with honey",
       price: 520,
-      imageUrl: "/images/menu/kaivu-loaded-bowl.jpg",
+      imageUrl: imgLoaded,
       category: MenuCategory.SIDES,
       tag: "Bestseller",
       rating: 5.0,
@@ -247,7 +252,7 @@ async function main() {
       name: "Nashville Loaded",
       description: "Nashville-style loaded dish",
       price: 230,
-      imageUrl: "/images/menu/kaivu-loaded-bowl.jpg",
+      imageUrl: imgLoaded,
       category: MenuCategory.SIDES,
       tag: "Spicy",
       rating: 4.7,
@@ -258,7 +263,7 @@ async function main() {
       name: "Beef Loaded",
       description: "Beef loaded dish",
       price: 240,
-      imageUrl: "/images/menu/kaivu-loaded-bowl.jpg",
+      imageUrl: imgLoaded,
       category: MenuCategory.SIDES,
       rating: 4.8,
       sortOrder: 12,
@@ -268,10 +273,43 @@ async function main() {
       name: "Mac & Cheese",
       description: "Creamy mac & cheese",
       price: 215,
-      imageUrl: "/images/menu/kaivu-loaded-bowl.jpg",
+      imageUrl: imgLoaded,
       category: MenuCategory.SIDES,
       rating: 4.6,
       sortOrder: 13,
+    },
+    {
+      slug: "squad-pack-feeds-4",
+      name: "Squad Party Pack (Feeds 4)",
+      description: "4 Smash Burgers + 2 Loaded Bowls + 4 Cold Beverages. Perfect for 4 people!",
+      price: 899,
+      imageUrl: imgMac,
+      category: MenuCategory.COMBOS,
+      tag: "Party Pack",
+      rating: 4.9,
+      sortOrder: 14,
+    },
+    {
+      slug: "mega-pack-feeds-6",
+      name: "Mega Party Pack (Feeds 6)",
+      description: "6 Smash Burgers + 3 Hot Bird Tenders (6pc) + 6 Cold Beverages + Large Fries. Feeds 6 people!",
+      price: 1299,
+      imageUrl: imgCluck,
+      category: MenuCategory.COMBOS,
+      tag: "Best Value",
+      rating: 5.0,
+      sortOrder: 15,
+    },
+    {
+      slug: "ultimate-feast-feeds-8",
+      name: "Ultimate Feast Pack (Feeds 8)",
+      description: "8 Smash Burgers + 4 Loaded Bowls + 2 Tenders Boxes + 8 Cold Beverages. Grand feast for 8 people!",
+      price: 1699,
+      imageUrl: imgLoaded,
+      category: MenuCategory.COMBOS,
+      tag: "Grand Feast",
+      rating: 5.0,
+      sortOrder: 16,
     },
   ];
 

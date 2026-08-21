@@ -22,13 +22,20 @@ export async function GET(req: NextRequest) {
       orderBy: { sortOrder: "asc" },
     });
 
-    // Convert Decimal fields to numbers for JSON serialization
+    // Convert Decimal fields to numbers for JSON serialization and normalize category
     const serialized = items.map((item) => ({
       ...item,
       price: Number(item.price),
       rating: Number(item.rating),
       image: item.imageUrl,
+      imageUrl: item.imageUrl,
+      videoUrl: item.videoUrl,
       desc: item.description,
+      isComingSoon: Boolean((item as any).isComingSoon) || item.tag?.toLowerCase() === "coming soon",
+      isFeatured: Boolean((item as any).isFeatured),
+      category: item.category
+        ? item.category.charAt(0).toUpperCase() + item.category.slice(1).toLowerCase()
+        : "Burgers",
     }));
 
     return NextResponse.json(apiSuccess(serialized));

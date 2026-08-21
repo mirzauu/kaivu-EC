@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import {
   LayoutDashboard,
@@ -34,6 +34,18 @@ import {
   BellRing,
   Layers,
   Eye,
+  Store,
+  Timer,
+  Power,
+  Radio,
+  ShieldAlert,
+  Upload,
+  Image as ImageIcon,
+  Video,
+  Loader2,
+  CheckCircle2,
+  Film,
+  Star,
 } from "lucide-react";
 import { FullScreenInstallBanner } from "@/components/banners/FullScreenInstallBanner";
 import { IdleNavBanner } from "@/components/banners/IdleNavBanner";
@@ -174,7 +186,7 @@ function AdminLogin() {
 
 // --- ADMIN CONSOLE COMPONENT ---
 function AdminConsole() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "orders" | "menu" | "users" | "settings" | "activity" | "instagram">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "orders" | "menu" | "users" | "settings" | "activity" | "instagram" | "manage-app">("dashboard");
   const orders = useOrders((s) => s.orders);
   const menuItems = useMenu((s) => s.menu);
 
@@ -194,9 +206,14 @@ function AdminConsole() {
     <div className="flex min-h-screen bg-[oklch(0.97_0.012_75)] font-sans">
       {/* SIDEBAR */}
       <aside className="fixed inset-y-0 left-0 flex w-64 flex-col border-r border-[oklch(0.9_0.015_75)] bg-white">
-        <div className="flex h-20 items-center px-6 border-b border-[oklch(0.9_0.015_75)]">
-          <span className="text-2xl font-display font-extrabold text-[oklch(0.18_0.02_50)] tracking-tight">
-            Kaivu <span className="text-brand">C-Suite</span>
+        <div className="flex h-20 items-center px-6 border-b border-[oklch(0.9_0.015_75)] gap-3">
+          <img
+            src="/images/brand/kaivu-logo-black.png"
+            alt="kaivu."
+            className="h-8 w-auto object-contain rounded-md"
+          />
+          <span className="text-xl font-display font-extrabold text-[oklch(0.18_0.02_50)] tracking-tight">
+            C-Suite
           </span>
         </div>
 
@@ -229,6 +246,17 @@ function AdminConsole() {
                 {orders.filter((o) => o.status === "active").length}
               </span>
             )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab("manage-app")}
+            className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all cursor-pointer ${activeTab === "manage-app"
+                ? "bg-brand text-brand-foreground shadow-lg shadow-brand/15"
+                : "text-[oklch(0.5_0.02_60)] hover:bg-[oklch(0.94_0.018_75)] hover:text-[oklch(0.18_0.02_50)]"
+              }`}
+          >
+            <Store className="h-5 w-5 shrink-0" />
+            <span>Manage App</span>
           </button>
 
           <button
@@ -287,6 +315,19 @@ function AdminConsole() {
             <Activity className="h-5 w-5 shrink-0" />
             <span>User Activity Stream</span>
           </button>
+
+          <a
+            href="/csuite/whatsapp"
+            className="flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all cursor-pointer text-[oklch(0.5_0.02_60)] hover:bg-[oklch(0.94_0.018_75)] hover:text-[oklch(0.18_0.02_50)]"
+          >
+            <div className="flex items-center gap-3">
+              <Smartphone className="h-5 w-5 shrink-0 text-emerald-600" />
+              <span>WhatsApp Device</span>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+              Baileys
+            </span>
+          </a>
         </nav>
 
         <div className="border-t border-[oklch(0.9_0.015_75)] p-4">
@@ -308,6 +349,7 @@ function AdminConsole() {
             <h2 className="text-xl font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-tight">
               {activeTab === "dashboard" && "Dashboard Overview"}
               {activeTab === "orders" && "Order Management"}
+              {activeTab === "manage-app" && "Manage App · Store Operations"}
               {activeTab === "menu" && "Menu Management"}
               {activeTab === "instagram" && "Instagram Story Importer"}
               {activeTab === "users" && "User Management"}
@@ -345,6 +387,7 @@ function AdminConsole() {
             <DashboardTab orders={orders} menuItems={menuItems} />
           )}
           {activeTab === "orders" && <OrdersTab orders={orders} />}
+          {activeTab === "manage-app" && <ManageAppTab />}
           {activeTab === "menu" && <MenuTab menuItems={menuItems} />}
           {activeTab === "instagram" && <InstagramTab menuItems={menuItems} />}
           {activeTab === "users" && <UsersTab />}
@@ -899,9 +942,21 @@ function MenuTab({ menuItems }: MenuTabProps) {
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [price, setPrice] = useState("");
-  const [category, setCategory] = useState<"Burgers" | "Sides" | "Drinks" | "Combos">("Burgers");
+  const [category, setCategory] = useState<"Burgers" | "Burrito" | "Sides" | "Drinks" | "Combos">("Burgers");
   const [tag, setTag] = useState("");
+  const [isComingSoon, setIsComingSoon] = useState(false);
+  const [isFeatured, setIsFeatured] = useState(false);
   const [image, setImage] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+
+  // Upload States
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [showManualImageUrl, setShowManualImageUrl] = useState(false);
+  const [showManualVideoUrl, setShowManualVideoUrl] = useState(false);
+
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const resetForm = () => {
     setEditingItem(null);
@@ -910,43 +965,173 @@ function MenuTab({ menuItems }: MenuTabProps) {
     setPrice("");
     setCategory("Burgers");
     setTag("");
+    setIsComingSoon(false);
+    setIsFeatured(false);
     setImage("");
+    setVideoUrl("");
+    setIsUploadingImage(false);
+    setIsUploadingVideo(false);
+    setShowManualImageUrl(false);
+    setShowManualVideoUrl(false);
+    if (imageInputRef.current) imageInputRef.current.value = "";
+    if (videoInputRef.current) videoInputRef.current.value = "";
   };
 
   const handleEditInit = (item: MenuItem) => {
     setEditingItem(item);
     setName(item.name);
-    setDesc(item.desc);
+    setDesc(item.desc || item.description || "");
     setPrice(item.price.toString());
     setCategory(item.category);
     setTag(item.tag || "");
-    setImage(item.image);
+    setIsComingSoon(Boolean((item as any).isComingSoon) || item.tag?.toLowerCase() === "coming soon");
+    setIsFeatured(Boolean((item as any).isFeatured));
+    setImage(item.imageUrl || item.image || "");
+    setVideoUrl(item.videoUrl || "");
+    setShowManualImageUrl(false);
+    setShowManualVideoUrl(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleToggleFeatured = async (item: MenuItem) => {
+    const newFeatured = !Boolean((item as any).isFeatured);
+    const res = await menuStore.updateItem(item.id, { isFeatured: newFeatured });
+    if (res) {
+      toast.success(
+        newFeatured
+          ? `⭐ "${item.name}" added to Homepage Main Carousel!`
+          : `"${item.name}" removed from Homepage Main Carousel`
+      );
+    }
+  };
+
+  // Upload Photo from computer to Cloudinary
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file (PNG, JPG, WEBP, etc.)");
+      return;
+    }
+
+    try {
+      setIsUploadingImage(true);
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "kaivu/menu");
+      formData.append("resourceType", "image");
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.success && (data.data?.secureUrl || data.data?.url)) {
+        const uploadedUrl = data.data.secureUrl || data.data.url;
+        setImage(uploadedUrl);
+        toast.success("Product photo uploaded to Cloudinary successfully!");
+      } else {
+        toast.error(data.error || "Failed to upload image to Cloudinary");
+      }
+    } catch (err: any) {
+      console.error("Image upload error:", err);
+      toast.error(err?.message || "Failed to upload image");
+    } finally {
+      setIsUploadingImage(false);
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    }
+  };
+
+  // Upload Video from computer to Cloudinary
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("video/")) {
+      toast.error("Please upload a video file (MP4, WebM, QuickTime, etc.)");
+      return;
+    }
+
+    try {
+      setIsUploadingVideo(true);
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "kaivu/videos");
+      formData.append("resourceType", "video");
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.success && (data.data?.secureUrl || data.data?.url)) {
+        const uploadedUrl = data.data.secureUrl || data.data.url;
+        setVideoUrl(uploadedUrl);
+        toast.success("Product video uploaded to Cloudinary successfully!");
+      } else {
+        toast.error(data.error || "Failed to upload video to Cloudinary");
+      }
+    } catch (err: any) {
+      console.error("Video upload error:", err);
+      toast.error(err?.message || "Failed to upload video");
+    } finally {
+      setIsUploadingVideo(false);
+      if (videoInputRef.current) videoInputRef.current.value = "";
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !price || !desc) return;
+    if (!name || !price || !desc) {
+      toast.error("Please fill in the product name, price, and description");
+      return;
+    }
+
+    if (isUploadingImage || isUploadingVideo) {
+      toast.error("Please wait for media uploads to complete before saving");
+      return;
+    }
 
     const parsedPrice = parseFloat(price);
-    if (isNaN(parsedPrice)) return;
+    if (isNaN(parsedPrice)) {
+      toast.error("Please enter a valid price");
+      return;
+    }
 
-    // Use default fallback avatar burger item if image is missing
+    // Default fallback avatar burger item if image is missing
     const defaultImage = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=60";
+    const finalImageUrl = image.trim() || defaultImage;
 
     const itemPayload = {
       name,
       desc,
       price: parsedPrice,
       category,
-      tag: tag || undefined,
-      image: image || defaultImage,
-      rating: editingItem ? editingItem.rating : 5.0
+      tag: tag.trim() || undefined,
+      isComingSoon,
+      isFeatured,
+      image: finalImageUrl,
+      imageUrl: finalImageUrl,
+      videoUrl: videoUrl.trim() || undefined,
+      rating: editingItem ? editingItem.rating : 5.0,
     };
 
     if (editingItem) {
-      menuStore.updateItem(editingItem.id, itemPayload);
+      const res = await menuStore.updateItem(editingItem.id, itemPayload);
+      if (res) {
+        toast.success(`"${name}" updated successfully!`);
+      } else {
+        toast.error("Failed to update item");
+      }
     } else {
-      menuStore.addItem(itemPayload);
+      const res = await menuStore.addItem(itemPayload);
+      if (res) {
+        toast.success(`"${name}" created successfully in menu!`);
+      } else {
+        toast.error("Failed to create menu item");
+      }
     }
 
     resetForm();
@@ -955,6 +1140,7 @@ function MenuTab({ menuItems }: MenuTabProps) {
   const handleDelete = (id: string) => {
     if (confirm("Are you sure you want to delete this menu item?")) {
       menuStore.deleteItem(id);
+      toast.success("Menu item deleted");
       if (editingItem && editingItem.id === id) {
         resetForm();
       }
@@ -965,9 +1151,14 @@ function MenuTab({ menuItems }: MenuTabProps) {
     <div className="grid grid-cols-5 gap-8 animate-fadeIn">
       {/* PRODUCTS LIST TABLE (LEFT 3/5) */}
       <div className="col-span-3 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm">
-        <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)] border-b border-[oklch(0.9_0.015_75)] pb-3 mb-4">
-          Catalog Menu Items ({menuItems.length})
-        </h3>
+        <div className="flex items-center justify-between border-b border-[oklch(0.9_0.015_75)] pb-3 mb-4">
+          <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">
+            Catalog Menu Items ({menuItems.length})
+          </h3>
+          <span className="text-xs text-[oklch(0.5_0.02_60)]">
+            Cloudinary media supported
+          </span>
+        </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -984,17 +1175,46 @@ function MenuTab({ menuItems }: MenuTabProps) {
                 <tr key={item.id} className="border-b border-[oklch(0.95_0.01_75)] text-sm group hover:bg-[oklch(0.98_0.005_75)] transition-colors">
                   <td className="py-3 pl-2">
                     <div className="flex items-center gap-3">
-                      <img src={item.image} alt={item.name} className="h-10 w-10 rounded-xl object-cover shrink-0 bg-accent" />
+                      <div className="relative h-12 w-12 rounded-xl overflow-hidden shrink-0 bg-accent border border-[oklch(0.9_0.015_75)] shadow-xs">
+                        <img
+                          src={item.imageUrl || item.image}
+                          alt={item.name}
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&auto=format&fit=crop&q=60";
+                          }}
+                        />
+                        {item.videoUrl && (
+                          <span className="absolute bottom-1 right-1 grid h-4 w-4 place-items-center rounded-full bg-black/70 text-white" title="Has attached video">
+                            <Film className="h-2.5 w-2.5" />
+                          </span>
+                        )}
+                      </div>
                       <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           <h4 className="font-bold text-[oklch(0.18_0.02_50)]">{item.name}</h4>
                           {item.tag && (
                             <span className="rounded bg-[oklch(0.9_0.015_75)] px-1 py-0.5 text-[8px] font-bold text-foreground">
                               {item.tag}
                             </span>
                           )}
+                          {(item.isComingSoon || item.tag?.toLowerCase() === "coming soon") && (
+                            <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-700 px-1.5 py-0.2 text-[9px] font-bold">
+                              🚀 Coming Soon
+                            </span>
+                          )}
+                          {item.isFeatured && (
+                            <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500 text-slate-950 px-1.5 py-0.2 text-[9px] font-bold shadow-2xs">
+                              ⭐ Main Carousel
+                            </span>
+                          )}
+                          {item.videoUrl && (
+                            <span className="inline-flex items-center gap-0.5 rounded-full bg-blue-500/10 px-1.5 py-0.2 text-[9px] font-bold text-blue-600">
+                              <Video className="h-2.5 w-2.5" /> Video
+                            </span>
+                          )}
                         </div>
-                        <p className="truncate text-xs text-[oklch(0.5_0.02_60)] mt-0.5 max-w-xs">{item.desc}</p>
+                        <p className="truncate text-xs text-[oklch(0.5_0.02_60)] mt-0.5 max-w-xs">{item.desc || item.description}</p>
                       </div>
                     </div>
                   </td>
@@ -1005,7 +1225,20 @@ function MenuTab({ menuItems }: MenuTabProps) {
                   </td>
                   <td className="py-3 font-bold text-[oklch(0.18_0.02_50)]">₹{item.price.toFixed(2)}</td>
                   <td className="py-3 text-right pr-2">
-                    <div className="inline-flex gap-1">
+                    <div className="inline-flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleFeatured(item)}
+                        className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-bold transition-all cursor-pointer ${
+                          item.isFeatured
+                            ? "bg-amber-400 text-amber-950 hover:bg-amber-500 shadow-2xs"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200"
+                        }`}
+                        title={item.isFeatured ? "Click to remove from Homepage Carousel" : "Click to spotlight in Homepage Carousel"}
+                      >
+                        <Star className={`h-3 w-3 ${item.isFeatured ? "fill-amber-950 text-amber-950" : "text-gray-400"}`} />
+                        <span>{item.isFeatured ? "Featured" : "Feature"}</span>
+                      </button>
                       <button
                         onClick={() => handleEditInit(item)}
                         className="grid h-8 w-8 place-items-center rounded-lg hover:bg-brand/10 hover:text-brand transition-colors text-[oklch(0.5_0.02_60)] cursor-pointer"
@@ -1033,21 +1266,28 @@ function MenuTab({ menuItems }: MenuTabProps) {
       <div className="col-span-2">
         <div className="sticky top-28 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm space-y-5">
           <div className="flex items-center justify-between border-b border-[oklch(0.9_0.015_75)] pb-3">
-            <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">
-              {editingItem ? "Edit Catalog Item" : "Create New Product"}
-            </h3>
+            <div>
+              <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">
+                {editingItem ? "Edit Catalog Item" : "Create New Product"}
+              </h3>
+              <p className="text-[11px] text-[oklch(0.5_0.02_60)]">
+                Upload image & video directly to Cloudinary
+              </p>
+            </div>
             {editingItem && (
               <button
+                type="button"
                 onClick={resetForm}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-[oklch(0.5_0.02_60)] hover:text-foreground cursor-pointer"
+                className="inline-flex items-center gap-1 rounded-full bg-[oklch(0.95_0.01_75)] px-2.5 py-1 text-xs font-semibold text-[oklch(0.5_0.02_60)] hover:text-foreground hover:bg-[oklch(0.9_0.015_75)] transition-colors cursor-pointer"
               >
-                <X className="h-3 w-3" />
+                <X className="h-3.5 w-3.5" />
                 <span>Cancel</span>
               </button>
             )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Product Title */}
             <div className="space-y-1">
               <label className="text-[11px] font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">
                 Product Title *
@@ -1058,10 +1298,11 @@ function MenuTab({ menuItems }: MenuTabProps) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] px-3 py-2 text-sm focus:border-brand focus:outline-none"
-                placeholder="e.g. Csuite Smashed Wagyu"
+                placeholder="e.g. Kaivu Smash Royale"
               />
             </div>
 
+            {/* Price & Category */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-[11px] font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">
@@ -1088,6 +1329,7 @@ function MenuTab({ menuItems }: MenuTabProps) {
                   className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] px-3 py-2.5 text-sm focus:border-brand focus:outline-none cursor-pointer"
                 >
                   <option value="Burgers">Burgers</option>
+                  <option value="Burrito">Burrito</option>
                   <option value="Sides">Sides</option>
                   <option value="Drinks">Drinks</option>
                   <option value="Combos">Combos</option>
@@ -1095,19 +1337,233 @@ function MenuTab({ menuItems }: MenuTabProps) {
               </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">
-                Product Image URL
-              </label>
+            {/* --- PRODUCT PHOTO UPLOAD (CLOUDINARY) --- */}
+            <div className="space-y-2 rounded-2xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.99_0.003_75)] p-3.5">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-1.5 text-[11px] font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">
+                  <ImageIcon className="h-3.5 w-3.5 text-brand" />
+                  Product Photo (Cloudinary)
+                </label>
+                {image && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                    <CheckCircle2 className="h-3 w-3" /> Ready
+                  </span>
+                )}
+              </div>
+
+              {/* Hidden file input */}
               <input
-                type="text"
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-                className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] px-3 py-2 text-sm focus:border-brand focus:outline-none"
-                placeholder="Leave blank for default"
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
               />
+
+              {image ? (
+                <div className="flex items-center gap-3 bg-white p-2.5 rounded-xl border border-[oklch(0.92_0.01_75)]">
+                  <img
+                    src={image}
+                    alt="Preview"
+                    className="h-16 w-16 rounded-lg object-cover bg-accent shrink-0 border border-border"
+                  />
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <p className="truncate text-xs font-medium text-[oklch(0.3_0.02_50)]">
+                      {image.includes("res.cloudinary.com") ? "Cloudinary Asset" : "Image Selected"}
+                    </p>
+                    <p className="truncate text-[10px] text-[oklch(0.55_0.02_60)] max-w-[200px]">
+                      {image}
+                    </p>
+                    <div className="flex items-center gap-2 pt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => imageInputRef.current?.click()}
+                        disabled={isUploadingImage}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-brand hover:underline cursor-pointer"
+                      >
+                        <Upload className="h-3 w-3" /> Replace Photo
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setImage("")}
+                        className="text-[11px] font-bold text-destructive hover:underline cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  onClick={() => !isUploadingImage && imageInputRef.current?.click()}
+                  className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed transition-all cursor-pointer ${
+                    isUploadingImage
+                      ? "border-brand/40 bg-brand/5 cursor-wait"
+                      : "border-[oklch(0.88_0.015_75)] hover:border-brand hover:bg-brand/5 bg-white"
+                  }`}
+                >
+                  {isUploadingImage ? (
+                    <div className="flex flex-col items-center gap-2 text-center py-1">
+                      <Loader2 className="h-6 w-6 text-brand animate-spin" />
+                      <span className="text-xs font-bold text-brand">Uploading image to Cloudinary...</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-1.5 text-center">
+                      <div className="grid h-9 w-9 place-items-center rounded-full bg-brand/10 text-brand">
+                        <Upload className="h-4 w-4" />
+                      </div>
+                      <span className="text-xs font-bold text-[oklch(0.25_0.02_50)]">
+                        Upload Product Photo from Computer
+                      </span>
+                      <span className="text-[10px] text-[oklch(0.55_0.02_60)]">
+                        JPG, PNG, WEBP · Auto-stored on Cloudinary
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Manual URL toggle */}
+              <div className="pt-1">
+                {!showManualImageUrl ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowManualImageUrl(true)}
+                    className="text-[10px] text-[oklch(0.55_0.02_60)] hover:text-foreground underline cursor-pointer"
+                  >
+                    Or paste image URL manually
+                  </button>
+                ) : (
+                  <div className="space-y-1 pt-1">
+                    <input
+                      type="text"
+                      value={image}
+                      onChange={(e) => setImage(e.target.value)}
+                      className="w-full rounded-lg border border-[oklch(0.9_0.015_75)] bg-white px-2.5 py-1.5 text-xs focus:border-brand focus:outline-none"
+                      placeholder="https://res.cloudinary.com/... or https://images.unsplash.com/..."
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
+            {/* --- PRODUCT VIDEO UPLOAD (CLOUDINARY) --- */}
+            <div className="space-y-2 rounded-2xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.99_0.003_75)] p-3.5">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-1.5 text-[11px] font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">
+                  <Video className="h-3.5 w-3.5 text-blue-600" />
+                  Product Video (Cloudinary · Optional)
+                </label>
+                {videoUrl && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                    <CheckCircle2 className="h-3 w-3" /> Attached
+                  </span>
+                )}
+              </div>
+
+              {/* Hidden video file input */}
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/mp4,video/webm,video/ogg,video/quicktime"
+                onChange={handleVideoUpload}
+                className="hidden"
+              />
+
+              {videoUrl ? (
+                <div className="flex items-center gap-3 bg-white p-2.5 rounded-xl border border-[oklch(0.92_0.01_75)]">
+                  <div className="relative h-16 w-24 rounded-lg overflow-hidden bg-black shrink-0 border border-border">
+                    <video
+                      src={videoUrl}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <p className="truncate text-xs font-medium text-[oklch(0.3_0.02_50)]">
+                      {videoUrl.includes("res.cloudinary.com") ? "Cloudinary Video Stream" : "Video Attached"}
+                    </p>
+                    <p className="truncate text-[10px] text-[oklch(0.55_0.02_60)] max-w-[180px]">
+                      {videoUrl}
+                    </p>
+                    <div className="flex items-center gap-2 pt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => videoInputRef.current?.click()}
+                        disabled={isUploadingVideo}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:underline cursor-pointer"
+                      >
+                        <Upload className="h-3 w-3" /> Replace Video
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setVideoUrl("")}
+                        className="text-[11px] font-bold text-destructive hover:underline cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  onClick={() => !isUploadingVideo && videoInputRef.current?.click()}
+                  className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed transition-all cursor-pointer ${
+                    isUploadingVideo
+                      ? "border-blue-500/40 bg-blue-50/50 cursor-wait"
+                      : "border-[oklch(0.88_0.015_75)] hover:border-blue-500 hover:bg-blue-50/30 bg-white"
+                  }`}
+                >
+                  {isUploadingVideo ? (
+                    <div className="flex flex-col items-center gap-2 text-center py-1">
+                      <Loader2 className="h-6 w-6 text-blue-600 animate-spin" />
+                      <span className="text-xs font-bold text-blue-600">Uploading video to Cloudinary...</span>
+                      <span className="text-[10px] text-[oklch(0.55_0.02_60)]">Streaming optimization in progress</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-1.5 text-center">
+                      <div className="grid h-9 w-9 place-items-center rounded-full bg-blue-50 text-blue-600">
+                        <Video className="h-4 w-4" />
+                      </div>
+                      <span className="text-xs font-bold text-[oklch(0.25_0.02_50)]">
+                        Upload Product Video from Computer
+                      </span>
+                      <span className="text-[10px] text-[oklch(0.55_0.02_60)]">
+                        MP4, WebM, MOV · Plays in hero & card spotlights
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Manual Video URL toggle */}
+              <div className="pt-1">
+                {!showManualVideoUrl ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowManualVideoUrl(true)}
+                    className="text-[10px] text-[oklch(0.55_0.02_60)] hover:text-foreground underline cursor-pointer"
+                  >
+                    Or paste video URL manually
+                  </button>
+                ) : (
+                  <div className="space-y-1 pt-1">
+                    <input
+                      type="text"
+                      value={videoUrl}
+                      onChange={(e) => setVideoUrl(e.target.value)}
+                      className="w-full rounded-lg border border-[oklch(0.9_0.015_75)] bg-white px-2.5 py-1.5 text-xs focus:border-brand focus:outline-none"
+                      placeholder="https://res.cloudinary.com/.../video/upload/..."
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Ribbon Tag */}
             <div className="space-y-1">
               <label className="text-[11px] font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">
                 Ribbon Tag (optional)
@@ -1117,10 +1573,47 @@ function MenuTab({ menuItems }: MenuTabProps) {
                 value={tag}
                 onChange={(e) => setTag(e.target.value)}
                 className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] px-3 py-2 text-sm focus:border-brand focus:outline-none"
-                placeholder="e.g. Spicy, Hot, New"
+                placeholder="e.g. Spicy, Hot, Bestseller"
               />
             </div>
 
+            {/* Coming Soon Status Toggle */}
+            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+              <div>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-amber-950">
+                  <span>🚀</span> Coming Soon Status
+                </label>
+                <p className="text-[10px] text-amber-800/80 mt-0.5">
+                  Mark as not launched yet. Disables Add to Cart & displays "Coming Soon" badge.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={isComingSoon}
+                onChange={(e) => setIsComingSoon(e.target.checked)}
+                className="h-5 w-5 rounded-md accent-amber-600 cursor-pointer"
+              />
+            </div>
+
+            {/* Main Homepage Carousel Spotlight Toggle */}
+            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-amber-50 border border-amber-300/80">
+              <div>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-amber-950">
+                  <span>⭐</span> Homepage Main Carousel
+                </label>
+                <p className="text-[10px] text-amber-900/80 mt-0.5">
+                  Display and spotlight this product in the top rotating carousel on the home page.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={isFeatured}
+                onChange={(e) => setIsFeatured(e.target.checked)}
+                className="h-5 w-5 rounded-md accent-amber-600 cursor-pointer"
+              />
+            </div>
+
+            {/* Description */}
             <div className="space-y-1">
               <label className="text-[11px] font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">
                 Description / Ingredients *
@@ -1131,15 +1624,28 @@ function MenuTab({ menuItems }: MenuTabProps) {
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
                 className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] px-3 py-2 text-sm focus:border-brand focus:outline-none resize-none"
-                placeholder="Fresh brioche bun, double beef, secret sauce..."
+                placeholder="Fresh brioche bun, double beef patty, melted cheddar, secret sauce..."
               />
             </div>
 
+            {/* Submit Button */}
             <button
               type="submit"
-              className="w-full rounded-full bg-primary py-3 text-sm font-bold text-primary-foreground hover:bg-primary/95 transition-colors cursor-pointer shadow"
+              disabled={isUploadingImage || isUploadingVideo}
+              className={`w-full rounded-full py-3 text-sm font-bold transition-all shadow cursor-pointer flex items-center justify-center gap-2 ${
+                isUploadingImage || isUploadingVideo
+                  ? "bg-primary/50 text-primary-foreground cursor-not-allowed"
+                  : "bg-primary text-primary-foreground hover:bg-primary/95"
+              }`}
             >
-              {editingItem ? "Update Catalog Item" : "Create Product"}
+              {(isUploadingImage || isUploadingVideo) && (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              )}
+              {isUploadingImage || isUploadingVideo
+                ? "Uploading media to Cloudinary..."
+                : editingItem
+                ? "Update Catalog Item"
+                : "Create Product"}
             </button>
           </form>
         </div>
@@ -3060,3 +3566,487 @@ function InstagramTab({ menuItems }: { menuItems: MenuItem[] }) {
     </div>
   );
 }
+
+// ==========================================
+// --- MANAGE APP & STORE OPERATIONS TAB ---
+// ==========================================
+function ManageAppTab() {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<{
+    isOpen: boolean;
+    closingTimerEndsAt: string | null;
+    closedMessage: string;
+  }>({
+    isOpen: true,
+    closingTimerEndsAt: null,
+    closedMessage: "We are currently closed for orders. Check back soon!",
+  });
+
+  const [selectedMinutes, setSelectedMinutes] = useState<number>(10);
+  const [customMinutes, setCustomMinutes] = useState<string>("");
+  const [messageInput, setMessageInput] = useState<string>("");
+
+  // Live countdown calculator
+  const [countdown, setCountdown] = useState<{ minutes: number; seconds: number; totalSeconds: number } | null>(null);
+
+  const fetchStatus = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/admin/store-status");
+      const data = await res.json();
+      if (data.success && data.data) {
+        setStatus(data.data);
+        setMessageInput(data.data.closedMessage || "");
+      }
+    } catch (err) {
+      console.error("Failed to fetch store status:", err);
+      toast.error("Failed to load store status");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStatus();
+  }, []);
+
+  // Update countdown clock every second
+  useEffect(() => {
+    if (!status.closingTimerEndsAt) {
+      setCountdown(null);
+      return;
+    }
+
+    const checkTimer = () => {
+      const endsAt = new Date(status.closingTimerEndsAt!).getTime();
+      const diff = endsAt - Date.now();
+
+      if (diff <= 0) {
+        setCountdown({ minutes: 0, seconds: 0, totalSeconds: 0 });
+        // Refresh status if timer expired
+        fetchStatus();
+        return;
+      }
+
+      const totalSec = Math.floor(diff / 1000);
+      const mins = Math.floor(totalSec / 60);
+      const secs = totalSec % 60;
+      setCountdown({ minutes: mins, seconds: secs, totalSeconds: totalSec });
+    };
+
+    checkTimer();
+    const timerInterval = setInterval(checkTimer, 1000);
+    return () => clearInterval(timerInterval);
+  }, [status.closingTimerEndsAt]);
+
+  const handleToggleOpen = async (newIsOpen: boolean) => {
+    try {
+      setSaving(true);
+      const res = await fetch("/api/admin/store-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "toggle_open", isOpen: newIsOpen }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setStatus(data.data);
+        toast.success(newIsOpen ? "Store is now OPEN and accepting orders!" : "Store is now CLOSED.");
+      } else {
+        toast.error(data.error || "Failed to update store status");
+      }
+    } catch {
+      toast.error("Network error updating store status");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleStartTimer = async (minsToUse?: number) => {
+    const mins = minsToUse || (customMinutes ? parseInt(customMinutes, 10) : selectedMinutes);
+    if (!mins || mins <= 0 || isNaN(mins)) {
+      toast.error("Please enter a valid number of minutes");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const res = await fetch("/api/admin/store-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "start_timer", durationMinutes: mins }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setStatus(data.data);
+        toast.success(`Closing countdown started! Store will close in ${mins} minutes.`, {
+          description: "Customers will now see a live closing warning on the app.",
+        });
+      } else {
+        toast.error(data.error || "Failed to start closing timer");
+      }
+    } catch {
+      toast.error("Network error starting timer");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancelTimer = async () => {
+    try {
+      setSaving(true);
+      const res = await fetch("/api/admin/store-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "cancel_timer" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setStatus(data.data);
+        toast.success("Closing timer canceled. Store remains open normally.");
+      } else {
+        toast.error(data.error || "Failed to cancel timer");
+      }
+    } catch {
+      toast.error("Network error canceling timer");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveMessage = async () => {
+    try {
+      setSaving(true);
+      const res = await fetch("/api/admin/store-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "update_message", closedMessage: messageInput }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setStatus(data.data);
+        toast.success("Closed announcement message saved!");
+      } else {
+        toast.error(data.error || "Failed to save message");
+      }
+    } catch {
+      toast.error("Network error saving message");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const isTimerActive = status.closingTimerEndsAt && countdown && countdown.totalSeconds > 0;
+  const isStoreClosed = !status.isOpen;
+
+  const presets = [5, 10, 15, 30, 45, 60];
+
+  const quickMessageTemplates = [
+    "We are currently closed for orders. Check back soon!",
+    "Kitchen is closed for the day. See you tomorrow at 11 AM! 🍔",
+    "Sold out for today! Thank you for the massive love ❤️",
+    "Temporarily paused for kitchen maintenance. Reopening shortly.",
+  ];
+
+  return (
+    <div className="space-y-8">
+      {/* SECTION 1: MASTER STORE STATUS HERO */}
+      <div className={`rounded-[2rem] p-8 transition-all border shadow-sm ${
+        isStoreClosed
+          ? "bg-red-50/70 border-red-200"
+          : isTimerActive
+          ? "bg-amber-50/70 border-amber-200"
+          : "bg-emerald-50/70 border-emerald-200"
+      }`}>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <span className={`flex h-4 w-4 rounded-full ${
+                isStoreClosed ? "bg-red-600" : isTimerActive ? "bg-amber-500 animate-ping" : "bg-emerald-500"
+              }`} />
+              <h3 className="text-2xl font-display font-extrabold tracking-tight text-[oklch(0.18_0.02_50)]">
+                {isStoreClosed
+                  ? "STORE IS CURRENTLY CLOSED"
+                  : isTimerActive
+                  ? "STORE CLOSING INTAKE SOON"
+                  : "STORE IS OPEN & ACCEPTING ORDERS"}
+              </h3>
+            </div>
+            <p className="text-sm text-[oklch(0.45_0.02_60)] max-w-xl">
+              {isStoreClosed
+                ? "Customers cannot place new orders. The closed announcement banner is active across the app."
+                : isTimerActive
+                ? `Closing countdown is running. Store will automatically close in ${countdown?.minutes}m ${countdown?.seconds}s.`
+                : "The online store is live. Customers can freely browse the menu and checkout orders."}
+            </p>
+          </div>
+
+          {/* Master Open / Close Controls */}
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => handleToggleOpen(!status.isOpen)}
+              className={`flex items-center gap-2.5 px-6 py-3.5 rounded-2xl font-bold text-sm shadow-md transition-all cursor-pointer ${
+                status.isOpen
+                  ? "bg-red-600 hover:bg-red-700 text-white shadow-red-600/20 active:scale-95"
+                  : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20 active:scale-95"
+              }`}
+            >
+              <Power className="h-4 w-4" />
+              <span>{status.isOpen ? "Close Store Now" : "Open Store Online"}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* SECTION 2: CLOSING COUNTDOWN TIMER CONTROLLER */}
+      <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-8 shadow-sm space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[oklch(0.92_0.015_75)] pb-6">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <div className="grid h-8 w-8 place-items-center rounded-xl bg-amber-100 text-amber-800">
+                <Timer className="h-5 w-5" />
+              </div>
+              <h4 className="text-lg font-bold text-[oklch(0.18_0.02_50)]">
+                Order Closing Countdown Timer
+              </h4>
+            </div>
+            <p className="text-xs text-[oklch(0.5_0.02_60)] mt-1">
+              Warn customers before closing. Displays a live ticking timer on customer devices saying "We are closing orders soon".
+            </p>
+          </div>
+
+          {isTimerActive && (
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-2 rounded-full bg-amber-100 px-3.5 py-1.5 text-xs font-bold text-amber-900 border border-amber-300">
+                <span className="h-2 w-2 rounded-full bg-amber-600 animate-pulse" />
+                Live Timer Running
+              </span>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={handleCancelTimer}
+                className="px-4 py-1.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs font-bold transition-colors cursor-pointer"
+              >
+                Cancel Timer
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ACTIVE TIMER DISPLAY */}
+        {isTimerActive ? (
+          <div className="rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 p-6 text-black shadow-md flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-5">
+              <div className="grid h-16 w-16 place-items-center rounded-2xl bg-black text-amber-300 shadow-inner">
+                <Clock className="h-8 w-8 animate-spin text-amber-400" style={{ animationDuration: "12s" }} />
+              </div>
+              <div>
+                <span className="text-xs uppercase font-extrabold tracking-widest text-black/80">
+                  Kitchen Intake Auto-Closes In
+                </span>
+                <div className="text-4xl font-mono font-black tracking-wider text-white drop-shadow-sm">
+                  {countdown?.minutes.toString().padStart(2, "0")}:{countdown?.seconds.toString().padStart(2, "0")}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <button
+                type="button"
+                disabled={saving}
+                onClick={handleCancelTimer}
+                className="flex-1 md:flex-none px-5 py-3 rounded-xl bg-black/80 hover:bg-black text-white text-xs font-bold transition-all cursor-pointer"
+              >
+                Stop Countdown
+              </button>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={() => handleToggleOpen(false)}
+                className="flex-1 md:flex-none px-5 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow transition-all cursor-pointer"
+              >
+                Close Immediately
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider text-[oklch(0.4_0.02_60)] block mb-3">
+                Select Countdown Duration
+              </label>
+
+              {/* Presets Grid */}
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                {presets.map((mins) => {
+                  const isSelected = selectedMinutes === mins && !customMinutes;
+                  return (
+                    <button
+                      key={mins}
+                      type="button"
+                      onClick={() => {
+                        setSelectedMinutes(mins);
+                        setCustomMinutes("");
+                      }}
+                      className={`flex flex-col items-center justify-center p-3.5 rounded-2xl border transition-all cursor-pointer ${
+                        isSelected
+                          ? "bg-brand text-brand-foreground border-brand shadow-md shadow-brand/10 font-bold scale-[1.02]"
+                          : "bg-white border-[oklch(0.9_0.015_75)] text-[oklch(0.3_0.02_50)] hover:border-brand/40 font-semibold"
+                      }`}
+                    >
+                      <span className="text-lg font-black">{mins}</span>
+                      <span className="text-[10px] uppercase opacity-80">Minutes</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Custom Minutes Input & Action */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <input
+                  type="number"
+                  min="1"
+                  max="300"
+                  value={customMinutes}
+                  onChange={(e) => {
+                    setCustomMinutes(e.target.value);
+                  }}
+                  placeholder="Or enter minutes..."
+                  className="w-full sm:w-44 rounded-xl border border-[oklch(0.85_0.015_75)] bg-white px-4 py-2.5 text-sm font-medium focus:border-brand focus:outline-none"
+                />
+              </div>
+
+              <button
+                type="button"
+                disabled={saving || !status.isOpen}
+                onClick={() => handleStartTimer()}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white px-6 py-2.5 text-sm font-bold shadow-md shadow-amber-600/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+              >
+                <Timer className="h-4 w-4" />
+                <span>
+                  Start {customMinutes ? `${customMinutes} Min` : `${selectedMinutes} Min`} Closing Timer
+                </span>
+              </button>
+
+              {!status.isOpen && (
+                <span className="text-xs text-red-600 font-semibold">
+                  (Store must be open to start a closing countdown)
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* SECTION 3: CUSTOM CLOSED ANNOUNCEMENT MESSAGE */}
+      <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-8 shadow-sm space-y-6">
+        <div>
+          <h4 className="text-lg font-bold text-[oklch(0.18_0.02_50)]">
+            Store Closed Announcement Message
+          </h4>
+          <p className="text-xs text-[oklch(0.5_0.02_60)] mt-1">
+            This message is displayed to customers at the top of the app and on checkout when the store is closed.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <textarea
+            rows={3}
+            value={messageInput}
+            onChange={(e) => setMessageInput(e.target.value)}
+            className="w-full rounded-2xl border border-[oklch(0.85_0.015_75)] p-4 text-sm font-medium focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+            placeholder="Enter announcement message..."
+          />
+
+          {/* Quick Template Chips */}
+          <div className="space-y-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[oklch(0.5_0.02_60)]">
+              Quick Templates:
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {quickMessageTemplates.map((tmpl) => (
+                <button
+                  key={tmpl}
+                  type="button"
+                  onClick={() => setMessageInput(tmpl)}
+                  className="rounded-full bg-[oklch(0.95_0.015_75)] hover:bg-[oklch(0.92_0.015_75)] px-3 py-1 text-xs text-[oklch(0.3_0.02_50)] font-medium transition-colors cursor-pointer"
+                >
+                  {tmpl}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <button
+              type="button"
+              disabled={saving}
+              onClick={handleSaveMessage}
+              className="flex items-center gap-2 rounded-xl bg-brand text-brand-foreground px-6 py-2.5 text-xs font-bold shadow-md hover:opacity-90 active:scale-95 transition-all cursor-pointer"
+            >
+              <Check className="h-4 w-4" />
+              <span>Save Announcement</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* SECTION 4: REAL-TIME CUSTOMER APP PREVIEW */}
+      <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-8 shadow-sm space-y-5">
+        <div className="flex items-center gap-2.5">
+          <Smartphone className="h-5 w-5 text-brand" />
+          <h4 className="text-base font-bold text-[oklch(0.18_0.02_50)]">
+            Live Customer Preview (Mobile Display)
+          </h4>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Closing Timer Preview */}
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+              1. Customer Closing Alert (When Timer Active)
+            </span>
+            <div className="rounded-2xl border border-amber-300 overflow-hidden shadow-sm bg-white">
+              <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 text-black px-4 py-2.5 text-center text-xs font-black flex items-center justify-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                </span>
+                <Clock className="h-3.5 w-3.5 text-black" />
+                <span>
+                  Closing orders soon! <span className="underline font-mono bg-black text-amber-300 px-1 py-0.5 rounded ml-1">09:48</span> remaining
+                </span>
+              </div>
+              <div className="p-4 bg-[#FBF7EE] text-xs text-gray-600 flex items-center justify-between">
+                <span>Customer can still browse and add to cart</span>
+                <span className="font-bold text-amber-700">Urgency Active</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Store Closed Preview */}
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+              2. Store Closed Alert (When Closed)
+            </span>
+            <div className="rounded-2xl border border-red-200 overflow-hidden shadow-sm bg-white">
+              <div className="bg-[#661E28] text-white px-4 py-2.5 text-center text-xs font-bold flex items-center justify-center gap-2">
+                <AlertCircle className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
+                <span className="truncate">{messageInput || "We are currently closed for orders. Check back soon!"}</span>
+              </div>
+              <div className="p-4 bg-gray-50 text-xs text-gray-600 flex items-center justify-between">
+                <span>Checkout button is automatically disabled</span>
+                <span className="font-bold text-red-600">Orders Blocked</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+

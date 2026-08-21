@@ -1,24 +1,32 @@
 import { NextResponse } from "next/server";
 import { apiSuccess } from "@/lib/api-utils";
-import { isRewardSectionEnabled, getNotificationBannersConfig, DEFAULT_NOTIFICATION_BANNERS_CONFIG } from "@/lib/services/settings-service";
+import {
+  isRewardSectionEnabled,
+  getNotificationBannersConfig,
+  DEFAULT_NOTIFICATION_BANNERS_CONFIG,
+  getStoreStatus,
+  DEFAULT_STORE_STATUS,
+} from "@/lib/services/settings-service";
 
 export const dynamic = "force-dynamic";
 
 /**
  * GET /api/settings/public
- * Get public system feature flags and settings.
+ * Get public system feature flags, banners, and store status.
  */
 export async function GET() {
   try {
-    const [rewardSectionEnabled, notificationBanners] = await Promise.all([
+    const [rewardSectionEnabled, notificationBanners, storeStatus] = await Promise.all([
       isRewardSectionEnabled(),
       getNotificationBannersConfig(),
+      getStoreStatus(),
     ]);
 
     return NextResponse.json(
       apiSuccess({
         rewardSectionEnabled,
         notificationBanners,
+        storeStatus,
       })
     );
   } catch (error) {
@@ -27,6 +35,7 @@ export async function GET() {
       apiSuccess({
         rewardSectionEnabled: false,
         notificationBanners: DEFAULT_NOTIFICATION_BANNERS_CONFIG,
+        storeStatus: DEFAULT_STORE_STATUS,
       })
     );
   }
