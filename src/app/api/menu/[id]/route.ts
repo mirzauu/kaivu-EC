@@ -33,6 +33,7 @@ export async function GET(
         imageUrl: item.imageUrl,
         videoUrl: item.videoUrl,
         desc: item.description,
+        isAvailable: item.isAvailable,
         isComingSoon: Boolean((item as any).isComingSoon) || item.tag?.toLowerCase() === "coming soon",
         isFeatured: Boolean((item as any).isFeatured),
       })
@@ -68,7 +69,7 @@ export const PUT = withAdmin(async (req: AuthenticatedRequest, context) => {
         category: body.category ? body.category.toUpperCase() : item.category,
         tag: body.tag !== undefined ? body.tag : item.tag,
         rating: body.rating ?? item.rating,
-        isAvailable: body.isAvailable !== undefined ? body.isAvailable : item.isAvailable,
+        isAvailable: body.isAvailable !== undefined ? Boolean(body.isAvailable) : item.isAvailable,
         isComingSoon: body.isComingSoon !== undefined ? Boolean(body.isComingSoon) : (item as any).isComingSoon,
         isFeatured: body.isFeatured !== undefined ? Boolean(body.isFeatured) : (item as any).isFeatured,
         sortOrder: body.sortOrder !== undefined ? body.sortOrder : item.sortOrder,
@@ -84,6 +85,7 @@ export const PUT = withAdmin(async (req: AuthenticatedRequest, context) => {
         imageUrl: updated.imageUrl,
         videoUrl: updated.videoUrl,
         desc: updated.description,
+        isAvailable: updated.isAvailable,
         isComingSoon: Boolean((updated as any).isComingSoon) || updated.tag?.toLowerCase() === "coming soon",
         isFeatured: Boolean((updated as any).isFeatured),
       })
@@ -97,23 +99,31 @@ export const PUT = withAdmin(async (req: AuthenticatedRequest, context) => {
 /**
  * DELETE /api/menu/[id]
  * Delete a menu item (admin-only). Soft-deletes by setting isAvailable = false.
+ * If ?hard=true is passed, permanently removes the record.
  */
-export const DELETE = withAdmin(async (_req: AuthenticatedRequest, context) => {
+export const DELETE = withAdmin(async (req: AuthenticatedRequest, context) => {
   try {
     const { id } = await context!.params;
+    const isHard = req.nextUrl.searchParams.get("hard") === "true";
 
     const item = await db.menuItem.findUnique({ where: { id } });
     if (!item) {
       return NextResponse.json(apiError("Menu item not found"), { status: 404 });
     }
 
-    // Soft delete
+    if (isHard) {
+      // Hard delete if explicitly requested
+      await db.menuItem.delete({ where: { id } });
+      return NextResponse.json(apiSuccess(null, "Menu item permanently deleted"));
+    }
+
+    // Soft delete / disable
     await db.menuItem.update({
       where: { id },
       data: { isAvailable: false },
     });
 
-    return NextResponse.json(apiSuccess(null, "Menu item deleted"));
+    return NextResponse.json(apiSuccess(null, "Menu item disabled / soft-deleted"));
   } catch (error) {
     console.error("Menu delete error:", error);
     return NextResponse.json(apiError("Failed to delete menu item"), { status: 500 });

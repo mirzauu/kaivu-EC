@@ -320,6 +320,53 @@ export const ordersStore = {
       console.error("Failed to update order stage", e);
     }
   },
+
+  /**
+   * Admin: Permanently delete a single order and its history.
+   */
+  async deleteOrder(id: string): Promise<boolean> {
+    const localOrder = state.orders.find((o) => o.id === id);
+    const dbId = (localOrder as any)?.dbId || id;
+
+    try {
+      const res = await fetch(`/api/orders/${dbId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        await loadOrders();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error("Failed to delete order", e);
+      return false;
+    }
+  },
+
+  /**
+   * Admin: Bulk delete multiple orders and their history.
+   */
+  async bulkDeleteOrders(ids: string[]): Promise<boolean> {
+    if (ids.length === 0) return true;
+
+    try {
+      const res = await fetch("/api/admin/orders/bulk-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderIds: ids }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await loadOrders();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error("Failed to bulk delete orders", e);
+      return false;
+    }
+  },
 };
 
 export function useOrders<T>(selector: (s: State) => T): T {

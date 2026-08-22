@@ -34,6 +34,7 @@ import {
   BellRing,
   Layers,
   Eye,
+  EyeOff,
   Store,
   Timer,
   Power,
@@ -46,6 +47,10 @@ import {
   CheckCircle2,
   Film,
   Star,
+  Search,
+  RotateCcw,
+  CheckSquare,
+  Square,
 } from "lucide-react";
 import { FullScreenInstallBanner } from "@/components/banners/FullScreenInstallBanner";
 import { IdleNavBanner } from "@/components/banners/IdleNavBanner";
@@ -192,9 +197,11 @@ function AdminConsole() {
 
   useEffect(() => {
     ordersStore.refresh();
+    menuStore.refresh(true); // load all menu items including disabled ones
     const interval = setInterval(() => {
       ordersStore.refresh();
-    }, 15000); // refresh orders every 15s for the admin panel
+      menuStore.refresh(true);
+    }, 15000); // refresh orders & menu every 15s for the admin panel
     return () => clearInterval(interval);
   }, []);
 
@@ -655,6 +662,9 @@ function OrdersTab({ orders }: OrdersTabProps) {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(
     orders.length > 0 ? orders[0].id : null
   );
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const selectedOrder = useMemo(() => {
     return orders.find((o) => o.id === selectedOrderId) || null;
@@ -670,260 +680,581 @@ function OrdersTab({ orders }: OrdersTabProps) {
     ordersStore.cancelOrder(id);
   };
 
-  const activeOrders = orders.filter((o) => o.status === "active");
-  const pastOrders = orders.filter((o) => o.status !== "active");
+  // Filter orders by search query
+  const filteredOrders = useMemo(() => {
+    if (!searchQuery.trim()) return orders;
+    const q = searchQuery.toLowerCase();
+    return orders.filter(
+      (o) =>
+        o.id.toLowerCase().includes(q) ||
+        o.item.toLowerCase().includes(q) ||
+        (o.deliveryAddress || "").toLowerCase().includes(q) ||
+        o.status.toLowerCase().includes(q)
+    );
+  }, [orders, searchQuery]);
+
+  const activeOrders = useMemo(
+    () => filteredOrders.filter((o) => o.status === "active"),
+    [filteredOrders]
+  );
+  const pastOrders = useMemo(
+    () => filteredOrders.filter((o) => o.status !== "active"),
+    [filteredOrders]
+  );
+
+  // Toggle selection for a single order
+  const handleToggleSelect = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  // Toggle Select All active orders
+  const handleToggleSelectAllActive = () => {
+    const activeIds = activeOrders.map((o) => o.id);
+    const allActiveSelected = activeIds.length > 0 && activeIds.every((id) => selectedIds.includes(id));
+    if (allActiveSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !activeIds.includes(id)));
+    } else {
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...activeIds])));
+    }
+  };
+
+  // Toggle Select All past orders
+  const handleToggleSelectAllPast = () => {
+    const pastIds = pastOrders.map((o) => o.id);
+    const allPastSelected = pastIds.length > 0 && pastIds.every((id) => selectedIds.includes(id));
+    if (allPastSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !pastIds.includes(id)));
+    } else {
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...pastIds])));
+    }
+  };
+
+  // Select all orders currently shown
+  const handleSelectAllGlobal = () => {
+    if (selectedIds.length === filteredOrders.length && filteredOrders.length > 0) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredOrders.map((o) => o.id));
+    }
+  };
+
+  // Delete a single order and all its history
+  const handleDeleteSingle = async (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (
+      confirm(
+        `Are you sure you want to PERMANENTLY delete Order ${id}?\n\nThis will completely erase the order and all its historical tracking records from the database.`
+      )
+    ) {
+      setIsDeleting(true);
+      const success = await ordersStore.deleteOrder(id);
+      setIsDeleting(false);
+      if (success) {
+        toast.success(`Order ${id} and all history permanently deleted.`);
+        if (selectedOrderId === id) {
+          setSelectedOrderId(null);
+        }
+        setSelectedIds((prev) => prev.filter((item) => item !== id));
+      } else {
+        toast.error(`Failed to delete order ${id}`);
+      }
+    }
+  };
+
+  // Bulk delete selected orders and their history
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    if (
+      confirm(
+        `⚠️ Permanently delete ${selectedIds.length} selected order(s)?\n\nThis will completely remove all selected active and archived orders, their items, and history from the database. This action CANNOT be undone.`
+      )
+    ) {
+      setIsDeleting(true);
+      const success = await ordersStore.bulkDeleteOrders(selectedIds);
+      setIsDeleting(false);
+      if (success) {
+        toast.success(`Successfully deleted ${selectedIds.length} order(s) and their full history.`);
+        if (selectedOrderId && selectedIds.includes(selectedOrderId)) {
+          setSelectedOrderId(null);
+        }
+        setSelectedIds([]);
+      } else {
+        toast.error("Failed to delete selected orders.");
+      }
+    }
+  };
 
   return (
-    <div className="grid grid-cols-3 gap-8 animate-fadeIn">
-      {/* ORDERS LIST PANEL (LEFT 2/3) */}
-      <div className="col-span-2 space-y-6">
-        {/* Active Orders List */}
-        <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4 border-b border-[oklch(0.9_0.015_75)] pb-3">
-            <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">Active Orders Stream</h3>
-            <span className="text-xs font-bold text-brand bg-brand/10 px-2.5 py-1 rounded-full">
-              {activeOrders.length} Processing
-            </span>
-          </div>
-
-          {activeOrders.length === 0 ? (
-            <div className="py-12 text-center text-sm text-[oklch(0.5_0.02_60)] flex flex-col items-center justify-center gap-2">
-              <ShoppingBag className="h-8 w-8 text-[oklch(0.5_0.02_60)] opacity-40" />
-              <span>No orders currently cooking or in transit.</span>
-            </div>
-          ) : (
-            <ul className="divide-y divide-[oklch(0.95_0.01_75)]">
-              {activeOrders.map((o) => {
-                const isSelected = o.id === selectedOrderId;
-                return (
-                  <li
-                    key={o.id}
-                    onClick={() => setSelectedOrderId(o.id)}
-                    className={`group relative flex items-center justify-between p-4 -mx-4 rounded-2xl transition-all cursor-pointer ${isSelected
-                        ? "bg-[oklch(0.94_0.018_75)]"
-                        : "hover:bg-[oklch(0.97_0.012_75)]"
-                      }`}
-                  >
-                    <div className="flex items-center gap-4 min-w-0">
-                      <img src={o.image} alt="" className="h-12 w-12 rounded-xl object-cover" />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-sm text-[oklch(0.18_0.02_50)]">{o.id}</h4>
-                          <span className="text-[10px] text-[oklch(0.5_0.02_60)]">{o.date}</span>
-                        </div>
-                        <p className="truncate text-xs font-semibold text-[oklch(0.18_0.02_50)] mt-0.5 max-w-sm">
-                          {o.item}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand">
-                        <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
-                        {o.stage === 0 && "Confirmed"}
-                        {o.stage === 1 && "Cooking"}
-                        {o.stage === 2 && "On the way"}
-                      </span>
-                      <span className="font-bold text-sm text-[oklch(0.18_0.02_50)]">
-                        ₹{o.price.toFixed(2)}
-                      </span>
-                      <ChevronRight className="h-4 w-4 text-[oklch(0.5_0.02_60)] transition-transform group-hover:translate-x-0.5" />
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+    <div className="space-y-6 animate-fadeIn">
+      {/* TOP CONTROLS & BULK ACTION BAR */}
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-4 shadow-sm">
+        {/* Search Input */}
+        <div className="relative flex-1 min-w-[240px] max-w-md">
+          <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search by order ID, items, or address..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 text-xs bg-[oklch(0.98_0.005_75)] border border-[oklch(0.9_0.015_75)] rounded-xl focus:outline-none focus:border-brand"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
           )}
         </div>
 
-        {/* Past Orders List */}
-        <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4 border-b border-[oklch(0.9_0.015_75)] pb-3">
-            <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">Completed & Cancelled History</h3>
-            <span className="text-xs font-bold text-[oklch(0.5_0.02_60)] bg-[oklch(0.94_0.018_75)] px-2.5 py-1 rounded-full">
-              {pastOrders.length} Logged
+        {/* Global Select All & Bulk Actions */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleSelectAllGlobal}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[oklch(0.95_0.01_75)] hover:bg-[oklch(0.9_0.015_75)] text-slate-700 transition-colors cursor-pointer"
+          >
+            {selectedIds.length === filteredOrders.length && filteredOrders.length > 0 ? (
+              <CheckSquare className="h-4 w-4 text-brand" />
+            ) : (
+              <Square className="h-4 w-4 text-slate-400" />
+            )}
+            <span>
+              {selectedIds.length === filteredOrders.length && filteredOrders.length > 0
+                ? "Deselect All"
+                : `Select All (${filteredOrders.length})`}
             </span>
-          </div>
+          </button>
 
-          {pastOrders.length === 0 ? (
-            <div className="py-8 text-center text-sm text-[oklch(0.5_0.02_60)]">
-              No order archive history is available yet.
+          {/* Bulk Delete Trigger Button */}
+          {selectedIds.length > 0 && (
+            <div className="flex items-center gap-2 animate-fadeIn">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleBulkDelete}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-sm transition-all cursor-pointer disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+                <span>Delete Selected ({selectedIds.length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedIds([])}
+                className="text-xs text-slate-500 hover:text-slate-800 underline px-1 cursor-pointer"
+              >
+                Clear
+              </button>
             </div>
-          ) : (
-            <ul className="divide-y divide-[oklch(0.95_0.01_75)]">
-              {pastOrders.map((o) => {
-                const isSelected = o.id === selectedOrderId;
-                return (
-                  <li
-                    key={o.id}
-                    onClick={() => setSelectedOrderId(o.id)}
-                    className={`group flex items-center justify-between p-4 -mx-4 rounded-2xl transition-all cursor-pointer ${isSelected
-                        ? "bg-[oklch(0.94_0.018_75)]"
-                        : "hover:bg-[oklch(0.97_0.012_75)]"
-                      }`}
-                  >
-                    <div className="flex items-center gap-4 min-w-0">
-                      <img src={o.image} alt="" className="h-10 w-10 rounded-xl object-cover opacity-60" />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-sm text-[oklch(0.18_0.02_50)]">{o.id}</h4>
-                          <span className="text-[10px] text-[oklch(0.5_0.02_60)]">{o.date}</span>
-                        </div>
-                        <p className="truncate text-xs font-semibold text-[oklch(0.5_0.02_60)] mt-0.5 max-w-sm">
-                          {o.item}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${o.status === "cancelled" ? "bg-destructive/10 text-destructive" : "bg-emerald-500/10 text-emerald-600"
-                        }`}>
-                        {o.status}
-                      </span>
-                      <span className="font-bold text-sm text-[oklch(0.18_0.02_50)]">
-                        ₹{o.price.toFixed(2)}
-                      </span>
-                      <ChevronRight className="h-4 w-4 text-[oklch(0.5_0.02_60)] transition-transform group-hover:translate-x-0.5" />
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
           )}
         </div>
       </div>
 
-      {/* DETAIL CONSOLE PANEL (RIGHT 1/3) */}
-      <div className="col-span-1">
-        {selectedOrder ? (
-          <div className="sticky top-28 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm space-y-6 animate-fadeIn">
-            <div className="border-b border-[oklch(0.9_0.015_75)] pb-4">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-brand uppercase tracking-wider">
-                  Live Dispatch
-                </span>
-                <span className="text-xs text-[oklch(0.5_0.02_60)]">{selectedOrder.date}</span>
-              </div>
-              <h3 className="text-xl font-display font-extrabold text-[oklch(0.18_0.02_50)] mt-1">
-                Order {selectedOrder.id}
-              </h3>
-            </div>
-
-            <div className="flex gap-3">
-              <img src={selectedOrder.image} alt="" className="h-20 w-20 rounded-2xl object-cover shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs text-[oklch(0.5_0.02_60)] font-bold uppercase tracking-wider">Items Summary</p>
-                <h4 className="text-sm font-bold text-[oklch(0.18_0.02_50)] mt-1 leading-snug break-words">
-                  {selectedOrder.item}
-                </h4>
-              </div>
-            </div>
-
-            {selectedOrder.deliveryAddress && (
-              <div className="rounded-2xl bg-[oklch(0.97_0.012_75)] p-4 space-y-3">
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-brand shrink-0 mt-0.5" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider mb-1">
-                      Delivery Address
-                    </p>
-                    <p className="text-sm text-[oklch(0.5_0.02_60)] leading-snug break-words">
-                      {selectedOrder.deliveryAddress}
-                    </p>
-                  </div>
-                </div>
-                <a
-                  href={selectedOrder.deliveryLat && selectedOrder.deliveryLng 
-                    ? `https://maps.google.com/?q=${selectedOrder.deliveryLat},${selectedOrder.deliveryLng}`
-                    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedOrder.deliveryAddress)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex w-full items-center justify-center gap-2 rounded-full border border-[oklch(0.9_0.015_75)] bg-white py-2.5 text-xs font-bold text-[oklch(0.18_0.02_50)] hover:bg-[oklch(0.98_0.005_75)] transition-colors"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Navigate with Google Maps
-                </a>
-              </div>
-            )}
-
-            {/* Stepper Status Progress */}
-            {selectedOrder.status === "active" && (
-              <div className="rounded-2xl bg-[oklch(0.97_0.012_75)] p-4 space-y-3">
-                <p className="text-xs font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">
-                  Update Cooking Stream
-                </p>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <div className={`flex flex-col items-center p-2 rounded-xl text-center border ${selectedOrder.stage >= 0 ? "bg-brand/10 border-brand/20 text-brand" : "bg-white border-transparent text-muted-foreground"
-                    }`}>
-                    <Check className="h-4 w-4" />
-                    <span className="text-[9px] font-bold mt-1 uppercase">Confirmed</span>
-                  </div>
-                  <div className={`flex flex-col items-center p-2 rounded-xl text-center border ${selectedOrder.stage >= 1 ? "bg-brand/10 border-brand/20 text-brand" : "bg-white border-transparent text-muted-foreground"
-                    }`}>
-                    <Activity className={`h-4 w-4 ${selectedOrder.stage === 1 ? "animate-pulse" : ""}`} />
-                    <span className="text-[9px] font-bold mt-1 uppercase">Cooking</span>
-                  </div>
-                  <div className={`flex flex-col items-center p-2 rounded-xl text-center border ${selectedOrder.stage >= 2 ? "bg-brand/10 border-brand/20 text-brand" : "bg-white border-transparent text-muted-foreground"
-                    }`}>
-                    <TrendingUp className="h-4 w-4" />
-                    <span className="text-[9px] font-bold mt-1 uppercase">In Transit</span>
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  {selectedOrder.stage === 0 && (
-                    <button
-                      onClick={() => handleAdvanceStage(selectedOrder.id, 0)}
-                      className="w-full rounded-full bg-brand py-2.5 text-xs font-bold text-brand-foreground hover:bg-brand/90 transition-colors cursor-pointer"
-                    >
-                      Advance to "Cooking"
-                    </button>
-                  )}
-                  {selectedOrder.stage === 1 && (
-                    <button
-                      onClick={() => handleAdvanceStage(selectedOrder.id, 1)}
-                      className="w-full rounded-full bg-primary py-2.5 text-xs font-bold text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer"
-                    >
-                      Advance to "On The Way"
-                    </button>
-                  )}
-                  {selectedOrder.stage === 2 && (
-                    <button
-                      onClick={() => handleAdvanceStage(selectedOrder.id, 2)}
-                      className="w-full rounded-full bg-emerald-600 py-2.5 text-xs font-bold text-white hover:bg-emerald-700 transition-colors cursor-pointer"
-                    >
-                      Mark as "Delivered"
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className="border-t border-[oklch(0.9_0.015_75)] pt-4 space-y-4">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-[oklch(0.5_0.02_60)] font-semibold">Total Price (GST Incl.)</span>
-                <span className="text-lg font-extrabold text-[oklch(0.18_0.02_50)]">
-                  ₹{selectedOrder.price.toFixed(2)}
-                </span>
-              </div>
-
-              {selectedOrder.status === "active" && (
+      <div className="grid grid-cols-3 gap-8">
+        {/* ORDERS LIST PANEL (LEFT 2/3) */}
+        <div className="col-span-2 space-y-6">
+          {/* Active Orders List */}
+          <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4 border-b border-[oklch(0.9_0.015_75)] pb-3">
+              <div className="flex items-center gap-3">
                 <button
-                  onClick={() => handleCancelOrder(selectedOrder.id)}
-                  className="flex w-full items-center justify-center gap-1.5 rounded-full border border-destructive/20 text-destructive bg-destructive/5 hover:bg-destructive/10 transition-colors py-2 text-xs font-bold cursor-pointer"
+                  type="button"
+                  onClick={handleToggleSelectAllActive}
+                  className="text-slate-400 hover:text-brand transition-colors cursor-pointer"
+                  title="Select all active orders"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  <span>Cancel Order</span>
+                  {activeOrders.length > 0 &&
+                  activeOrders.every((o) => selectedIds.includes(o.id)) ? (
+                    <CheckSquare className="h-4 w-4 text-brand" />
+                  ) : (
+                    <Square className="h-4 w-4" />
+                  )}
                 </button>
-              )}
+                <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">
+                  Active Orders Stream
+                </h3>
+              </div>
+              <span className="text-xs font-bold text-brand bg-brand/10 px-2.5 py-1 rounded-full">
+                {activeOrders.length} Processing
+              </span>
             </div>
+
+            {activeOrders.length === 0 ? (
+              <div className="py-12 text-center text-sm text-[oklch(0.5_0.02_60)] flex flex-col items-center justify-center gap-2">
+                <ShoppingBag className="h-8 w-8 text-[oklch(0.5_0.02_60)] opacity-40" />
+                <span>No orders currently cooking or in transit.</span>
+              </div>
+            ) : (
+              <ul className="divide-y divide-[oklch(0.95_0.01_75)]">
+                {activeOrders.map((o) => {
+                  const isSelected = o.id === selectedOrderId;
+                  const isChecked = selectedIds.includes(o.id);
+                  return (
+                    <li
+                      key={o.id}
+                      onClick={() => setSelectedOrderId(o.id)}
+                      className={`group relative flex items-center justify-between p-4 -mx-4 rounded-2xl transition-all cursor-pointer ${
+                        isSelected
+                          ? "bg-[oklch(0.94_0.018_75)]"
+                          : "hover:bg-[oklch(0.97_0.012_75)]"
+                      } ${isChecked ? "ring-2 ring-brand/40 bg-brand/5" : ""}`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        {/* Checkbox */}
+                        <div
+                          onClick={(e) => handleToggleSelect(o.id, e)}
+                          className="grid h-6 w-6 place-items-center rounded-md text-slate-400 hover:text-brand cursor-pointer shrink-0"
+                        >
+                          {isChecked ? (
+                            <CheckSquare className="h-4 w-4 text-brand" />
+                          ) : (
+                            <Square className="h-4 w-4" />
+                          )}
+                        </div>
+
+                        <img
+                          src={o.image}
+                          alt=""
+                          className="h-12 w-12 rounded-xl object-cover shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-sm text-[oklch(0.18_0.02_50)]">
+                              {o.id}
+                            </h4>
+                            <span className="text-[10px] text-[oklch(0.5_0.02_60)]">
+                              {o.date}
+                            </span>
+                          </div>
+                          <p className="truncate text-xs font-semibold text-[oklch(0.18_0.02_50)] mt-0.5 max-w-sm">
+                            {o.item}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand">
+                          <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
+                          {o.stage === 0 && "Confirmed"}
+                          {o.stage === 1 && "Cooking"}
+                          {o.stage === 2 && "On the way"}
+                        </span>
+                        <span className="font-bold text-sm text-[oklch(0.18_0.02_50)]">
+                          ₹{o.price.toFixed(2)}
+                        </span>
+
+                        {/* Individual Delete Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => handleDeleteSingle(o.id, e)}
+                          className="grid h-7 w-7 place-items-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Permanently delete this order & history"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+
+                        <ChevronRight className="h-4 w-4 text-[oklch(0.5_0.02_60)] transition-transform group-hover:translate-x-0.5" />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
-        ) : (
-          <div className="sticky top-28 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm text-center text-sm text-[oklch(0.5_0.02_60)] py-12">
-            Select an order from the list to view live tracking and update stages.
+
+          {/* Past Orders List */}
+          <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4 border-b border-[oklch(0.9_0.015_75)] pb-3">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleToggleSelectAllPast}
+                  className="text-slate-400 hover:text-brand transition-colors cursor-pointer"
+                  title="Select all past orders"
+                >
+                  {pastOrders.length > 0 &&
+                  pastOrders.every((o) => selectedIds.includes(o.id)) ? (
+                    <CheckSquare className="h-4 w-4 text-brand" />
+                  ) : (
+                    <Square className="h-4 w-4" />
+                  )}
+                </button>
+                <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">
+                  Completed & Cancelled History
+                </h3>
+              </div>
+              <span className="text-xs font-bold text-[oklch(0.5_0.02_60)] bg-[oklch(0.94_0.018_75)] px-2.5 py-1 rounded-full">
+                {pastOrders.length} Logged
+              </span>
+            </div>
+
+            {pastOrders.length === 0 ? (
+              <div className="py-8 text-center text-sm text-[oklch(0.5_0.02_60)]">
+                No order archive history is available yet.
+              </div>
+            ) : (
+              <ul className="divide-y divide-[oklch(0.95_0.01_75)]">
+                {pastOrders.map((o) => {
+                  const isSelected = o.id === selectedOrderId;
+                  const isChecked = selectedIds.includes(o.id);
+                  return (
+                    <li
+                      key={o.id}
+                      onClick={() => setSelectedOrderId(o.id)}
+                      className={`group flex items-center justify-between p-4 -mx-4 rounded-2xl transition-all cursor-pointer ${
+                        isSelected
+                          ? "bg-[oklch(0.94_0.018_75)]"
+                          : "hover:bg-[oklch(0.97_0.012_75)]"
+                      } ${isChecked ? "ring-2 ring-brand/40 bg-brand/5" : ""}`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        {/* Checkbox */}
+                        <div
+                          onClick={(e) => handleToggleSelect(o.id, e)}
+                          className="grid h-6 w-6 place-items-center rounded-md text-slate-400 hover:text-brand cursor-pointer shrink-0"
+                        >
+                          {isChecked ? (
+                            <CheckSquare className="h-4 w-4 text-brand" />
+                          ) : (
+                            <Square className="h-4 w-4" />
+                          )}
+                        </div>
+
+                        <img
+                          src={o.image}
+                          alt=""
+                          className="h-10 w-10 rounded-xl object-cover opacity-60 shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-sm text-[oklch(0.18_0.02_50)]">
+                              {o.id}
+                            </h4>
+                            <span className="text-[10px] text-[oklch(0.5_0.02_60)]">
+                              {o.date}
+                            </span>
+                          </div>
+                          <p className="truncate text-xs font-semibold text-[oklch(0.5_0.02_60)] mt-0.5 max-w-sm">
+                            {o.item}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                            o.status === "cancelled"
+                              ? "bg-destructive/10 text-destructive"
+                              : "bg-emerald-500/10 text-emerald-600"
+                          }`}
+                        >
+                          {o.status}
+                        </span>
+                        <span className="font-bold text-sm text-[oklch(0.18_0.02_50)]">
+                          ₹{o.price.toFixed(2)}
+                        </span>
+
+                        {/* Individual Delete Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => handleDeleteSingle(o.id, e)}
+                          className="grid h-7 w-7 place-items-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Permanently delete this order & history"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+
+                        <ChevronRight className="h-4 w-4 text-[oklch(0.5_0.02_60)] transition-transform group-hover:translate-x-0.5" />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
-        )}
+        </div>
+
+        {/* DETAIL CONSOLE PANEL (RIGHT 1/3) */}
+        <div className="col-span-1">
+          {selectedOrder ? (
+            <div className="sticky top-28 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm space-y-6 animate-fadeIn">
+              <div className="border-b border-[oklch(0.9_0.015_75)] pb-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-brand uppercase tracking-wider">
+                    Live Dispatch
+                  </span>
+                  <span className="text-xs text-[oklch(0.5_0.02_60)]">{selectedOrder.date}</span>
+                </div>
+                <h3 className="text-xl font-display font-extrabold text-[oklch(0.18_0.02_50)] mt-1">
+                  Order {selectedOrder.id}
+                </h3>
+              </div>
+
+              <div className="flex gap-3">
+                <img
+                  src={selectedOrder.image}
+                  alt=""
+                  className="h-20 w-20 rounded-2xl object-cover shrink-0"
+                />
+                <div className="min-w-0">
+                  <p className="text-xs text-[oklch(0.5_0.02_60)] font-bold uppercase tracking-wider">
+                    Items Summary
+                  </p>
+                  <h4 className="text-sm font-bold text-[oklch(0.18_0.02_50)] mt-1 leading-snug break-words">
+                    {selectedOrder.item}
+                  </h4>
+                </div>
+              </div>
+
+              {selectedOrder.deliveryAddress && (
+                <div className="rounded-2xl bg-[oklch(0.97_0.012_75)] p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <MapPin className="h-5 w-5 text-brand shrink-0 mt-0.5" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider mb-1">
+                        Delivery Address
+                      </p>
+                      <p className="text-sm text-[oklch(0.5_0.02_60)] leading-snug break-words">
+                        {selectedOrder.deliveryAddress}
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href={
+                      selectedOrder.deliveryLat && selectedOrder.deliveryLng
+                        ? `https://maps.google.com/?q=${selectedOrder.deliveryLat},${selectedOrder.deliveryLng}`
+                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                            selectedOrder.deliveryAddress
+                          )}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex w-full items-center justify-center gap-2 rounded-full border border-[oklch(0.9_0.015_75)] bg-white py-2.5 text-xs font-bold text-[oklch(0.18_0.02_50)] hover:bg-[oklch(0.98_0.005_75)] transition-colors"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Navigate with Google Maps
+                  </a>
+                </div>
+              )}
+
+              {/* Stepper Status Progress */}
+              {selectedOrder.status === "active" && (
+                <div className="rounded-2xl bg-[oklch(0.97_0.012_75)] p-4 space-y-3">
+                  <p className="text-xs font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">
+                    Update Cooking Stream
+                  </p>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <div
+                      className={`flex flex-col items-center p-2 rounded-xl text-center border ${
+                        selectedOrder.stage >= 0
+                          ? "bg-brand/10 border-brand/20 text-brand"
+                          : "bg-white border-transparent text-muted-foreground"
+                      }`}
+                    >
+                      <Check className="h-4 w-4" />
+                      <span className="text-[9px] font-bold mt-1 uppercase">Confirmed</span>
+                    </div>
+                    <div
+                      className={`flex flex-col items-center p-2 rounded-xl text-center border ${
+                        selectedOrder.stage >= 1
+                          ? "bg-brand/10 border-brand/20 text-brand"
+                          : "bg-white border-transparent text-muted-foreground"
+                      }`}
+                    >
+                      <Activity
+                        className={`h-4 w-4 ${selectedOrder.stage === 1 ? "animate-pulse" : ""}`}
+                      />
+                      <span className="text-[9px] font-bold mt-1 uppercase">Cooking</span>
+                    </div>
+                    <div
+                      className={`flex flex-col items-center p-2 rounded-xl text-center border ${
+                        selectedOrder.stage >= 2
+                          ? "bg-brand/10 border-brand/20 text-brand"
+                          : "bg-white border-transparent text-muted-foreground"
+                      }`}
+                    >
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="text-[9px] font-bold mt-1 uppercase">In Transit</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    {selectedOrder.stage === 0 && (
+                      <button
+                        onClick={() => handleAdvanceStage(selectedOrder.id, 0)}
+                        className="w-full rounded-full bg-brand py-2.5 text-xs font-bold text-brand-foreground hover:bg-brand/90 transition-colors cursor-pointer"
+                      >
+                        Advance to "Cooking"
+                      </button>
+                    )}
+                    {selectedOrder.stage === 1 && (
+                      <button
+                        onClick={() => handleAdvanceStage(selectedOrder.id, 1)}
+                        className="w-full rounded-full bg-primary py-2.5 text-xs font-bold text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer"
+                      >
+                        Advance to "On The Way"
+                      </button>
+                    )}
+                    {selectedOrder.stage === 2 && (
+                      <button
+                        onClick={() => handleAdvanceStage(selectedOrder.id, 2)}
+                        className="w-full rounded-full bg-emerald-600 py-2.5 text-xs font-bold text-white hover:bg-emerald-700 transition-colors cursor-pointer"
+                      >
+                        Mark as "Delivered"
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="border-t border-[oklch(0.9_0.015_75)] pt-4 space-y-4">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-[oklch(0.5_0.02_60)] font-semibold">
+                    Total Price (GST Incl.)
+                  </span>
+                  <span className="text-lg font-extrabold text-[oklch(0.18_0.02_50)]">
+                    ₹{selectedOrder.price.toFixed(2)}
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {selectedOrder.status === "active" && (
+                    <button
+                      onClick={() => handleCancelOrder(selectedOrder.id)}
+                      className="flex w-full items-center justify-center gap-1.5 rounded-full border border-amber-300 text-amber-800 bg-amber-50 hover:bg-amber-100 transition-colors py-2 text-xs font-bold cursor-pointer"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      <span>Cancel Order</span>
+                    </button>
+                  )}
+
+                  {/* Permanent Delete Button */}
+                  <button
+                    disabled={isDeleting}
+                    onClick={() => handleDeleteSingle(selectedOrder.id)}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-full border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 hover:border-rose-300 transition-colors py-2.5 text-xs font-bold cursor-pointer disabled:opacity-50"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 text-rose-600" />
+                    <span>Permanently Delete Order & History</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="sticky top-28 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm text-center text-sm text-[oklch(0.5_0.02_60)] py-12">
+              Select an order from the list to view live tracking and update stages.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -938,12 +1269,18 @@ interface MenuTabProps {
 function MenuTab({ menuItems }: MenuTabProps) {
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
 
+  // Filters
+  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "disabled">("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
   // Form Fields
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState<"Burgers" | "Burrito" | "Sides" | "Drinks" | "Combos">("Burgers");
   const [tag, setTag] = useState("");
+  const [isAvailable, setIsAvailable] = useState(true);
   const [isComingSoon, setIsComingSoon] = useState(false);
   const [isFeatured, setIsFeatured] = useState(false);
   const [image, setImage] = useState("");
@@ -958,6 +1295,41 @@ function MenuTab({ menuItems }: MenuTabProps) {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
+  // Counts
+  const activeCount = useMemo(
+    () => menuItems.filter((i) => i.isAvailable !== false).length,
+    [menuItems]
+  );
+  const disabledCount = useMemo(
+    () => menuItems.filter((i) => i.isAvailable === false).length,
+    [menuItems]
+  );
+
+  // Filtered Items
+  const filteredItems = useMemo(() => {
+    return menuItems.filter((item) => {
+      const isItemActive = item.isAvailable !== false;
+      const matchesStatus =
+        filterStatus === "all"
+          ? true
+          : filterStatus === "active"
+          ? isItemActive
+          : !isItemActive;
+
+      const matchesCategory =
+        selectedCategory === "All" ||
+        item.category?.toLowerCase() === selectedCategory.toLowerCase();
+
+      const matchesSearch =
+        !searchQuery.trim() ||
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.desc || item.description || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.tag || "").toLowerCase().includes(searchQuery.toLowerCase());
+
+      return matchesStatus && matchesCategory && matchesSearch;
+    });
+  }, [menuItems, filterStatus, selectedCategory, searchQuery]);
+
   const resetForm = () => {
     setEditingItem(null);
     setName("");
@@ -965,6 +1337,7 @@ function MenuTab({ menuItems }: MenuTabProps) {
     setPrice("");
     setCategory("Burgers");
     setTag("");
+    setIsAvailable(true);
     setIsComingSoon(false);
     setIsFeatured(false);
     setImage("");
@@ -984,12 +1357,25 @@ function MenuTab({ menuItems }: MenuTabProps) {
     setPrice(item.price.toString());
     setCategory(item.category);
     setTag(item.tag || "");
+    setIsAvailable(item.isAvailable !== false);
     setIsComingSoon(Boolean((item as any).isComingSoon) || item.tag?.toLowerCase() === "coming soon");
     setIsFeatured(Boolean((item as any).isFeatured));
     setImage(item.imageUrl || item.image || "");
     setVideoUrl(item.videoUrl || "");
     setShowManualImageUrl(false);
     setShowManualVideoUrl(false);
+  };
+
+  const handleToggleAvailable = async (item: MenuItem) => {
+    const nextState = item.isAvailable === false ? true : false;
+    const res = await menuStore.toggleAvailable(item.id, nextState);
+    if (res) {
+      toast.success(
+        nextState
+          ? `🟢 "${item.name}" enabled (now visible on customer store)!`
+          : `⏸️ "${item.name}" disabled (soft-deleted & hidden from customer store)`
+      );
+    }
   };
 
   const handleToggleFeatured = async (item: MenuItem) => {
@@ -1110,6 +1496,7 @@ function MenuTab({ menuItems }: MenuTabProps) {
       price: parsedPrice,
       category,
       tag: tag.trim() || undefined,
+      isAvailable,
       isComingSoon,
       isFeatured,
       image: finalImageUrl,
@@ -1137,10 +1524,10 @@ function MenuTab({ menuItems }: MenuTabProps) {
     resetForm();
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this menu item?")) {
-      menuStore.deleteItem(id);
-      toast.success("Menu item deleted");
+  const handleDelete = (id: string, name: string) => {
+    if (confirm(`Are you sure you want to permanently delete "${name}" from database?`)) {
+      menuStore.hardDeleteItem(id);
+      toast.success(`"${name}" permanently deleted`);
       if (editingItem && editingItem.id === id) {
         resetForm();
       }
@@ -1150,115 +1537,282 @@ function MenuTab({ menuItems }: MenuTabProps) {
   return (
     <div className="grid grid-cols-5 gap-8 animate-fadeIn">
       {/* PRODUCTS LIST TABLE (LEFT 3/5) */}
-      <div className="col-span-3 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm">
-        <div className="flex items-center justify-between border-b border-[oklch(0.9_0.015_75)] pb-3 mb-4">
-          <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">
-            Catalog Menu Items ({menuItems.length})
-          </h3>
-          <span className="text-xs text-[oklch(0.5_0.02_60)]">
-            Cloudinary media supported
-          </span>
+      <div className="col-span-3 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm flex flex-col gap-4">
+        {/* Header & Stats */}
+        <div className="flex flex-col gap-3 border-b border-[oklch(0.9_0.015_75)] pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">
+                Catalog Menu Items ({menuItems.length})
+              </h3>
+              <p className="text-xs text-[oklch(0.5_0.02_60)]">
+                Manage product details, pricing, and customer visibility
+              </p>
+            </div>
+            <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+              Cloudinary Media Sync
+            </span>
+          </div>
+
+          {/* Filter Status Tabs (All / Active / Disabled) */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+            <div className="inline-flex rounded-xl bg-[oklch(0.95_0.01_75)] p-1 text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setFilterStatus("all")}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  filterStatus === "all"
+                    ? "bg-white text-[oklch(0.18_0.02_50)] shadow-xs font-bold"
+                    : "text-[oklch(0.5_0.02_60)] hover:text-foreground"
+                }`}
+              >
+                All ({menuItems.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterStatus("active")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  filterStatus === "active"
+                    ? "bg-emerald-500 text-white shadow-xs font-bold"
+                    : "text-[oklch(0.5_0.02_60)] hover:text-emerald-700"
+                }`}
+              >
+                <span className="h-2 w-2 rounded-full bg-emerald-300" />
+                Active ({activeCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterStatus("disabled")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  filterStatus === "disabled"
+                    ? "bg-slate-800 text-white shadow-xs font-bold"
+                    : "text-[oklch(0.5_0.02_60)] hover:text-slate-900"
+                }`}
+              >
+                <span className="h-2 w-2 rounded-full bg-amber-400" />
+                Disabled / Hidden ({disabledCount})
+              </button>
+            </div>
+
+            {/* Search & Category Filter */}
+            <div className="flex items-center gap-2 flex-1 max-w-xs">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 text-xs bg-[oklch(0.98_0.005_75)] border border-[oklch(0.9_0.015_75)] rounded-xl focus:outline-none focus:border-brand"
+                />
+              </div>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="text-xs bg-[oklch(0.98_0.005_75)] border border-[oklch(0.9_0.015_75)] rounded-xl px-2 py-1.5 focus:outline-none focus:border-brand cursor-pointer"
+              >
+                <option value="All">All Categories</option>
+                <option value="Burgers">Burgers</option>
+                <option value="Burrito">Burrito</option>
+                <option value="Sides">Sides</option>
+                <option value="Drinks">Drinks</option>
+                <option value="Combos">Combos</option>
+              </select>
+            </div>
+          </div>
         </div>
 
+        {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-[oklch(0.9_0.015_75)] text-xs font-bold text-[oklch(0.5_0.02_60)] uppercase tracking-wider">
-                <th className="pb-3 pl-2">Product</th>
-                <th className="pb-3">Category</th>
-                <th className="pb-3">Price</th>
-                <th className="pb-3 text-right pr-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {menuItems.map((item) => (
-                <tr key={item.id} className="border-b border-[oklch(0.95_0.01_75)] text-sm group hover:bg-[oklch(0.98_0.005_75)] transition-colors">
-                  <td className="py-3 pl-2">
-                    <div className="flex items-center gap-3">
-                      <div className="relative h-12 w-12 rounded-xl overflow-hidden shrink-0 bg-accent border border-[oklch(0.9_0.015_75)] shadow-xs">
-                        <img
-                          src={item.imageUrl || item.image}
-                          alt={item.name}
-                          className="h-full w-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&auto=format&fit=crop&q=60";
-                          }}
-                        />
-                        {item.videoUrl && (
-                          <span className="absolute bottom-1 right-1 grid h-4 w-4 place-items-center rounded-full bg-black/70 text-white" title="Has attached video">
-                            <Film className="h-2.5 w-2.5" />
+          {filteredItems.length === 0 ? (
+            <div className="p-8 text-center text-slate-400 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 my-2">
+              <Utensils className="h-8 w-8 mx-auto text-slate-300 mb-2" />
+              <p className="text-sm font-semibold text-slate-600">No menu items found</p>
+              <p className="text-xs text-slate-400 mt-1">
+                {filterStatus === "disabled"
+                  ? "No disabled items currently in the catalog."
+                  : "Try adjusting your search or status filter."}
+              </p>
+            </div>
+          ) : (
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-[oklch(0.9_0.015_75)] text-xs font-bold text-[oklch(0.5_0.02_60)] uppercase tracking-wider">
+                  <th className="pb-3 pl-2">Product</th>
+                  <th className="pb-3">Status</th>
+                  <th className="pb-3">Category</th>
+                  <th className="pb-3">Price</th>
+                  <th className="pb-3 text-right pr-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredItems.map((item) => {
+                  const isItemActive = item.isAvailable !== false;
+                  return (
+                    <tr
+                      key={item.id}
+                      className={`border-b border-[oklch(0.95_0.01_75)] text-sm group transition-colors ${
+                        !isItemActive
+                          ? "bg-slate-50/80 opacity-75 hover:opacity-100"
+                          : "hover:bg-[oklch(0.98_0.005_75)]"
+                      }`}
+                    >
+                      <td className="py-3 pl-2">
+                        <div className="flex items-center gap-3">
+                          <div className="relative h-12 w-12 rounded-xl overflow-hidden shrink-0 bg-accent border border-[oklch(0.9_0.015_75)] shadow-xs">
+                            <img
+                              src={item.imageUrl || item.image}
+                              alt={item.name}
+                              className={`h-full w-full object-cover transition-all ${
+                                !isItemActive ? "grayscale" : ""
+                              }`}
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src =
+                                  "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&auto=format&fit=crop&q=60";
+                              }}
+                            />
+                            {item.videoUrl && (
+                              <span
+                                className="absolute bottom-1 right-1 grid h-4 w-4 place-items-center rounded-full bg-black/70 text-white"
+                                title="Has attached video"
+                              >
+                                <Film className="h-2.5 w-2.5" />
+                              </span>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <h4
+                                className={`font-bold ${
+                                  !isItemActive
+                                    ? "text-slate-500 line-through"
+                                    : "text-[oklch(0.18_0.02_50)]"
+                                }`}
+                              >
+                                {item.name}
+                              </h4>
+                              {item.tag && (
+                                <span className="rounded bg-[oklch(0.9_0.015_75)] px-1 py-0.5 text-[8px] font-bold text-foreground">
+                                  {item.tag}
+                                </span>
+                              )}
+                              {(item.isComingSoon || item.tag?.toLowerCase() === "coming soon") && (
+                                <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-700 px-1.5 py-0.2 text-[9px] font-bold">
+                                  🚀 Coming Soon
+                                </span>
+                              )}
+                              {item.isFeatured && (
+                                <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500 text-slate-950 px-1.5 py-0.2 text-[9px] font-bold shadow-2xs">
+                                  ⭐ Main Carousel
+                                </span>
+                              )}
+                              {item.videoUrl && (
+                                <span className="inline-flex items-center gap-0.5 rounded-full bg-blue-500/10 px-1.5 py-0.2 text-[9px] font-bold text-blue-600">
+                                  <Video className="h-2.5 w-2.5" /> Video
+                                </span>
+                              )}
+                            </div>
+                            <p className="truncate text-xs text-[oklch(0.5_0.02_60)] mt-0.5 max-w-xs">
+                              {item.desc || item.description}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      {/* Status Column */}
+                      <td className="py-3">
+                        {isItemActive ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Active
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-600 border border-slate-300 px-2 py-0.5 text-[10px] font-bold">
+                            <EyeOff className="h-3 w-3 text-slate-400" />
+                            Disabled
                           </span>
                         )}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <h4 className="font-bold text-[oklch(0.18_0.02_50)]">{item.name}</h4>
-                          {item.tag && (
-                            <span className="rounded bg-[oklch(0.9_0.015_75)] px-1 py-0.5 text-[8px] font-bold text-foreground">
-                              {item.tag}
-                            </span>
-                          )}
-                          {(item.isComingSoon || item.tag?.toLowerCase() === "coming soon") && (
-                            <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-700 px-1.5 py-0.2 text-[9px] font-bold">
-                              🚀 Coming Soon
-                            </span>
-                          )}
-                          {item.isFeatured && (
-                            <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500 text-slate-950 px-1.5 py-0.2 text-[9px] font-bold shadow-2xs">
-                              ⭐ Main Carousel
-                            </span>
-                          )}
-                          {item.videoUrl && (
-                            <span className="inline-flex items-center gap-0.5 rounded-full bg-blue-500/10 px-1.5 py-0.2 text-[9px] font-bold text-blue-600">
-                              <Video className="h-2.5 w-2.5" /> Video
-                            </span>
-                          )}
+                      </td>
+                      <td className="py-3">
+                        <span className="rounded-full bg-[oklch(0.94_0.018_75)] px-2.5 py-1 text-xs font-medium text-[oklch(0.22_0.025_50)]">
+                          {item.category}
+                        </span>
+                      </td>
+                      <td className="py-3 font-bold text-[oklch(0.18_0.02_50)]">
+                        ₹{item.price.toFixed(2)}
+                      </td>
+                      <td className="py-3 text-right pr-2">
+                        <div className="inline-flex items-center gap-1.5">
+                          {/* Soft Delete / Disable Toggle Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleAvailable(item)}
+                            className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-bold transition-all cursor-pointer ${
+                              isItemActive
+                                ? "bg-slate-100 text-slate-700 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 border border-slate-200"
+                                : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-300 shadow-2xs"
+                            }`}
+                            title={
+                              isItemActive
+                                ? "Disable / Soft Delete (Hides from customer store)"
+                                : "Enable Product (Makes visible on customer store)"
+                            }
+                          >
+                            {isItemActive ? (
+                              <>
+                                <EyeOff className="h-3 w-3 text-slate-500" />
+                                <span>Disable</span>
+                              </>
+                            ) : (
+                              <>
+                                <Check className="h-3 w-3 text-emerald-600 font-bold" />
+                                <span>Enable</span>
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleToggleFeatured(item)}
+                            className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-bold transition-all cursor-pointer ${
+                              item.isFeatured
+                                ? "bg-amber-400 text-amber-950 hover:bg-amber-500 shadow-2xs"
+                                : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200"
+                            }`}
+                            title={
+                              item.isFeatured
+                                ? "Click to remove from Homepage Carousel"
+                                : "Click to spotlight in Homepage Carousel"
+                            }
+                          >
+                            <Star
+                              className={`h-3 w-3 ${
+                                item.isFeatured ? "fill-amber-950 text-amber-950" : "text-gray-400"
+                              }`}
+                            />
+                            <span>{item.isFeatured ? "Featured" : "Feature"}</span>
+                          </button>
+                          <button
+                            onClick={() => handleEditInit(item)}
+                            className="grid h-8 w-8 place-items-center rounded-lg hover:bg-brand/10 hover:text-brand transition-colors text-[oklch(0.5_0.02_60)] cursor-pointer"
+                            title="Edit Item"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item.id, item.name)}
+                            className="grid h-8 w-8 place-items-center rounded-lg hover:bg-destructive/10 hover:text-destructive transition-colors text-[oklch(0.5_0.02_60)] cursor-pointer"
+                            title="Permanently Delete Item"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
                         </div>
-                        <p className="truncate text-xs text-[oklch(0.5_0.02_60)] mt-0.5 max-w-xs">{item.desc || item.description}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3">
-                    <span className="rounded-full bg-[oklch(0.94_0.018_75)] px-2.5 py-1 text-xs font-medium text-[oklch(0.22_0.025_50)]">
-                      {item.category}
-                    </span>
-                  </td>
-                  <td className="py-3 font-bold text-[oklch(0.18_0.02_50)]">₹{item.price.toFixed(2)}</td>
-                  <td className="py-3 text-right pr-2">
-                    <div className="inline-flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => handleToggleFeatured(item)}
-                        className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-bold transition-all cursor-pointer ${
-                          item.isFeatured
-                            ? "bg-amber-400 text-amber-950 hover:bg-amber-500 shadow-2xs"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200"
-                        }`}
-                        title={item.isFeatured ? "Click to remove from Homepage Carousel" : "Click to spotlight in Homepage Carousel"}
-                      >
-                        <Star className={`h-3 w-3 ${item.isFeatured ? "fill-amber-950 text-amber-950" : "text-gray-400"}`} />
-                        <span>{item.isFeatured ? "Featured" : "Feature"}</span>
-                      </button>
-                      <button
-                        onClick={() => handleEditInit(item)}
-                        className="grid h-8 w-8 place-items-center rounded-lg hover:bg-brand/10 hover:text-brand transition-colors text-[oklch(0.5_0.02_60)] cursor-pointer"
-                        title="Edit Item"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="grid h-8 w-8 place-items-center rounded-lg hover:bg-destructive/10 hover:text-destructive transition-colors text-[oklch(0.5_0.02_60)] cursor-pointer"
-                        title="Delete Item"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
@@ -1574,6 +2128,32 @@ function MenuTab({ menuItems }: MenuTabProps) {
                 onChange={(e) => setTag(e.target.value)}
                 className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] px-3 py-2 text-sm focus:border-brand focus:outline-none"
                 placeholder="e.g. Spicy, Hot, Bestseller"
+              />
+            </div>
+
+            {/* --- VISIBILITY & SOFT-DELETE TOGGLE --- */}
+            <div
+              className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all ${
+                isAvailable
+                  ? "bg-emerald-50/80 border-emerald-200 text-emerald-950"
+                  : "bg-slate-100 border-slate-300 text-slate-800"
+              }`}
+            >
+              <div>
+                <label className="flex items-center gap-1.5 text-xs font-bold cursor-pointer">
+                  <span>{isAvailable ? "🟢" : "⏸️"}</span> Product Visibility on Store
+                </label>
+                <p className="text-[10px] opacity-80 mt-0.5">
+                  {isAvailable
+                    ? "Active: Displayed and purchasable in the customer store."
+                    : "Disabled / Soft-Deleted: Hidden from customer store but preserved in database."}
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={isAvailable}
+                onChange={(e) => setIsAvailable(e.target.checked)}
+                className="h-5 w-5 rounded-md accent-emerald-600 cursor-pointer"
               />
             </div>
 

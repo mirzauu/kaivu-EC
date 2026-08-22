@@ -18,13 +18,17 @@ function emit() {
   listeners.forEach((cb) => cb());
 }
 
+let includeAllItems = false;
+
 // Load menu items from server on client initialization
-async function loadMenu() {
+async function loadMenu(includeDisabled = includeAllItems) {
   try {
+    includeAllItems = includeDisabled;
     state = { ...state, isLoading: true, error: null };
     emit();
 
-    const res = await fetch("/api/menu");
+    const url = includeDisabled ? "/api/menu?all=true" : "/api/menu";
+    const res = await fetch(url);
     const data = await res.json();
 
     if (data.success) {
@@ -57,9 +61,10 @@ if (typeof window !== "undefined") {
 export const menuStore = {
   /**
    * Refreshes the menu from the database.
+   * @param includeDisabled If true, includes soft-deleted / disabled items (used in admin console).
    */
-  async refresh() {
-    await loadMenu();
+  async refresh(includeDisabled = false) {
+    await loadMenu(includeDisabled);
   },
 
   /**
@@ -108,7 +113,14 @@ export const menuStore = {
   },
 
   /**
-   * Admin: Delete (disable) a menu item.
+   * Admin: Toggle item availability (Soft Delete / Enable).
+   */
+  async toggleAvailable(id: string, isAvailable: boolean) {
+    return this.updateItem(id, { isAvailable });
+  },
+
+  /**
+   * Admin: Soft-delete (disable) a menu item.
    */
   async deleteItem(id: string) {
     try {
@@ -118,9 +130,32 @@ export const menuStore = {
       const data = await res.json();
       if (data.success) {
         await loadMenu();
+        return true;
       }
+      return false;
     } catch (e) {
       console.error("Failed to delete menu item", e);
+      return false;
+    }
+  },
+
+  /**
+   * Admin: Hard delete (permanently remove) a menu item.
+   */
+  async hardDeleteItem(id: string) {
+    try {
+      const res = await fetch(`/api/menu/${id}?hard=true`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        await loadMenu();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error("Failed to permanently delete menu item", e);
+      return false;
     }
   },
 };

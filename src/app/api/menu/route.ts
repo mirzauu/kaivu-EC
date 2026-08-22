@@ -11,8 +11,14 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
     const category = searchParams.get("category");
+    const includeDisabled =
+      searchParams.get("includeDisabled") === "true" ||
+      searchParams.get("all") === "true";
 
-    const where: Record<string, unknown> = { isAvailable: true };
+    const where: Record<string, unknown> = {};
+    if (!includeDisabled) {
+      where.isAvailable = true;
+    }
     if (category && category !== "All") {
       where.category = category.toUpperCase();
     }
@@ -31,6 +37,7 @@ export async function GET(req: NextRequest) {
       imageUrl: item.imageUrl,
       videoUrl: item.videoUrl,
       desc: item.description,
+      isAvailable: item.isAvailable,
       isComingSoon: Boolean((item as any).isComingSoon) || item.tag?.toLowerCase() === "coming soon",
       isFeatured: Boolean((item as any).isFeatured),
       category: item.category

@@ -23,9 +23,10 @@ export const GET = withAuth(
     try {
       const { id } = await context!.params;
 
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
       const order = await db.order.findFirst({
         where: {
-          OR: [{ id }, { orderNumber: id }],
+          ...(isUuid ? { id } : { orderNumber: id }),
           // Regular users can only see their own orders
           ...(req.user.role !== "ADMIN" ? { userId: req.user.userId } : {}),
         },
@@ -98,13 +99,9 @@ export const PATCH = withAdmin(
         );
       }
 
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
       const order = await db.order.findFirst({
-        where: {
-          OR: [
-            ...(id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i) ? [{ id }] : []),
-            { orderNumber: id }
-          ]
-        }
+        where: isUuid ? { id } : { orderNumber: id },
       });
       if (!order) {
         return NextResponse.json(apiError("Order not found"), { status: 404 });
@@ -182,6 +179,56 @@ export const PATCH = withAdmin(
     } catch (error) {
       console.error("Order update error:", error);
       return NextResponse.json(apiError("Failed to update order"), { status: 500 });
+    }
+  }
+);
+
+/**
+ * DELETE /api/orders/[id]
+ * Completely delete an order and all its associated history (admin-only).
+ */
+export const DELETE = withAdmin(
+  async (
+    _req: AuthenticatedRequest,
+    context?: { params: Promise<Record<string, string>> }
+  ) => {
+    try {
+      const { id } = await context!.params;
+
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+      const order = await db.order.findFirst({
+        where: isUuid ? { id } : { orderNumber: id },
+      });
+
+      if (!order) {
+        return NextResponse.json(apiError("Order not found"), { status: 404 });
+      }
+
+      // Perform clean deletion of order and all related historical records in a transaction
+      await db.$transaction(async (tx) => {
+        // 1. Unlink any user rewards redeemed on this order
+        await tx.userReward.updateMany({
+          where: { redeemedOnOrder: order.id },
+          data: { redeemedOnOrder: null },
+        });
+
+        // 2. Delete all line items
+        await tx.orderItem.deleteMany({
+          where: { orderId: order.id },
+        });
+
+        // 3. Delete the order record itself
+        await tx.order.delete({
+          where: { id: order.id },
+        });
+      });
+
+      return NextResponse.json(
+        apiSuccess(null, `Order ${order.orderNumber} and all associated history permanently deleted.`)
+      );
+    } catch (error) {
+      console.error("Order deletion error:", error);
+      return NextResponse.json(apiError("Failed to delete order"), { status: 500 });
     }
   }
 );

@@ -17,6 +17,7 @@ export type MenuItem = {
   tag?: string;
   badge?: string;
   rating: number;
+  isAvailable?: boolean;
   isComingSoon?: boolean;
   isFeatured?: boolean;
 };
