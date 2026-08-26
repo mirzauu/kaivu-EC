@@ -21,10 +21,7 @@ import { PushingHandBanner } from "@/components/PushingHandBanner";
 import { useLocation, locationStore } from "@/lib/location-store";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFlyToCart } from "@/components/FlyToCartProvider";
-import { KaivuIRLSection } from "@/components/KaivuIRLSection";
-import { KaivuStoryModal } from "@/components/KaivuStoryModal";
 import { KaivuBrandLogo } from "@/components/KaivuBrandLogo";
-import { getStories, isStoriesEnabled, KaivuStory } from "@/lib/stories-data";
 
 import { HeroCarousel } from "@/components/HeroCarousel";
 
@@ -230,9 +227,7 @@ export default function Home() {
       clearTimeout(idleTimer);
     };
   }, []);
-  const [activeStoryIndex, setActiveStoryIndex] = useState<number | null>(null);
-  const [stories] = useState<KaivuStory[]>(() => getStories());
-  const [storiesEnabled] = useState<boolean>(() => isStoriesEnabled());
+
 
   const [bogoToastVisible, setBogoToastVisible] = useState(false);
 
@@ -374,13 +369,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Kaivu IRL Shoppable Customer Stories (Only shown if ON and stories exist) */}
-            {storiesEnabled && mounted && stories.length > 0 && (
-              <KaivuIRLSection
-                stories={stories}
-                onOpenStory={(index) => setActiveStoryIndex(index)}
-              />
-            )}
+
 
 
 
@@ -552,14 +541,7 @@ export default function Home() {
         onClose={() => setSelectedDetailItem(null)}
       />
 
-      {/* Kaivu IRL Shoppable UGC Story Modal */}
-      <KaivuStoryModal
-        stories={stories.length > 0 ? stories : getStories()}
-        initialIndex={activeStoryIndex ?? 0}
-        isOpen={activeStoryIndex !== null}
-        onClose={() => setActiveStoryIndex(null)}
-        onSelectProduct={(product) => setSelectedDetailItem(product)}
-      />
+
 
       <AnimatePresence>
         {itemCount > 0 && mounted && showCartBar && (

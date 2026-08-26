@@ -98,6 +98,25 @@ export async function getNotificationBannersConfig(): Promise<NotificationBanner
   if (!raw) return DEFAULT_NOTIFICATION_BANNERS_CONFIG;
   try {
     const parsed = JSON.parse(raw);
+    let halfScreenOffer = {
+      ...DEFAULT_NOTIFICATION_BANNERS_CONFIG.halfScreenOffer,
+      ...(parsed.halfScreenOffer || {}),
+    };
+    // Auto-migrate legacy 200 off settings if still present
+    if (
+      halfScreenOffer.title?.includes("200") ||
+      halfScreenOffer.promoCode === "FIRSTFEAST" ||
+      halfScreenOffer.description?.includes("FIRSTFEAST")
+    ) {
+      halfScreenOffer = {
+        ...DEFAULT_NOTIFICATION_BANNERS_CONFIG.halfScreenOffer,
+        enabled: halfScreenOffer.enabled,
+        targetAudience: halfScreenOffer.targetAudience,
+        routes: halfScreenOffer.routes,
+        delaySeconds: halfScreenOffer.delaySeconds,
+      };
+    }
+
     return {
       fullScreenInstall: {
         ...DEFAULT_NOTIFICATION_BANNERS_CONFIG.fullScreenInstall,
@@ -107,10 +126,7 @@ export async function getNotificationBannersConfig(): Promise<NotificationBanner
         ...DEFAULT_NOTIFICATION_BANNERS_CONFIG.idleSmallBanner,
         ...(parsed.idleSmallBanner || {}),
       },
-      halfScreenOffer: {
-        ...DEFAULT_NOTIFICATION_BANNERS_CONFIG.halfScreenOffer,
-        ...(parsed.halfScreenOffer || {}),
-      },
+      halfScreenOffer,
     };
   } catch {
     return DEFAULT_NOTIFICATION_BANNERS_CONFIG;

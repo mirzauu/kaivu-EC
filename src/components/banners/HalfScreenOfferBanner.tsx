@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Tag, Copy, Check, X, ArrowRight, Sparkles, Percent } from "lucide-react";
+import { Tag, Copy, Check, X, ArrowRight, Sparkles, Gift } from "lucide-react";
 import { toast } from "sonner";
 import { HalfScreenOfferBannerConfig } from "@/lib/types/banners";
 
@@ -21,7 +21,7 @@ export function HalfScreenOfferBanner({ config, isOpen, onClose }: HalfScreenOff
     if (typeof window !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(config.promoCode);
       setCopied(true);
-      toast.success(`Code "${config.promoCode}" copied to clipboard!`);
+      toast.success(`Coupon code "${config.promoCode}" copied to clipboard!`);
       setTimeout(() => setCopied(false), 3000);
     }
   };
@@ -41,7 +41,7 @@ export function HalfScreenOfferBanner({ config, isOpen, onClose }: HalfScreenOff
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", stiffness: 340, damping: 30 }}
-          className="relative w-full max-w-md max-h-[58vh] sm:max-h-[52vh] rounded-t-[32px] sm:rounded-[32px] bg-gradient-to-b from-[#180e11] via-[#100709] to-[#080305] border-t sm:border border-amber-500/25 p-6 shadow-2xl text-white overflow-y-auto flex flex-col justify-between"
+          className="relative w-full max-w-md max-h-[58vh] sm:max-h-[52vh] rounded-t-[32px] sm:rounded-[32px] bg-gradient-to-b from-[#1c0e12] via-[#12070a] to-[#080305] border-t sm:border border-amber-500/30 p-6 shadow-2xl text-white overflow-y-auto flex flex-col justify-between"
         >
           {/* Pull Handle Indicator */}
           <div className="mx-auto h-1.5 w-12 rounded-full bg-white/20 -mt-2 mb-3" />
@@ -59,20 +59,20 @@ export function HalfScreenOfferBanner({ config, isOpen, onClose }: HalfScreenOff
             {/* Tag Badge */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-[10px] font-black uppercase tracking-wider mb-3">
               <Sparkles className="h-3 w-3" />
-              <span>{config.badgeText || "Special Exclusive Deal"}</span>
+              <span>{config.badgeText || "BUY 1 GET 1 FREE"}</span>
             </div>
 
             {/* Offer Header & Title */}
             <div className="flex items-start gap-3.5">
-              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand to-rose-600 text-white shadow-lg shadow-brand/25">
-                <Percent className="h-6 w-6 stroke-[2.5]" />
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-amber-500 via-rose-600 to-brand text-white shadow-lg shadow-brand/25">
+                <Gift className="h-6 w-6 stroke-[2.2]" />
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className="text-xl sm:text-2xl font-black text-white leading-tight tracking-tight">
-                  {config.title || "Flat ₹200 OFF Your Feast!"}
+                  {config.title || "BUY 1 GET 1 FREE on First Order!"}
                 </h3>
-                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                  {config.description || "Use coupon code at checkout on orders above ₹499. Fresh artisanal smash burgers delivered piping hot."}
+                <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                  {config.description || "Add any 2 artisanal craft burgers to your cart & get the second one completely FREE! Applied automatically at checkout."}
                 </p>
               </div>
             </div>
@@ -80,10 +80,12 @@ export function HalfScreenOfferBanner({ config, isOpen, onClose }: HalfScreenOff
             {/* Promo Code Box */}
             {config.promoCode && (
               <div className="mt-4 rounded-2xl bg-white/5 border border-dashed border-amber-500/40 p-3 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <Tag className="h-4 w-4 text-amber-400 shrink-0" />
+                <div className="flex items-center gap-2.5">
+                  <div className="grid h-8 w-8 place-items-center rounded-xl bg-amber-500/20 text-amber-400">
+                    <Tag className="h-4 w-4 shrink-0" />
+                  </div>
                   <div>
-                    <p className="text-[10px] uppercase font-bold text-slate-400">Coupon Code</p>
+                    <p className="text-[10px] uppercase font-bold text-slate-400">Coupon / Offer Code</p>
                     <p className="text-sm font-black text-amber-400 tracking-wider font-mono">
                       {config.promoCode}
                     </p>
@@ -114,11 +116,11 @@ export function HalfScreenOfferBanner({ config, isOpen, onClose }: HalfScreenOff
           {/* Action CTAs */}
           <div className="mt-6 flex items-center gap-3">
             <Link
-              href={config.buttonLink || "/menu"}
+              href={config.buttonLink || "/menu?category=Burgers"}
               onClick={onClose}
-              className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-brand to-amber-500 text-slate-950 font-extrabold text-sm shadow-xl shadow-brand/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-brand text-slate-950 font-extrabold text-sm shadow-xl shadow-brand/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
             >
-              <span>{config.buttonText || "Claim Offer Now"}</span>
+              <span>{config.buttonText || "Claim BOGO Offer"}</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
 

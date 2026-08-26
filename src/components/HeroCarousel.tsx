@@ -40,36 +40,15 @@ const cardBgColors = [
   "#3A5A80", // Steel Ocean
 ];
 
-import assets from "@/lib/cloudinary-assets.json";
-
-// Video assets for different item types from Cloudinary
-const VIDEO_BURGER_1 = assets.videos["A_professional_second_e_comm (1)_gwr_video_mvp.mp4"];
-const VIDEO_BURGER_2 = assets.videos["A_professional_second_e_comm (2)_gwr_video_mvp.mp4"];
-const VIDEO_LOADED = assets.videos["A_professional_second_e_comm (4)_gwr_video_mvp.mp4"];
-
 /**
- * Returns the matching video source based on item name and category
+ * Returns the optimized video source only if a video is explicitly attached to the product.
  */
-function getCardVideoSrc(item: MenuItem, idx: number): string {
-  if ((item as any).videoUrl) {
-    return getOptimizedVideoUrl((item as any).videoUrl);
+function getCardVideoSrc(item: MenuItem): string | null {
+  const url = item.videoUrl || (item as any).video || (item as any).video_url;
+  if (url && typeof url === "string" && url.trim().length > 0) {
+    return getOptimizedVideoUrl(url.trim());
   }
-
-  const name = (item.name || "").toLowerCase();
-  const id = (item.id || "").toLowerCase();
-
-  // Loaded items get the loaded video (Video 4)
-  if (name.includes("loaded") || id.includes("loaded")) {
-    return getOptimizedVideoUrl(VIDEO_LOADED);
-  }
-
-  // Chicken / cluck / spicy burgers get Video 2
-  if (name.includes("cluck") || name.includes("chicken") || name.includes("rooster") || idx % 2 === 1) {
-    return getOptimizedVideoUrl(VIDEO_BURGER_2);
-  }
-
-  // Classic beef smash burgers get Video 1
-  return getOptimizedVideoUrl(VIDEO_BURGER_1);
+  return null;
 }
 
 /**
@@ -426,7 +405,7 @@ const topCategories = [
             ? null
             : displayItems.map((item, idx) => {
                 const isActive = activeIndex === idx;
-                const videoSrc = getCardVideoSrc(item, idx);
+                const videoSrc = getCardVideoSrc(item);
 
                 return (
                   <li
@@ -447,8 +426,8 @@ const topCategories = [
                         className="absolute inset-0 h-full w-full object-cover object-center group-hover:scale-108 transition-transform duration-700 pointer-events-none"
                       />
 
-                      {/* ACTIVE CARD VIDEO PLAYER (Plays matching video on loop in mute when idle) */}
-                      {isActive && (
+                      {/* ACTIVE CARD VIDEO PLAYER (Only plays if explicit video is attached to the product) */}
+                      {isActive && videoSrc && (
                         <CardVideoPlayer
                           src={videoSrc}
                           isActive={isActive}

@@ -414,73 +414,84 @@ interface TabProps {
   menuItems: MenuItem[];
 }
 function DashboardTab({ orders, menuItems }: TabProps) {
-  // Compute Stats
+  // Compute Stats strictly from real database records (0 if clean database)
   const stats = useMemo(() => {
-    // base baseline values for stats to make the dashboard look like an active corporate system
-    const baseRevenue = 15240;
-    const baseOrdersCount = 24;
-
-    const actualRevenue = orders
-      .filter((o) => o.status === "delivered" || o.status === "active")
-      .reduce((sum, o) => sum + o.price, 0);
-
-    const totalRevenue = baseRevenue + actualRevenue;
-    const totalOrdersCount = baseOrdersCount + orders.length;
+    const validOrders = orders.filter((o) => o.status !== "cancelled");
+    const totalRevenue = validOrders.reduce((sum, o) => sum + (Number(o.price) || 0), 0);
+    const totalOrdersCount = orders.length;
     const averageOrderValue = totalOrdersCount > 0 ? totalRevenue / totalOrdersCount : 0;
-    const activeProductsCount = menuItems.length;
+    const activeProductsCount = menuItems.filter((m) => m.isAvailable !== false).length;
 
     return {
       revenue: totalRevenue,
       ordersCount: totalOrdersCount,
       aov: averageOrderValue,
-      productsCount: activeProductsCount
+      productsCount: activeProductsCount,
     };
   }, [orders, menuItems]);
 
-  // Recharts Sales Trend Data
+  // Recharts Sales Trend Data from actual orders
   const salesTrendData = useMemo(() => {
-    return [
-      { day: "Mon", sales: 1800 },
-      { day: "Tue", sales: 2400 },
-      { day: "Wed", sales: 2200 },
-      { day: "Thu", sales: 3100 },
-      { day: "Fri", sales: 4200 },
-      { day: "Sat", sales: 5800 },
-      { day: "Sun", sales: 4900 + (orders.length * 200) } // scales dynamically slightly
-    ];
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const result = [];
+    const now = new Date();
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(now.getDate() - i);
+      const dayName = days[d.getDay()];
+
+      const daySales = orders
+        .filter((o) => {
+          if (o.status === "cancelled") return false;
+          if (o.date?.startsWith("Today") && i === 0) return true;
+          if (o.date?.startsWith("Yesterday") && i === 1) return true;
+          return false;
+        })
+        .reduce((sum, o) => sum + (Number(o.price) || 0), 0);
+
+      result.push({ day: dayName, sales: daySales });
+    }
+    return result;
   }, [orders]);
 
-  // Recharts Category Sales Data
+  // Recharts Category Sales Data strictly from orders or catalog
   const categoryData = useMemo(() => {
     const counts: Record<string, number> = {
-      Burgers: 65,
-      Sides: 32,
-      Drinks: 18,
-      Combos: 15
+      Burgers: 0,
+      Burrito: 0,
+      Sides: 0,
+      Drinks: 0,
+      Combos: 0,
     };
 
-    // add active orders to categorizations
     orders.forEach((o) => {
-      if (o.item.toLowerCase().includes("smashed") || o.item.toLowerCase().includes("bbq") || o.item.toLowerCase().includes("burger")) {
-        counts.Burgers += 1;
-      } else if (o.item.toLowerCase().includes("fries")) {
-        counts.Sides += 1;
-      } else if (o.item.toLowerCase().includes("shake") || o.item.toLowerCase().includes("choco")) {
-        counts.Drinks += 1;
-      } else {
-        counts.Combos += 1;
-      }
+      const itemLower = (o.item || "").toLowerCase();
+      if (itemLower.includes("burrito")) counts.Burrito += 1;
+      else if (itemLower.includes("burger") || itemLower.includes("smash") || itemLower.includes("cluck")) counts.Burgers += 1;
+      else if (itemLower.includes("tender") || itemLower.includes("loaded") || itemLower.includes("fries") || itemLower.includes("sides") || itemLower.includes("mac")) counts.Sides += 1;
+      else if (itemLower.includes("drink") || itemLower.includes("shake") || itemLower.includes("beverage")) counts.Drinks += 1;
+      else if (itemLower.includes("pack") || itemLower.includes("combo") || itemLower.includes("feast")) counts.Combos += 1;
+      else counts.Burgers += 1;
     });
 
-    return [
-      { name: "Burgers", value: counts.Burgers },
-      { name: "Sides", value: counts.Sides },
-      { name: "Drinks", value: counts.Drinks },
-      { name: "Combos", value: counts.Combos }
-    ];
-  }, [orders]);
+    const hasOrders = Object.values(counts).some((v) => v > 0);
+    if (!hasOrders) {
+      menuItems.forEach((m) => {
+        if (m.category && counts[m.category] !== undefined) {
+          counts[m.category] += 1;
+        }
+      });
+    }
 
-  const COLORS = ["oklch(0.68 0.19 40)", "oklch(0.22 0.025 50)", "oklch(0.5 0.02 60)", "#f59e0b"];
+    const res = Object.entries(counts)
+      .filter(([_, value]) => value > 0)
+      .map(([name, value]) => ({ name, value }));
+
+    return res.length > 0 ? res : [{ name: "Catalog", value: menuItems.length || 1 }];
+  }, [orders, menuItems]);
+
+  const COLORS = ["oklch(0.68 0.19 40)", "oklch(0.22 0.025 50)", "oklch(0.5 0.02 60)", "#f59e0b", "#3b82f6"];
 
   return (
     <div className="space-y-8 animate-fadeIn">
@@ -3281,7 +3292,7 @@ function UsersTab() {
                           },
                         }))
                       }
-                      placeholder="e.g. FIRSTFEAST"
+                      placeholder="e.g. BOGOFREE"
                       className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] p-2.5 text-xs font-mono font-bold uppercase focus:border-brand focus:outline-none"
                     />
                   </div>
@@ -3317,24 +3328,24 @@ function UsersTab() {
                   </span>
                 </div>
 
-                <div className="w-full max-w-[320px] rounded-t-[28px] rounded-b-[20px] bg-gradient-to-b from-[#180e11] via-[#100709] to-[#080305] border border-amber-500/30 p-4 text-white shadow-xl space-y-3">
+                <div className="w-full max-w-[320px] rounded-t-[28px] rounded-b-[20px] bg-gradient-to-b from-[#1c0e12] via-[#12070a] to-[#080305] border border-amber-500/30 p-4 text-white shadow-xl space-y-3">
                   <div className="w-8 h-1 bg-white/20 rounded-full mx-auto" />
 
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-[9px] font-black uppercase tracking-wider">
                     <Sparkles className="h-2.5 w-2.5" />
-                    <span>{bannersConfig.halfScreenOffer.badgeText || "Special Exclusive Deal"}</span>
+                    <span>{bannersConfig.halfScreenOffer.badgeText || "BUY 1 GET 1 FREE"}</span>
                   </div>
 
                   <div className="flex items-start gap-2.5">
-                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand to-rose-600 text-white font-bold">
-                      <Percent className="h-4 w-4 stroke-[2.5]" />
+                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-amber-500 via-rose-600 to-brand text-white font-bold">
+                      <Gift className="h-4 w-4 stroke-[2.2]" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <h5 className="text-xs font-black text-white leading-tight">
-                        {bannersConfig.halfScreenOffer.title || "Flat ₹200 OFF Your Feast!"}
+                        {bannersConfig.halfScreenOffer.title || "BUY 1 GET 1 FREE on First Order!"}
                       </h5>
                       <p className="text-[10px] text-slate-300 line-clamp-2 mt-0.5">
-                        {bannersConfig.halfScreenOffer.description || "Use coupon code on orders above ₹499."}
+                        {bannersConfig.halfScreenOffer.description || "Add any 2 burgers & get the second one completely FREE!"}
                       </p>
                     </div>
                   </div>
@@ -3342,7 +3353,7 @@ function UsersTab() {
                   {bannersConfig.halfScreenOffer.promoCode && (
                     <div className="rounded-xl bg-white/5 border border-dashed border-amber-500/40 p-2 flex items-center justify-between">
                       <div>
-                        <span className="text-[8px] uppercase text-slate-400 font-bold block">Coupon Code</span>
+                        <span className="text-[8px] uppercase text-slate-400 font-bold block">Offer Code</span>
                         <span className="text-xs font-black text-amber-400 font-mono">{bannersConfig.halfScreenOffer.promoCode}</span>
                       </div>
                       <span className="px-2 py-0.5 rounded-md bg-white/10 text-[9px] font-bold text-white">Copy</span>
@@ -3352,9 +3363,9 @@ function UsersTab() {
                   <button
                     type="button"
                     onClick={() => setLivePreviewBanner("offer")}
-                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-brand to-amber-500 text-slate-950 font-extrabold text-xs shadow-md"
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-brand text-slate-950 font-extrabold text-xs shadow-md"
                   >
-                    {bannersConfig.halfScreenOffer.buttonText || "Claim Offer Now"}
+                    {bannersConfig.halfScreenOffer.buttonText || "Claim BOGO Offer"}
                   </button>
                 </div>
               </div>
