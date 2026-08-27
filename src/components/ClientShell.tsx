@@ -7,6 +7,7 @@ import { BottomNav } from "./BottomNav";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import { tracker } from "@/lib/tracking/tracker";
+import { trackNewVisitor } from "@/lib/tracking/visitor-tracker";
 import { LocationPermissionModal } from "./LocationPermissionModal";
 import { InstallPrompt } from "./InstallPrompt";
 import { FlyToCartProvider } from "./FlyToCartProvider";
@@ -17,12 +18,15 @@ import { NotificationBannerManager } from "./banners/NotificationBannerManager";
 
 const queryClient = new QueryClient();
 
-// Tracker watcher component to log page views
+// Tracker watcher component to log page views & detect first-time visitors
 function TrackingWatcher() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    // Zero-latency first-time visitor check & background alert
+    trackNewVisitor(pathname);
+
     tracker.track("PAGE_VIEW", {
       path: pathname,
       query: searchParams.toString(),
