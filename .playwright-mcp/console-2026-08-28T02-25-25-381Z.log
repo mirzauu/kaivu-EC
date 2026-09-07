@@ -1,0 +1,30 @@
+[   31995ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[   32071ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[   32072ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[   37277ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[   37278ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[   42296ms] [WARNING] VIDEOJS: WARN: Using the tech directly can be dangerous. I hope you know what you're doing.
+See https://github.com/videojs/video.js/issues/2617 for more info.
+ @ https://static.licdn.com/aero-v1/sc/h/assets/D2TURHn7.js:0
+[   46385ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[   46600ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[   46601ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[   47356ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[   47357ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[   68278ms] [INFO] Terminator datalet is not seen within 12000 ms. @ https://static.licdn.com/aero-v1/sc/h/ep7lv466vmkjzvje2yk243it4:120

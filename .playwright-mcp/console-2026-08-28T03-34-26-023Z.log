@@ -1,0 +1,506 @@
+[    7260ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[    7260ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[    7262ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[    8076ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[    8077ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[   16592ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787887800000:7
+[   26064ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[   26581ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[   26583ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[   26585ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[   26586ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[   33023ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787887800000:7
+[   33024ms] [LOG] visitor.publishDestinations() result: The destination publishing iframe is already attached and loaded. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787887800000:7
+[ 3348310ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[ 3348368ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3348368ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3348780ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3348783ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3365865ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787891400000:7
+[ 3368035ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[ 3368356ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3368357ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3368602ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3368603ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3373895ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787891400000:7
+[ 3383531ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787891400000:7
+[ 3462793ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ https://www.linkedin.com/realtime/connect?rc=1:0
+[ 3462794ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 3566366ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[ 3566409ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3566410ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3566856ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3566856ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3572617ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787891400000:7
+[ 3576882ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[ 3577410ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3577411ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3577413ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3577414ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3581855ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787891400000:7
+[ 3586220ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[ 3586920ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3586921ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3586923ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3586924ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 3591850ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787891400000:7
+[ 5843624ms] [ERROR] Error: No activity within 45000 milliseconds. 5030 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 5961891ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://www.linkedin.com/realtime/connect?rc=1:0
+[ 5961892ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 6110634ms] [ERROR] Error: No activity within 45000 milliseconds. 1230 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 6951334ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[ 6951342ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 6951343ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 6952328ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 6952329ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 6958746ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787895000000:7
+[ 6958747ms] [LOG] visitor.publishDestinations() result: The destination publishing iframe is already attached and loaded. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787895000000:7
+[ 6964232ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[ 6964504ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 6964504ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 6965089ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 6965089ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 6969879ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787895000000:7
+[ 6969879ms] [LOG] visitor.publishDestinations() result: The destination publishing iframe is already attached and loaded. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787895000000:7
+[ 6979745ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[ 6980726ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 6980728ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 6980730ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 6980731ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 6984880ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787895000000:7
+[ 6984880ms] [LOG] visitor.publishDestinations() result: The destination publishing iframe is already attached and loaded. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787895000000:7
+[ 6990560ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[ 6992688ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 6992689ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 6992692ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 6992694ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[ 7001711ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787895000000:7
+[ 7001711ms] [LOG] visitor.publishDestinations() result: The destination publishing iframe is already attached and loaded. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787895000000:7
+[ 7049638ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 7103636ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 7163634ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 7223631ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 7344622ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 7582622ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 7701888ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://www.linkedin.com/realtime/connect?rc=1:0
+[ 7701888ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 7762650ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 7822647ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 8003628ms] [ERROR] Error: No activity within 45000 milliseconds. 1122 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 8186628ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 8424625ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 8601879ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://www.linkedin.com/realtime/connect?rc=1:0
+[ 8601880ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 8604635ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_CLOSED @ https://www.linkedin.com/realtime/connect?rc=1:0
+[ 8604635ms] [ERROR] TypeError: Failed to fetch
+    at j.open (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9738:8)
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9774:9)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9767:315 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 8722645ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 8782639ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 8906623ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 9083582ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR.QUIC_NETWORK_IDLE_TIMEOUT @ https://www.linkedin.com/realtime/connect?rc=1:0
+[ 9083582ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 9143624ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 9265980ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ https://www.linkedin.com/realtime/connect?rc=1:0
+[ 9265981ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 9382643ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ 9442637ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[10643628ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[10703635ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[10824632ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[11007628ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[11132263ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://www.linkedin.com/realtime/connect?rc=1:0
+[11132263ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[11150706ms] [WARNING] Realtime: session heartbeat failed {status: 0, message: Realtime: API Server Error https://www.linkedin.co…altime/realtimeFrontendClientConnectivityTracking} @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9679
+[11150706ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_CLOSED @ https://www.linkedin.com/realtime/realtimeFrontendClientConnectivityTracking?action=sendHeartbeat:0
+[11166405ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ https://www.linkedin.com/realtime/connect?rc=1:0
+[11166406ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[11183338ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ https://www.linkedin.com/realtime/connect?rc=1:0
+[11183338ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[11522019ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ https://www.linkedin.com/realtime/connect?rc=1:0
+[11522020ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[12077095ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://www.linkedin.com/realtime/connect?rc=1:0
+[12077095ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[12389760ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ https://www.linkedin.com/realtime/connect?rc=1:0
+[12389761ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[12407125ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ https://www.linkedin.com/realtime/connect?rc=1:0
+[12407125ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[12454444ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ https://www.linkedin.com/realtime/connect?rc=1:0
+[12454444ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[13456790ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR.QUIC_NETWORK_IDLE_TIMEOUT @ https://www.linkedin.com/realtime/connect?rc=1:0
+[13456790ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[14145059ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[14145100ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[14145101ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[14145664ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[14145664ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[14151189ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787902200000:7
+[14243630ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[14303624ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[14363636ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[14484627ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[14630637ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[15143626ms] [ERROR] Error: No activity within 45000 milliseconds. 2040 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[15326635ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[15530630ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[15743624ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[15926627ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[16164623ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[16402621ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[16521880ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ https://www.linkedin.com/realtime/connect?rc=1:0
+[16521881ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[16582640ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[16642651ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[16823629ms] [ERROR] Error: No activity within 45000 milliseconds. 1122 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[17006621ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[17244625ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[17482626ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[17747581ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[17747654ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[17747655ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[17753634ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[17753635ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[17760179ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[17760404ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[17760405ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[17760630ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[17760631ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[17766264ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787905800000:7
+[17843632ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[17903634ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[17963621ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[18084636ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[18230639ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[18298188ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_CLOSED @ https://www.linkedin.com/realtime/connect?rc=1:0
+[18298188ms] [ERROR] TypeError: Failed to fetch
+    at j.open (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9738:8)
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9774:9)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9767:315 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[18298189ms] [WARNING] Realtime: session heartbeat failed {status: 0, message: Realtime: API Server Error https://www.linkedin.co…altime/realtimeFrontendClientConnectivityTracking} @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9679
+[18298189ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_CLOSED @ https://www.linkedin.com/realtime/realtimeFrontendClientConnectivityTracking?action=sendHeartbeat:0
+[18829349ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR.QUIC_NETWORK_IDLE_TIMEOUT @ https://www.linkedin.com/realtime/connect?rc=1:0
+[18829350ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[19752626ms] [ERROR] Error: No activity within 45000 milliseconds. 1230 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[21348368ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[21348394ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[21348395ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[21348915ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[21348916ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[21354413ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787909400000:7
+[21354413ms] [LOG] visitor.publishDestinations() result: The destination publishing iframe is already attached and loaded. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787909400000:7
+[21362560ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[21362821ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[21362822ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[21363723ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[21363723ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[21367858ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787909400000:7
+[21367858ms] [LOG] visitor.publishDestinations() result: The destination publishing iframe is already attached and loaded. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787909400000:7
+[21375156ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[21375535ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[21375536ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[21376039ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[21376040ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[21380875ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787909400000:7
+[21503629ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[21563634ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[21906329ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://www.linkedin.com/realtime/connect?rc=1:0
+[21906329ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[24947849ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[24947890ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[24947891ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[24948404ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[24948405ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[24953298ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787913000000:7
+[24953299ms] [LOG] visitor.publishDestinations() result: The destination publishing iframe is already attached and loaded. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787913000000:7
+[24958498ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[24958764ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[24958766ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[24959030ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[24959031ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[24963873ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787913000000:7
+[24963873ms] [LOG] visitor.publishDestinations() result: The destination publishing iframe is already attached and loaded. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787913000000:7
+[24968182ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[24968999ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[24969001ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[24969003ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[24969005ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[24973875ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787913000000:7
+[25043623ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[25094625ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[26631292ms] [WARNING] Realtime: session heartbeat failed {status: 0, message: Realtime: API Server Error https://www.linkedin.co…altime/realtimeFrontendClientConnectivityTracking} @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9679
+[26631293ms] [ERROR] Failed to load resource: net::ERR_INTERNET_DISCONNECTED @ https://www.linkedin.com/realtime/realtimeFrontendClientConnectivityTracking?action=sendHeartbeat:0
+[26633251ms] [ERROR] Failed to load resource: net::ERR_INTERNET_DISCONNECTED @ https://www.linkedin.com/realtime/realtimeFrontendClientConnectivityTracking?action=sendHeartbeat:0
+[26848639ms] [ERROR] Failed to load resource: net::ERR_INTERNET_DISCONNECTED @ https://www.linkedin.com/lix/treatmentsV2:0
+[26881643ms] [ERROR] Failed to load resource: net::ERR_INTERNET_DISCONNECTED @ https://www.linkedin.com/to11yUMn42qmfSKMD:0
+[26881648ms] [ERROR] Failed to load resource: net::ERR_INTERNET_DISCONNECTED @ https://www.linkedin.com/to11yUMn42qmfSKMD:0
+[27448625ms] [ERROR] Failed to load resource: net::ERR_INTERNET_DISCONNECTED @ https://www.linkedin.com/lix/treatmentsV2:0
+[28048639ms] [ERROR] Failed to load resource: net::ERR_INTERNET_DISCONNECTED @ https://www.linkedin.com/lix/treatmentsV2:0
+[28648636ms] [ERROR] Failed to load resource: net::ERR_INTERNET_DISCONNECTED @ https://www.linkedin.com/lix/treatmentsV2:0
+[29270629ms] [ERROR] Failed to load resource: net::ERR_INTERNET_DISCONNECTED @ https://www.linkedin.com/lix/treatmentsV2:0
+[29870633ms] [ERROR] Failed to load resource: net::ERR_INTERNET_DISCONNECTED @ https://www.linkedin.com/lix/treatmentsV2:0
+[30470632ms] [ERROR] Failed to load resource: net::ERR_INTERNET_DISCONNECTED @ https://www.linkedin.com/lix/treatmentsV2:0
+[30481634ms] [ERROR] Failed to load resource: net::ERR_INTERNET_DISCONNECTED @ https://www.linkedin.com/to11yUMn42qmfSKMD:0
+[30481641ms] [ERROR] Failed to load resource: net::ERR_INTERNET_DISCONNECTED @ https://www.linkedin.com/to11yUMn42qmfSKMD:0

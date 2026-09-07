@@ -1,0 +1,32 @@
+[    9196ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[    9217ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[    9218ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[    9807ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[    9809ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[   14328ms] [LOG] visitor.publishDestinations() result: The destination publishing iframe is already attached and loaded. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787884200000:7
+[   14448ms] [LOG] visitor.publishDestinations() result: The destination publishing iframe is already attached and loaded. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787884200000:7
+[   22478ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rO (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:50371)
+    at oV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:99613)
+    at sh (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:128139)
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124314
+    at https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124322
+    at sr (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:124419)
+    at sV (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:145647)
+    at MessagePort.T (https://static.licdn.com/aero-v1/sc/h/assets/kuu7tUnu.js:1:14547)
+[   23048ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[   23049ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[   23131ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[   23132ms] [WARNING] Attribute 'exception.tags' of type 'object' could not be converted to a proto attribute. @ https://static.licdn.com/aero-v1/sc/h/assets/BO7qRSFJ.js:2
+[   29815ms] [LOG] visitor.publishDestinations() result: Attempted to attach and load the destination publishing iframe through this API call. Result: The destination publishing iframe was attached and loaded successfully. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787884200000:7
+[   29822ms] [LOG] visitor.publishDestinations() result: The destination publishing iframe is already attached and loaded. @ https://platform.linkedin.com/litms/utag/voyager-web-search/utag.js?cb=1787884200000:7
+[   79345ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR.QUIC_TOO_MANY_RTOS @ https://www.linkedin.com/realtime/connect?rc=1:0
+[   79345ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768

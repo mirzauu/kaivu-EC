@@ -8,6 +8,8 @@
  *   tracker.track("PAGE_VIEW", { page: "/menu" });
  */
 
+import { getOrCreateVisitorId } from "./visitor-tracker";
+
 type TrackEvent = {
   eventType: string;
   metadata?: Record<string, unknown>;
@@ -56,9 +58,17 @@ class EventTracker {
   track(eventType: string, metadata?: Record<string, unknown>) {
     if (typeof window === "undefined") return; // SSR guard
 
+    let visitorId = "";
+    try {
+      visitorId = getOrCreateVisitorId();
+    } catch {}
+
     this.buffer.push({
       eventType,
-      metadata,
+      metadata: {
+        ...(metadata || {}),
+        ...(visitorId ? { visitorId } : {}),
+      },
       timestamp: new Date().toISOString(),
     });
 

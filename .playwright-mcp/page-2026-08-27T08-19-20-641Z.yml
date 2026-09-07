@@ -1,0 +1,234 @@
+- generic [ref=f8e2]:
+  - heading "0 notifications" [level=2] [ref=f8e3]
+  - generic [ref=f8e4]:
+    - generic:
+      - generic "Skip navigation menu":
+        - button "Close jump menu" [ref=f8e6] [cursor=pointer]
+    - generic [ref=f8e9]:
+      - banner [ref=f8e11]:
+        - generic [ref=f8e14]:
+          - button [ref=f8e15] [cursor=pointer]
+          - generic [ref=f8e18]:
+            - navigation [ref=f8e22]:
+              - list [ref=f8e23]:
+                - listitem [ref=f8e24]:
+                  - button "Home, 1 new notification" [ref=f8e25] [cursor=pointer]:
+                    - generic [ref=f8e29]: Home
+                - listitem [ref=f8e31]:
+                  - link "My Network, 0 new notifications" [ref=f8e32] [cursor=pointer]:
+                    - /url: https://www.linkedin.com/mynetwork
+                    - generic [ref=f8e36]: My Network
+                - listitem [ref=f8e38]:
+                  - link "Jobs, 0 new notifications" [ref=f8e39] [cursor=pointer]:
+                    - /url: https://www.linkedin.com/jobs/
+                    - generic [ref=f8e43]: Jobs
+                - listitem [ref=f8e45]:
+                  - link "Messaging, 0 new notifications" [ref=f8e46] [cursor=pointer]:
+                    - /url: https://www.linkedin.com/messaging/
+                    - generic [ref=f8e50]: Messaging
+                - listitem [ref=f8e52]:
+                  - link "Notifications, 4 new notifications" [ref=f8e53] [cursor=pointer]:
+                    - /url: https://www.linkedin.com/notifications/
+                    - generic [ref=f8e57]: Notifications
+                - listitem [ref=f8e59]:
+                  - button "Me" [ref=f8e60] [cursor=pointer]:
+                    - figure [ref=f8e62]
+            - navigation [ref=f8e68]:
+              - list [ref=f8e69]:
+                - listitem [ref=f8e70]:
+                  - button "For Business" [ref=f8e71] [cursor=pointer]
+                - listitem [ref=f8e78]:
+                  - link "Learning, 0 new notifications" [ref=f8e79] [cursor=pointer]:
+                    - /url: https://www.linkedin.com/learning/?trk=nav_neptune_learning
+                    - generic [ref=f8e82]: Learning
+      - main [ref=f8e86]:
+        - generic [ref=f8e88]:
+          - complementary "Sidebar" [ref=f8e89]:
+            - generic [ref=f8e92]:
+              - generic [ref=f8e96]:
+                - link [ref=f8e97] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/in/ali-mirsa/
+                  - generic [ref=f8e98]:
+                    - generic [ref=f8e99]:
+                      - figure [ref=f8e100]
+                      - paragraph [ref=f8e102]: Premium
+                    - figure [ref=f8e105]
+                - generic [ref=f8e106]:
+                  - link [ref=f8e107] [cursor=pointer]:
+                    - /url: https://www.linkedin.com/in/ali-mirsa/
+                    - generic "Alimirza ., Turning manual workflows into AI-powered engines |AI developer | AI automation developer, Bengaluru, Karnataka, Premium profile" [ref=f8e108]:
+                      - paragraph [ref=f8e111]: Alimirza .
+                      - paragraph [ref=f8e114]: Turning manual workflows into AI-powered engines |AI developer | AI automation developer
+                      - paragraph [ref=f8e115]: Bengaluru, Karnataka
+                  - link [ref=f8e116] [cursor=pointer]:
+                    - /url: https://www.linkedin.com/in/ali-mirsa/
+                    - generic [ref=f8e117]:
+                      - figure [ref=f8e118]
+                      - paragraph [ref=f8e119]: PaperPie
+              - generic [ref=f8e121]:
+                - menu [ref=f8e122]:
+                  - link [ref=f8e124] [cursor=pointer]:
+                    - /url: https://www.linkedin.com/me/profile-views/
+                    - generic "Profile viewers 22" [ref=f8e125]:
+                      - paragraph [ref=f8e127]: Profile viewers
+                      - paragraph [ref=f8e128]: "22"
+                  - link [ref=f8e130] [cursor=pointer]:
+                    - /url: https://www.linkedin.com/analytics/creator/content/
+                    - generic "View all analytics 0" [ref=f8e131]:
+                      - paragraph [ref=f8e133]: View all analytics
+                - menu [ref=f8e134]:
+                  - link [ref=f8e136] [cursor=pointer]:
+                    - /url: https://www.linkedin.com/premium/my-premium/
+                    - paragraph [ref=f8e139]: Your Premium features
+              - menu [ref=f8e143]:
+                - link [ref=f8e144] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/company/112392992/admin/
+                  - generic [ref=f8e146]:
+                    - figure [ref=f8e147]
+                    - paragraph [ref=f8e151]: PaperPie
+                - link [ref=f8e152] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/company/112392992/admin/notifications/
+                  - generic [ref=f8e153]:
+                    - paragraph [ref=f8e154]: Activity
+                    - paragraph [ref=f8e155]: "0"
+                - link [ref=f8e156] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/company/112392992/admin/analytics/visitors/
+                  - generic [ref=f8e157]:
+                    - paragraph [ref=f8e158]: Visitors
+                    - paragraph [ref=f8e159]: "2"
+                - paragraph [ref=f8e162]: Grow your business faster
+                - link [ref=f8e166] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/premium/products/?upsellOrderOrigin=Tracking%3Av1%3Apremium_page_feed_page_card_upsell%3ACompany+Pages+SKU%3AIn-Product&referenceId=RxxF%2FnFzRj2eK4yeo8lfig%3D%3D&companyUrn=urn%3Ali%3Afsd_company%3A112392992&isSS=false&upsellSlotId=PREMIUM_PAGE_FEED_PAGE_CARD
+                - link [ref=f8e171] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/campaignmanager/accounts/
+                  - paragraph [ref=f8e174]: Advertise on LinkedIn
+                - link [ref=f8e176] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/company/112392992/admin/analytics/visitors/
+                  - paragraph [ref=f8e178]: See visitor analytics
+              - menu [ref=f8e182]:
+                - link [ref=f8e183] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/my-items/saved-posts/
+                  - paragraph [ref=f8e186]: Saved items
+                - link [ref=f8e187] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/groups/
+                  - paragraph [ref=f8e190]: Groups
+                - link [ref=f8e191] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/mynetwork/network-manager/newsletters/
+                  - paragraph [ref=f8e194]: Newsletters
+                - link [ref=f8e195] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/events/
+                  - paragraph [ref=f8e198]: Events
+          - region "Primary content" [ref=f8e199]:
+            - list [ref=f8e200]:
+              - listitem [ref=f8e202]:
+                - generic [ref=f8e203]:
+                  - generic [ref=f8e204]:
+                    - link [ref=f8e206] [cursor=pointer]:
+                      - /url: https://www.linkedin.com/in/ali-mirsa/
+                      - figure [ref=f8e207]
+                    - button [ref=f8e209] [cursor=pointer]:
+                      - generic "Start a post" [ref=f8e210]:
+                        - generic [ref=f8e212]:
+                          - paragraph [ref=f8e213]: "Draft:"
+                          - paragraph [ref=f8e215]: "n"
+                  - generic [ref=f8e216]:
+                    - button [ref=f8e217] [cursor=pointer]:
+                      - paragraph [ref=f8e220]: Video
+                    - button [ref=f8e221] [cursor=pointer]:
+                      - paragraph [ref=f8e224]: Photo
+                    - button [ref=f8e225] [cursor=pointer]:
+                      - paragraph [ref=f8e228]: Write article
+              - progressbar "In progress" [ref=f8e232]
+          - complementary "Aside" [ref=f8e233]:
+            - generic [ref=f8e234]:
+              - generic [ref=f8e237]:
+                - generic [ref=f8e239]:
+                  - generic [ref=f8e240]:
+                    - paragraph [ref=f8e241]: LinkedIn News
+                    - button "Info tooltip" [ref=f8e242] [cursor=pointer]
+                  - paragraph [ref=f8e245]: Top stories
+                  - generic [ref=f8e246]:
+                    - link [ref=f8e248] [cursor=pointer]:
+                      - /url: https://www.linkedin.com/news/story/us-hits-pause-on-all-visa-appointments-globally-9273922/
+                    - link [ref=f8e251] [cursor=pointer]:
+                      - /url: https://www.linkedin.com/news/story/mid-sized-firms-outpace-it-giants-in-bfsi-race-8550513/
+                    - link [ref=f8e254] [cursor=pointer]:
+                      - /url: https://www.linkedin.com/news/story/vcs-look-at-upi-autopay-for-startup-stickiness-8549105/
+                    - link [ref=f8e257] [cursor=pointer]:
+                      - /url: https://www.linkedin.com/news/story/what-kind-of-leaders-does-india-inc-need-7535748/
+                    - link [ref=f8e260] [cursor=pointer]:
+                      - /url: https://www.linkedin.com/news/story/at-least-157-dead-in-nepal-flash-floods-9282306/
+                - generic [ref=f8e266]:
+                  - paragraph [ref=f8e267]: Today’s puzzles
+                  - generic [ref=f8e268]:
+                    - link [ref=f8e270] [cursor=pointer]:
+                      - /url: https://www.linkedin.com/games/zip/
+                      - generic "Play Zip" [ref=f8e271]:
+                        - generic [ref=f8e272]:
+                          - figure [ref=f8e273]
+                          - generic [ref=f8e274]:
+                            - paragraph [ref=f8e275]:
+                              - strong [ref=f8e276]: Zip
+                              - text: "#528"
+                            - paragraph [ref=f8e277]: 9 connections played
+                    - link [ref=f8e280] [cursor=pointer]:
+                      - /url: https://www.linkedin.com/games/wend/
+                      - generic "Play Wend" [ref=f8e281]:
+                        - generic [ref=f8e282]:
+                          - figure [ref=f8e283]
+                          - generic [ref=f8e284]:
+                            - paragraph [ref=f8e285]:
+                              - strong [ref=f8e286]: Wend
+                              - text: "#80"
+                            - paragraph [ref=f8e287]: 7 connections played
+                    - link [ref=f8e290] [cursor=pointer]:
+                      - /url: https://www.linkedin.com/games/patches/
+                      - generic "Play Patches" [ref=f8e291]:
+                        - generic [ref=f8e292]:
+                          - figure [ref=f8e293]
+                          - generic [ref=f8e294]:
+                            - paragraph [ref=f8e295]:
+                              - strong [ref=f8e296]: Patches
+                              - text: "#163"
+                            - paragraph [ref=f8e297]: 7 connections played
+                    - link [ref=f8e300] [cursor=pointer]:
+                      - /url: /games/mini-sudoku/
+                      - generic "Play MiniSudoku" [ref=f8e301]:
+                        - generic [ref=f8e302]:
+                          - figure [ref=f8e303]
+                          - generic [ref=f8e304]:
+                            - paragraph [ref=f8e305]:
+                              - strong [ref=f8e306]: Mini Sudoku
+                              - text: "#381"
+                            - paragraph [ref=f8e307]: 4 connections played
+              - generic [ref=f8e310]:
+                - iframe [ref=f8e313]:
+                  
+                - generic [ref=f8e314]:
+                  - generic [ref=f8e315]:
+                    - link [ref=f8e316] [cursor=pointer]:
+                      - /url: https://about.linkedin.com/
+                      - paragraph [ref=f8e317]: About
+                    - link [ref=f8e318] [cursor=pointer]:
+                      - /url: https://www.linkedin.com/accessibility/
+                      - paragraph [ref=f8e319]: Accessibility
+                    - link [ref=f8e320] [cursor=pointer]:
+                      - /url: https://www.linkedin.com/help/linkedin/
+                      - paragraph [ref=f8e321]: Help Center
+                    - button [ref=f8e322] [cursor=pointer]:
+                      - paragraph [ref=f8e324]: Privacy & Terms
+                    - link [ref=f8e326] [cursor=pointer]:
+                      - /url: https://www.linkedin.com/help/linkedin/answer/62931/
+                      - paragraph [ref=f8e327]: Ad Choices
+                    - link [ref=f8e328] [cursor=pointer]:
+                      - /url: https://www.linkedin.com/ad/start/?trk=n_nav_ads_rr
+                      - paragraph [ref=f8e329]: Advertising
+                    - button [ref=f8e330] [cursor=pointer]:
+                      - paragraph [ref=f8e332]: Business Services
+                    - link [ref=f8e334] [cursor=pointer]:
+                      - /url: https://www.linkedin.com/mobile/
+                      - paragraph [ref=f8e335]: Get the LinkedIn app
+                    - link [ref=f8e336] [cursor=pointer]:
+                      - /url: https://www.linkedin.com/
+                      - paragraph [ref=f8e337]: More
+                  - paragraph [ref=f8e340]: LinkedIn Corporation © 2026

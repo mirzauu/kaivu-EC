@@ -1,0 +1,56 @@
+[-34498411ms] [ERROR] Failed to load resource: net::ERR_NETWORK_IO_SUSPENDED @ https://www.linkedin.com/realtime/connect?rc=1:0
+[-28312588ms] [ERROR] Failed to load resource: net::ERR_NETWORK_CHANGED @ https://www.linkedin.com/lix/treatmentsV2:0
+[-28312587ms] [ERROR] Failed to load resource: net::ERR_NETWORK_CHANGED @ https://www.linkedin.com/realtime/realtimeFrontendClientConnectivityTracking?action=sendHeartbeat:0
+[-28312587ms] [ERROR] Failed to load resource: net::ERR_NETWORK_CHANGED @ https://www.linkedin.com/realtime/connect?rc=1:0
+[ -161309ms] [ERROR] Failed to load resource: net::ERR_NETWORK_IO_SUSPENDED @ https://www.linkedin.com/realtime/connect?rc=1:0
+[ -101318ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://www.linkedin.com/realtime/connect?rc=1:0
+[    -119ms] [ERROR] Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR @ https://www.linkedin.com/realtime/connect?rc=1:0
+[-34498411ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[-28312587ms] [WARNING] Realtime: session heartbeat failed Object @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9679
+[-28312587ms] [ERROR] TypeError: Failed to fetch
+    at j.open (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9738:8)
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9774:9)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9767:315 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[ -101318ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[  -41062ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[    -119ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[     -26ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[     279ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[     467ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[     569ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[     673ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[     779ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[     883ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[     986ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[    1090ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[    1212ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[    1925ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[    2920ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[    3925ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[    4928ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[    5922ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[    6927ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[    7926ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[    8921ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[    9989ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[   10926ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[   11919ms] [ERROR] Failed to load resource: net::ERR_FAILED @ chrome-extension://invalid/:0
+[   28642ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_CLOSED @ https://www.linkedin.com/l0/ep/clr.gif?t=l3nx5s:0
+[   58049ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR @ https://static.licdn.com/aero-v1/sc/h/6otu1lrkvfduueuvtmiyyefnk:0
+[   63641ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://www.linkedin.com/voyager/api/voyagerRelationshipsDashMemberRelationships?action=verifyQuotaAndCreateV2&decorationId=com.linkedin.voyager.dash.deco.relationships.InvitationCreationResultWithInvitee-2:0
+[  139922ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[  199931ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[  249682ms] [ERROR] Failed to load resource: net::ERR_QUIC_PROTOCOL_ERROR.QUIC_TOO_MANY_RTOS @ https://www.linkedin.com/realtime/connect?rc=1:0
+[  249683ms] [ERROR] TypeError: network error @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[  318926ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
+[  378941ms] [ERROR] Error: No activity within 45000 milliseconds. 960 chars received. Reconnecting.
+    at K (https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:38)
+    at https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9775:22 @ https://static.licdn.com/aero-v1/sc/h/bnmc4331fne8fm9kp3n6mnwn0:9768
