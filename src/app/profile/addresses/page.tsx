@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Plus, MapPin, Trash2, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, Plus, MapPin, Trash2, CheckCircle2, Navigation } from "lucide-react";
 import { MobileShell } from "@/components/MobileShell";
 import { useAuth, auth } from "@/lib/auth-store";
 import { toast } from "sonner";
@@ -81,6 +81,21 @@ export default function AddressesPage() {
                   <p className="mt-1 text-xs text-muted-foreground leading-normal">
                     {addr.fullAddress}
                   </p>
+                  {addr.lat != null && addr.lng != null ? (
+                    <a
+                      href={`https://maps.google.com/?q=${addr.lat},${addr.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-bold text-brand hover:underline"
+                    >
+                      <Navigation className="h-3 w-3" />
+                      View on Google Maps
+                    </a>
+                  ) : (
+                    <span className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600">
+                      ⚠️ GPS coordinates missing
+                    </span>
+                  )}
                 </div>
                 <button
                   onClick={() => handleDelete(addr.id)}

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronLeft, MapPin, Loader2, Navigation, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, MapPin, Loader2, Navigation, CheckCircle2, AlertTriangle, ExternalLink, RefreshCw } from "lucide-react";
 import { MobileShell } from "@/components/MobileShell";
 import { auth } from "@/lib/auth-store";
 import { locationStore } from "@/lib/location-store";
@@ -108,12 +108,17 @@ function NewAddressForm() {
       if (err instanceof GeolocationPositionError && err.code === err.PERMISSION_DENIED) {
         locationStore.openPermissionModal("Location access denied. Please enable it in your browser settings.");
       } else {
-        toast.error(err.message || "Failed to auto-detect location. Please enter manually.");
+        toast.error(err.message || "Failed to auto-detect location. Please allow GPS access.");
       }
     } finally {
       setIsDetecting(false);
     }
   };
+
+  // Automatically attempt GPS detection on mount
+  useEffect(() => {
+    handleAutoDetect();
+  }, []);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,6 +142,11 @@ function NewAddressForm() {
       return;
     }
 
+    if (detectedLat === null || detectedLng === null || isNaN(detectedLat) || isNaN(detectedLng)) {
+      toast.error("GPS location is compulsory! Please tap 'Auto-Detect Current Location' to capture your location before saving.");
+      return;
+    }
+
     setIsSaving(true);
 
     // fullAddress combines details, place, and pincode for display
@@ -149,14 +159,14 @@ function NewAddressForm() {
       city: place,
       pincode,
       isDefault,
-      lat: detectedLat !== null ? detectedLat : undefined,
-      lng: detectedLng !== null ? detectedLng : undefined,
+      lat: detectedLat,
+      lng: detectedLng,
     });
 
     setIsSaving(false);
 
     if (res.success) {
-      toast.success("Address saved successfully");
+      toast.success("Address saved successfully with GPS location");
       if (redirect) {
         router.push(redirect);
       } else {
@@ -166,6 +176,8 @@ function NewAddressForm() {
       toast.error(res.error || "Failed to save address");
     }
   };
+
+  const hasGps = detectedLat !== null && detectedLng !== null;
 
   return (
     <MobileShell>
@@ -188,23 +200,70 @@ function NewAddressForm() {
         <div className="w-10" />
       </header>
 
-      {/* Auto Detect Section */}
-      <section className="px-5 pt-6">
+      {/* GPS Status & Detection Section */}
+      <section className="px-5 pt-6 space-y-3">
+        {/* Compulsory GPS Status Banner */}
+        {hasGps ? (
+          <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-3.5 text-xs animate-fade-in">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />
+                <div>
+                  <p className="font-bold text-emerald-900">GPS Location Captured</p>
+                  <p className="text-[11px] text-emerald-800 font-mono mt-0.5">
+                    {detectedLat.toFixed(5)}, {detectedLng.toFixed(5)}
+                  </p>
+                </div>
+              </div>
+              <a
+                href={`https://maps.google.com/?q=${detectedLat},${detectedLng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-lg bg-emerald-600/15 px-2.5 py-1 text-[10px] font-bold text-emerald-700 hover:bg-emerald-600/25 transition-colors shrink-0"
+              >
+                <span>Google Map</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs">
+            <div className="flex items-start gap-2.5">
+              <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
+              <div>
+                <p className="font-bold text-amber-900">GPS Location Compulsory</p>
+                <p className="mt-0.5 text-amber-800/90 leading-relaxed text-[11px]">
+                  Exact GPS coordinates are required so our delivery riders can reach your doorstep.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <button
           type="button"
           onClick={handleAutoDetect}
           disabled={isDetecting}
-          className="flex w-full items-center justify-center gap-2.5 rounded-2xl bg-brand/10 border border-brand/20 py-3.5 text-sm font-semibold text-brand transition-all hover:bg-brand/15 active:scale-[0.99] disabled:opacity-50"
+          className={`flex w-full items-center justify-center gap-2.5 rounded-2xl py-3.5 text-sm font-bold transition-all active:scale-[0.99] disabled:opacity-50 ${
+            hasGps
+              ? "bg-surface border border-border text-foreground hover:bg-accent"
+              : "bg-brand text-brand-foreground shadow-md ring-2 ring-brand/30"
+          }`}
         >
           {isDetecting ? (
             <>
               <Loader2 className="h-4.5 w-4.5 animate-spin" />
-              Detecting Current Location...
+              Acquiring GPS Location...
+            </>
+          ) : hasGps ? (
+            <>
+              <RefreshCw className="h-4 w-4 text-muted-foreground" />
+              <span>Update / Re-detect GPS Location</span>
             </>
           ) : (
             <>
-              <Navigation className="h-4.5 w-4.5 fill-brand/20" />
-              Auto-Detect Current Location
+              <Navigation className="h-4.5 w-4.5 fill-current" />
+              <span>Auto-Detect Current Location (Required)</span>
             </>
           )}
         </button>

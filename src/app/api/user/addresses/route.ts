@@ -41,6 +41,13 @@ export const POST = withAuth(async (req) => {
       );
     }
 
+    if (lat === undefined || lat === null || lng === undefined || lng === null || isNaN(Number(lat)) || isNaN(Number(lng))) {
+      return NextResponse.json(
+        apiError("Exact GPS location coordinates (lat/lng) are mandatory for delivery addresses"),
+        { status: 400 }
+      );
+    }
+
     // Check if user has any existing addresses
     const addressCount = await db.address.count({
       where: { userId },
@@ -65,8 +72,8 @@ export const POST = withAuth(async (req) => {
         fullAddress,
         city: city || null,
         pincode: pincode || null,
-        lat: lat ? Number(lat) : null,
-        lng: lng ? Number(lng) : null,
+        lat: Number(lat),
+        lng: Number(lng),
         isDefault: shouldBeDefault,
       },
     });

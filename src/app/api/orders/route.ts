@@ -112,6 +112,8 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
           total: result.order.total,
           paymentMethod: result.order.paymentMethod,
           deliveryAddress: result.order.deliveryAddress,
+          deliveryLat: (result.order as any).deliveryLat != null ? Number((result.order as any).deliveryLat) : (deliveryLat ?? null),
+          deliveryLng: (result.order as any).deliveryLng != null ? Number((result.order as any).deliveryLng) : (deliveryLng ?? null),
           items: result.order.items,
           customer: {
             name: user?.name,

@@ -5,6 +5,8 @@ export interface OrderNotificationPayload {
   total: number | string;
   paymentMethod?: string | null;
   deliveryAddress?: string | null;
+  deliveryLat?: number | string | null;
+  deliveryLng?: number | string | null;
   items: Array<{
     itemName: string;
     quantity: number;
@@ -35,9 +37,20 @@ export async function notifyNewOrderToWhatsAppGroup(payload: OrderNotificationPa
       ? `👤 *Customer:* ${payload.customer.name || "Customer"} (${payload.customer.phone || "N/A"})\n`
       : "";
 
-    const addressDetails = payload.deliveryAddress
-      ? `📍 *Delivery Address:*\n${payload.deliveryAddress}\n`
-      : "📍 *Delivery:* Dine-in / Takeaway\n";
+    const lat = payload.deliveryLat != null ? Number(payload.deliveryLat) : null;
+    const lng = payload.deliveryLng != null ? Number(payload.deliveryLng) : null;
+    const hasGps = lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng);
+    const googleMapsUrl = hasGps ? `https://maps.google.com/?q=${lat},${lng}` : null;
+
+    let addressDetails = "";
+    if (payload.deliveryAddress) {
+      addressDetails = `📍 *Delivery Address:*\n${payload.deliveryAddress}\n`;
+      if (googleMapsUrl) {
+        addressDetails += `🗺️ *Google Maps Link:*\n${googleMapsUrl}\n`;
+      }
+    } else {
+      addressDetails = "📍 *Delivery:* Dine-in / Takeaway\n";
+    }
 
     const formattedTime = new Date().toLocaleTimeString("en-IN", {
       hour: "2-digit",

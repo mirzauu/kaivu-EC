@@ -101,6 +101,8 @@ export const POST = withAdmin(async (_req: AuthenticatedRequest) => {
         coinsEarned,
         status: "CONFIRMED",
         deliveryAddress: "Simulated Delivery Street, Bangalore",
+        deliveryLat: new Prisma.Decimal(12.9716),
+        deliveryLng: new Prisma.Decimal(77.5946),
         paymentMethod: "WALLET",
         estimatedDelivery: new Date(Date.now() + 25 * 60 * 1000),
       },
@@ -152,6 +154,8 @@ export const POST = withAdmin(async (_req: AuthenticatedRequest) => {
           total,
           paymentMethod: "WALLET",
           deliveryAddress: "Simulated Delivery Street, Bangalore",
+          deliveryLat: 12.9716,
+          deliveryLng: 77.5946,
           items: selectedItems.map((si) => ({
             itemName: si.item.name,
             quantity: si.quantity,

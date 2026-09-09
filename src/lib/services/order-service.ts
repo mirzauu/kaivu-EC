@@ -148,7 +148,21 @@ export async function placeOrder(params: {
     const coinEarnRate = await getSettingNumber("coin_earn_rate_percent", 10);
     const coinsEarned = Math.floor((total * coinEarnRate) / 100);
 
-    // 6. Create order
+    // 6. Resolve delivery coordinates (fallback to user saved address if not passed in params)
+    let finalLat = deliveryLat;
+    let finalLng = deliveryLng;
+
+    if (deliveryAddress && (finalLat === undefined || finalLat === null || finalLng === undefined || finalLng === null)) {
+      const savedAddr = await tx.address.findFirst({
+        where: { userId, fullAddress: deliveryAddress },
+      });
+      if (savedAddr?.lat != null && savedAddr?.lng != null) {
+        finalLat = Number(savedAddr.lat);
+        finalLng = Number(savedAddr.lng);
+      }
+    }
+
+    // Create order
     const order = await tx.order.create({
       data: {
         orderNumber,
@@ -161,8 +175,8 @@ export async function placeOrder(params: {
         coinsRedeemed: actualCoinsRedeemed,
         status: "CONFIRMED",
         deliveryAddress,
-        deliveryLat: deliveryLat ? new Prisma.Decimal(deliveryLat) : null,
-        deliveryLng: deliveryLng ? new Prisma.Decimal(deliveryLng) : null,
+        deliveryLat: finalLat ? new Prisma.Decimal(finalLat) : null,
+        deliveryLng: finalLng ? new Prisma.Decimal(finalLng) : null,
         paymentMethod: paymentMethod || "WALLET",
         estimatedDelivery: new Date(Date.now() + 30 * 60 * 1000), // 30 min ETA
       },
@@ -179,6 +193,8 @@ export async function placeOrder(params: {
             userId,
             fullAddress: deliveryAddress,
             label: "Home",
+            lat: finalLat ? new Prisma.Decimal(finalLat) : null,
+            lng: finalLng ? new Prisma.Decimal(finalLng) : null,
             isDefault: addressCount === 0,
           }
         });

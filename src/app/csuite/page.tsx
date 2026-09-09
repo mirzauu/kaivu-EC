@@ -178,12 +178,6 @@ function AdminLogin() {
           </button>
         </form>
 
-        <div className="mt-8 border-t border-[oklch(0.9_0.015_75)] pt-6 text-center">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-[oklch(0.94_0.018_75)] px-4 py-1.5 text-xs text-[oklch(0.22_0.025_50)] font-medium">
-            <Sparkles className="h-3.5 w-3.5 text-brand" />
-            <span>Hint: Use <strong className="font-bold">admin</strong> / <strong className="font-bold">admin</strong></span>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -192,8 +186,11 @@ function AdminLogin() {
 // --- ADMIN CONSOLE COMPONENT ---
 function AdminConsole() {
   const [activeTab, setActiveTab] = useState<"dashboard" | "orders" | "menu" | "users" | "settings" | "activity" | "instagram" | "manage-app">("dashboard");
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
   const orders = useOrders((s) => s.orders);
   const menuItems = useMenu((s) => s.menu);
+
+  const activeOrdersCount = orders.filter((o) => o.status === "active").length;
 
   useEffect(() => {
     ordersStore.refresh();
@@ -209,10 +206,17 @@ function AdminConsole() {
     adminAuth.logout();
   };
 
+  const handleSelectTab = (tab: "dashboard" | "orders" | "menu" | "users" | "settings" | "activity" | "instagram" | "manage-app") => {
+    setActiveTab(tab);
+    setIsMoreOpen(false);
+    // Scroll to top when switching tab
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <div className="flex min-h-screen bg-[oklch(0.97_0.012_75)] font-sans">
-      {/* SIDEBAR */}
-      <aside className="fixed inset-y-0 left-0 flex w-64 flex-col border-r border-[oklch(0.9_0.015_75)] bg-white">
+      {/* DESKTOP SIDEBAR */}
+      <aside className="fixed inset-y-0 left-0 hidden lg:flex w-64 flex-col border-r border-[oklch(0.9_0.015_75)] bg-white z-30">
         <div className="flex h-20 items-center px-6 border-b border-[oklch(0.9_0.015_75)] gap-3">
           <img
             src="/images/brand/kaivu-logo-black.png"
@@ -247,10 +251,10 @@ function AdminConsole() {
               <ShoppingBag className="h-5 w-5 shrink-0" />
               <span>Order Management</span>
             </div>
-            {orders.filter((o) => o.status === "active").length > 0 && (
+            {activeOrdersCount > 0 && (
               <span className={`grid h-5 min-w-5 place-items-center rounded-full text-[10px] font-bold px-1.5 ${activeTab === "orders" ? "bg-white text-brand" : "bg-brand text-brand-foreground"
                 }`}>
-                {orders.filter((o) => o.status === "active").length}
+                {activeOrdersCount}
               </span>
             )}
           </button>
@@ -349,47 +353,72 @@ function AdminConsole() {
       </aside>
 
       {/* MAIN CONTENT CONTAINER */}
-      <div className="flex flex-1 flex-col pl-64">
+      <div className="flex flex-1 flex-col pl-0 lg:pl-64 min-w-0">
         {/* HEADER */}
-        <header className="flex h-20 items-center justify-between bg-white px-8 border-b border-[oklch(0.9_0.015_75)]">
-          <div>
-            <h2 className="text-xl font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-tight">
-              {activeTab === "dashboard" && "Dashboard Overview"}
-              {activeTab === "orders" && "Order Management"}
-              {activeTab === "manage-app" && "Manage App · Store Operations"}
-              {activeTab === "menu" && "Menu Management"}
-              {activeTab === "instagram" && "Instagram Story Importer"}
-              {activeTab === "users" && "User Management"}
-              {activeTab === "settings" && "Settings & Simulator"}
-              {activeTab === "activity" && "User Activity Stream"}
-            </h2>
-            <p className="text-xs text-[oklch(0.5_0.02_60)]">
-              Welcome back, Admin · Systems operational.
-            </p>
+        <header className="sticky top-0 z-20 flex h-16 sm:h-20 items-center justify-between bg-white/95 backdrop-blur-md px-4 sm:px-8 border-b border-[oklch(0.9_0.015_75)]">
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Mobile Brand Logo */}
+            <div className="flex items-center gap-2 lg:hidden shrink-0">
+              <img
+                src="/images/brand/kaivu-logo-black.png"
+                alt="kaivu."
+                className="h-6 w-auto object-contain rounded-md"
+              />
+              <span className="text-lg font-display font-extrabold text-[oklch(0.18_0.02_50)]">
+                C-Suite
+              </span>
+              <div className="h-4 w-px bg-[oklch(0.9_0.015_75)] mx-1" />
+            </div>
+
+            <div className="min-w-0">
+              <h2 className="text-sm sm:text-xl font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-tight truncate">
+                {activeTab === "dashboard" && "Dashboard"}
+                {activeTab === "orders" && "Orders"}
+                {activeTab === "manage-app" && "Manage App"}
+                {activeTab === "menu" && "Menu Catalog"}
+                {activeTab === "instagram" && "Stories"}
+                {activeTab === "users" && "Users"}
+                {activeTab === "settings" && "Settings"}
+                {activeTab === "activity" && "Activity Stream"}
+              </h2>
+              <p className="hidden sm:block text-xs text-[oklch(0.5_0.02_60)] truncate">
+                Welcome back, Admin · Systems operational.
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 rounded-full bg-[oklch(0.94_0.018_75)] px-3 py-1.5 text-xs text-[oklch(0.22_0.025_50)] font-semibold">
-              <span className="relative flex h-2 w-2">
+          <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 rounded-full bg-[oklch(0.94_0.018_75)] px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs text-[oklch(0.22_0.025_50)] font-semibold">
+              <span className="relative flex h-2 w-2 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <span>Live Synced</span>
+              <span className="hidden sm:inline">Live Synced</span>
+              <span className="sm:hidden">Live</span>
             </div>
 
-            <div className="h-8 w-px bg-[oklch(0.9_0.015_75)]" />
+            <div className="hidden sm:block h-8 w-px bg-[oklch(0.9_0.015_75)]" />
 
-            <div className="flex items-center gap-2.5">
+            <div className="hidden sm:flex items-center gap-2.5">
               <div className="grid h-9 w-9 place-items-center rounded-full bg-brand text-brand-foreground font-bold text-sm">
                 A
               </div>
-              <span className="text-sm font-bold text-[oklch(0.18_0.02_50)]">Administrator</span>
+              <span className="text-sm font-bold text-[oklch(0.18_0.02_50)]">Admin</span>
             </div>
+
+            {/* Mobile Signout Button in Header */}
+            <button
+              onClick={handleLogout}
+              className="lg:hidden grid h-8 w-8 place-items-center rounded-full bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+              title="Sign Out"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
           </div>
         </header>
 
         {/* WORKSPACE */}
-        <main className="flex-1 p-8 overflow-y-auto">
+        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 pb-24 lg:pb-8 overflow-y-auto min-w-0">
           {activeTab === "dashboard" && (
             <DashboardTab orders={orders} menuItems={menuItems} />
           )}
@@ -402,6 +431,195 @@ function AdminConsole() {
           {activeTab === "activity" && <ActivityTab />}
         </main>
       </div>
+
+      {/* MOBILE BOTTOM NAVIGATION BAR */}
+      <nav className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-[oklch(0.9_0.015_75)] z-40 lg:hidden px-2 py-2 flex items-center justify-around shadow-2xl safe-area-bottom">
+        <button
+          onClick={() => handleSelectTab("orders")}
+          className={`relative flex flex-col items-center gap-1 py-1 px-3 rounded-2xl transition-all cursor-pointer ${
+            activeTab === "orders"
+              ? "text-brand font-bold"
+              : "text-[oklch(0.5_0.02_60)] hover:text-[oklch(0.18_0.02_50)] font-medium"
+          }`}
+        >
+          <div className="relative">
+            <ShoppingBag className={`h-5 w-5 ${activeTab === "orders" ? "stroke-[2.5]" : "stroke-2"}`} />
+            {activeOrdersCount > 0 && (
+              <span className="absolute -top-1.5 -right-2 grid h-4 min-w-4 place-items-center rounded-full bg-brand text-[9px] font-extrabold text-white px-1 shadow-sm">
+                {activeOrdersCount}
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] tracking-tight">Orders</span>
+        </button>
+
+        <button
+          onClick={() => handleSelectTab("dashboard")}
+          className={`flex flex-col items-center gap-1 py-1 px-3 rounded-2xl transition-all cursor-pointer ${
+            activeTab === "dashboard"
+              ? "text-brand font-bold"
+              : "text-[oklch(0.5_0.02_60)] hover:text-[oklch(0.18_0.02_50)] font-medium"
+          }`}
+        >
+          <LayoutDashboard className={`h-5 w-5 ${activeTab === "dashboard" ? "stroke-[2.5]" : "stroke-2"}`} />
+          <span className="text-[10px] tracking-tight">Dashboard</span>
+        </button>
+
+        <button
+          onClick={() => handleSelectTab("menu")}
+          className={`flex flex-col items-center gap-1 py-1 px-3 rounded-2xl transition-all cursor-pointer ${
+            activeTab === "menu"
+              ? "text-brand font-bold"
+              : "text-[oklch(0.5_0.02_60)] hover:text-[oklch(0.18_0.02_50)] font-medium"
+          }`}
+        >
+          <Utensils className={`h-5 w-5 ${activeTab === "menu" ? "stroke-[2.5]" : "stroke-2"}`} />
+          <span className="text-[10px] tracking-tight">Menu</span>
+        </button>
+
+        <button
+          onClick={() => handleSelectTab("manage-app")}
+          className={`flex flex-col items-center gap-1 py-1 px-3 rounded-2xl transition-all cursor-pointer ${
+            activeTab === "manage-app"
+              ? "text-brand font-bold"
+              : "text-[oklch(0.5_0.02_60)] hover:text-[oklch(0.18_0.02_50)] font-medium"
+          }`}
+        >
+          <Store className={`h-5 w-5 ${activeTab === "manage-app" ? "stroke-[2.5]" : "stroke-2"}`} />
+          <span className="text-[10px] tracking-tight">Store</span>
+        </button>
+
+        <button
+          onClick={() => setIsMoreOpen(true)}
+          className={`flex flex-col items-center gap-1 py-1 px-3 rounded-2xl transition-all cursor-pointer ${
+            isMoreOpen || ["instagram", "users", "settings", "activity"].includes(activeTab)
+              ? "text-brand font-bold"
+              : "text-[oklch(0.5_0.02_60)] hover:text-[oklch(0.18_0.02_50)] font-medium"
+          }`}
+        >
+          <MenuSquare className={`h-5 w-5 ${["instagram", "users", "settings", "activity"].includes(activeTab) ? "stroke-[2.5]" : "stroke-2"}`} />
+          <span className="text-[10px] tracking-tight">More</span>
+        </button>
+      </nav>
+
+      {/* MOBILE "MORE" BOTTOM SHEET DRAWER */}
+      {isMoreOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div
+            className="absolute inset-0"
+            onClick={() => setIsMoreOpen(false)}
+          />
+          <div className="relative bg-white rounded-t-[2rem] p-6 space-y-4 shadow-2xl border-t border-[oklch(0.9_0.015_75)] max-h-[80vh] overflow-y-auto">
+            {/* Sheet Header */}
+            <div className="flex items-center justify-between border-b border-[oklch(0.9_0.015_75)] pb-3">
+              <div>
+                <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">More Controls</h3>
+                <p className="text-xs text-[oklch(0.5_0.02_60)]">Additional admin tools & navigation</p>
+              </div>
+              <button
+                onClick={() => setIsMoreOpen(false)}
+                className="grid h-8 w-8 place-items-center rounded-full bg-[oklch(0.94_0.018_75)] text-slate-600 hover:bg-[oklch(0.9_0.015_75)]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Menu List */}
+            <div className="space-y-1.5 pt-1">
+              <button
+                onClick={() => handleSelectTab("instagram")}
+                className={`flex w-full items-center gap-3.5 p-3.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer ${
+                  activeTab === "instagram"
+                    ? "bg-brand text-brand-foreground shadow-sm"
+                    : "bg-[oklch(0.98_0.005_75)] text-[oklch(0.2_0.02_50)] hover:bg-[oklch(0.94_0.018_75)]"
+                }`}
+              >
+                <Camera className="h-5 w-5 shrink-0 text-brand" />
+                <div className="text-left flex-1">
+                  <p className="font-bold">Instagram Stories</p>
+                  <p className="text-[11px] opacity-75 font-normal">Manage top story feed & video highlights</p>
+                </div>
+                <ChevronRight className="h-4 w-4 opacity-50" />
+              </button>
+
+              <button
+                onClick={() => handleSelectTab("users")}
+                className={`flex w-full items-center gap-3.5 p-3.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer ${
+                  activeTab === "users"
+                    ? "bg-brand text-brand-foreground shadow-sm"
+                    : "bg-[oklch(0.98_0.005_75)] text-[oklch(0.2_0.02_50)] hover:bg-[oklch(0.94_0.018_75)]"
+                }`}
+              >
+                <User className="h-5 w-5 shrink-0 text-brand" />
+                <div className="text-left flex-1">
+                  <p className="font-bold">User Management</p>
+                  <p className="text-[11px] opacity-75 font-normal">Customer accounts, notification banners</p>
+                </div>
+                <ChevronRight className="h-4 w-4 opacity-50" />
+              </button>
+
+              <button
+                onClick={() => handleSelectTab("settings")}
+                className={`flex w-full items-center gap-3.5 p-3.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer ${
+                  activeTab === "settings"
+                    ? "bg-brand text-brand-foreground shadow-sm"
+                    : "bg-[oklch(0.98_0.005_75)] text-[oklch(0.2_0.02_50)] hover:bg-[oklch(0.94_0.018_75)]"
+                }`}
+              >
+                <Settings className="h-5 w-5 shrink-0 text-brand" />
+                <div className="text-left flex-1">
+                  <p className="font-bold">Settings & Simulator</p>
+                  <p className="text-[11px] opacity-75 font-normal">Simulate orders, configure store settings</p>
+                </div>
+                <ChevronRight className="h-4 w-4 opacity-50" />
+              </button>
+
+              <button
+                onClick={() => handleSelectTab("activity")}
+                className={`flex w-full items-center gap-3.5 p-3.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer ${
+                  activeTab === "activity"
+                    ? "bg-brand text-brand-foreground shadow-sm"
+                    : "bg-[oklch(0.98_0.005_75)] text-[oklch(0.2_0.02_50)] hover:bg-[oklch(0.94_0.018_75)]"
+                }`}
+              >
+                <Activity className="h-5 w-5 shrink-0 text-brand" />
+                <div className="text-left flex-1">
+                  <p className="font-bold">User Activity Stream</p>
+                  <p className="text-[11px] opacity-75 font-normal">Real-time visitor telemetry and logs</p>
+                </div>
+                <ChevronRight className="h-4 w-4 opacity-50" />
+              </button>
+
+              <a
+                href="/csuite/whatsapp"
+                className="flex w-full items-center gap-3.5 p-3.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer bg-[oklch(0.98_0.005_75)] text-[oklch(0.2_0.02_50)] hover:bg-[oklch(0.94_0.018_75)]"
+              >
+                <Smartphone className="h-5 w-5 shrink-0 text-emerald-600" />
+                <div className="text-left flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold">WhatsApp Device</p>
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                      Baileys
+                    </span>
+                  </div>
+                  <p className="text-[11px] opacity-75 font-normal">QR pairing and bot messaging status</p>
+                </div>
+                <ChevronRight className="h-4 w-4 opacity-50" />
+              </a>
+
+              <div className="pt-2 border-t border-[oklch(0.9_0.015_75)]">
+                <button
+                  onClick={handleLogout}
+                  className="flex w-full items-center justify-center gap-2 p-3 rounded-2xl text-sm font-bold text-destructive bg-destructive/5 hover:bg-destructive/10 transition-colors"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Sign Out of C-Suite</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -494,60 +712,60 @@ function DashboardTab({ orders, menuItems }: TabProps) {
   const COLORS = ["oklch(0.68 0.19 40)", "oklch(0.22 0.025 50)", "oklch(0.5 0.02 60)", "#f59e0b", "#3b82f6"];
 
   return (
-    <div className="space-y-8 animate-fadeIn">
+    <div className="space-y-6 sm:space-y-8 animate-fadeIn">
       {/* 4 STATS CARDS */}
-      <div className="grid grid-cols-4 gap-6">
-        <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm flex items-center gap-5">
-          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand shrink-0">
-            <DollarSign className="h-6 w-6" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-3.5 sm:p-6 shadow-sm flex items-center gap-3 sm:gap-5 min-w-0">
+          <div className="grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-xl sm:rounded-2xl bg-brand/10 text-brand shrink-0">
+            <DollarSign className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
-          <div>
-            <p className="text-xs font-bold text-[oklch(0.5_0.02_60)] uppercase tracking-wider">
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] sm:text-xs font-bold text-[oklch(0.5_0.02_60)] uppercase tracking-wider truncate">
               Total Revenue
             </p>
-            <h3 className="mt-1 text-2xl font-display font-extrabold text-[oklch(0.18_0.02_50)]">
+            <h3 className="mt-0.5 sm:mt-1 text-base sm:text-2xl font-display font-extrabold text-[oklch(0.18_0.02_50)] truncate">
               ₹{stats.revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </h3>
           </div>
         </div>
 
-        <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm flex items-center gap-5">
-          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[oklch(0.22_0.025_50)]/5 text-[oklch(0.22_0.025_50)] shrink-0">
-            <ShoppingBag className="h-6 w-6" />
+        <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-3.5 sm:p-6 shadow-sm flex items-center gap-3 sm:gap-5 min-w-0">
+          <div className="grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-xl sm:rounded-2xl bg-[oklch(0.22_0.025_50)]/5 text-[oklch(0.22_0.025_50)] shrink-0">
+            <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
-          <div>
-            <p className="text-xs font-bold text-[oklch(0.5_0.02_60)] uppercase tracking-wider">
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] sm:text-xs font-bold text-[oklch(0.5_0.02_60)] uppercase tracking-wider truncate">
               Total Orders
             </p>
-            <h3 className="mt-1 text-2xl font-display font-extrabold text-[oklch(0.18_0.02_50)]">
+            <h3 className="mt-0.5 sm:mt-1 text-base sm:text-2xl font-display font-extrabold text-[oklch(0.18_0.02_50)] truncate">
               {stats.ordersCount}
             </h3>
           </div>
         </div>
 
-        <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm flex items-center gap-5">
-          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[oklch(0.5_0.02_60)]/5 text-[oklch(0.5_0.02_60)] shrink-0">
-            <TrendingUp className="h-6 w-6" />
+        <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-3.5 sm:p-6 shadow-sm flex items-center gap-3 sm:gap-5 min-w-0">
+          <div className="grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-xl sm:rounded-2xl bg-[oklch(0.5_0.02_60)]/5 text-[oklch(0.5_0.02_60)] shrink-0">
+            <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
-          <div>
-            <p className="text-xs font-bold text-[oklch(0.5_0.02_60)] uppercase tracking-wider">
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] sm:text-xs font-bold text-[oklch(0.5_0.02_60)] uppercase tracking-wider truncate">
               Average Ticket
             </p>
-            <h3 className="mt-1 text-2xl font-display font-extrabold text-[oklch(0.18_0.02_50)]">
+            <h3 className="mt-0.5 sm:mt-1 text-base sm:text-2xl font-display font-extrabold text-[oklch(0.18_0.02_50)] truncate">
               ₹{stats.aov.toFixed(2)}
             </h3>
           </div>
         </div>
 
-        <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm flex items-center gap-5">
-          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand shrink-0">
-            <Utensils className="h-6 w-6" />
+        <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-3.5 sm:p-6 shadow-sm flex items-center gap-3 sm:gap-5 min-w-0">
+          <div className="grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-xl sm:rounded-2xl bg-brand/10 text-brand shrink-0">
+            <Utensils className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
-          <div>
-            <p className="text-xs font-bold text-[oklch(0.5_0.02_60)] uppercase tracking-wider">
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] sm:text-xs font-bold text-[oklch(0.5_0.02_60)] uppercase tracking-wider truncate">
               Active Products
             </p>
-            <h3 className="mt-1 text-2xl font-display font-extrabold text-[oklch(0.18_0.02_50)]">
+            <h3 className="mt-0.5 sm:mt-1 text-base sm:text-2xl font-display font-extrabold text-[oklch(0.18_0.02_50)] truncate">
               {stats.productsCount}
             </h3>
           </div>
@@ -555,14 +773,14 @@ function DashboardTab({ orders, menuItems }: TabProps) {
       </div>
 
       {/* CHARTS GRID */}
-      <div className="grid grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
         {/* Sales Area Chart */}
-        <div className="col-span-3 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm flex flex-col">
+        <div className="col-span-1 lg:col-span-3 rounded-[1.5rem] sm:rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-4 sm:p-6 shadow-sm flex flex-col">
           <div className="mb-4">
-            <h4 className="text-base font-bold text-[oklch(0.18_0.02_50)]">Sales Volume Trend</h4>
+            <h4 className="text-sm sm:text-base font-bold text-[oklch(0.18_0.02_50)]">Sales Volume Trend</h4>
             <p className="text-xs text-[oklch(0.5_0.02_60)]">Daily performance across the last week.</p>
           </div>
-          <div className="h-80 w-full flex-1">
+          <div className="h-60 sm:h-80 w-full flex-1">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={salesTrendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <defs>
@@ -581,20 +799,20 @@ function DashboardTab({ orders, menuItems }: TabProps) {
         </div>
 
         {/* Category Pie Chart */}
-        <div className="col-span-2 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm flex flex-col">
+        <div className="col-span-1 lg:col-span-2 rounded-[1.5rem] sm:rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-4 sm:p-6 shadow-sm flex flex-col">
           <div className="mb-4">
-            <h4 className="text-base font-bold text-[oklch(0.18_0.02_50)]">Category Distribution</h4>
+            <h4 className="text-sm sm:text-base font-bold text-[oklch(0.18_0.02_50)]">Category Distribution</h4>
             <p className="text-xs text-[oklch(0.5_0.02_60)]">Popularity percentage of catalog categories.</p>
           </div>
-          <div className="h-80 w-full flex-1 relative flex items-center justify-center">
+          <div className="h-60 sm:h-80 w-full flex-1 relative flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={categoryData}
                   cx="50%"
                   cy="45%"
-                  innerRadius={70}
-                  outerRadius={100}
+                  innerRadius={55}
+                  outerRadius={85}
                   paddingAngle={4}
                   dataKey="value"
                 >
@@ -611,10 +829,10 @@ function DashboardTab({ orders, menuItems }: TabProps) {
       </div>
 
       {/* RECENT LIVE ORDERS GRID PREVIEW */}
-      <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm">
+      <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-4 sm:p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h4 className="text-base font-bold text-[oklch(0.18_0.02_50)]">Active Live Orders</h4>
+            <h4 className="text-sm sm:text-base font-bold text-[oklch(0.18_0.02_50)]">Active Live Orders</h4>
             <p className="text-xs text-[oklch(0.5_0.02_60)]">Real-time status of orders currently in the kitchen or delivery stream.</p>
           </div>
         </div>
@@ -624,8 +842,8 @@ function DashboardTab({ orders, menuItems }: TabProps) {
             No live active orders. All orders processed or none placed yet.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+            <table className="w-full text-left border-collapse min-w-[480px]">
               <thead>
                 <tr className="border-b border-[oklch(0.9_0.015_75)] text-xs font-bold text-[oklch(0.5_0.02_60)] uppercase tracking-wider">
                   <th className="pb-3">Order ID</th>
@@ -640,9 +858,9 @@ function DashboardTab({ orders, menuItems }: TabProps) {
                   .slice(0, 5)
                   .map((o) => (
                     <tr key={o.id} className="border-b border-[oklch(0.95_0.01_75)] text-sm">
-                      <td className="py-4 font-bold text-[oklch(0.18_0.02_50)]">{o.id}</td>
-                      <td className="py-4 text-[oklch(0.18_0.02_50)]">{o.item}</td>
-                      <td className="py-4">
+                      <td className="py-3 sm:py-4 font-bold text-[oklch(0.18_0.02_50)]">{o.id}</td>
+                      <td className="py-3 sm:py-4 text-[oklch(0.18_0.02_50)]">{o.item}</td>
+                      <td className="py-3 sm:py-4">
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 px-2.5 py-1 text-xs font-bold text-brand">
                           <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
                           {o.stage === 0 && "Confirmed"}
@@ -651,7 +869,7 @@ function DashboardTab({ orders, menuItems }: TabProps) {
                           {o.stage === 3 && "Delivered"}
                         </span>
                       </td>
-                      <td className="py-4 text-right font-bold text-[oklch(0.18_0.02_50)]">₹{o.price.toFixed(2)}</td>
+                      <td className="py-3 sm:py-4 text-right font-bold text-[oklch(0.18_0.02_50)]">₹{o.price.toFixed(2)}</td>
                     </tr>
                   ))}
               </tbody>
@@ -673,6 +891,7 @@ function OrdersTab({ orders }: OrdersTabProps) {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(
     orders.length > 0 ? orders[0].id : null
   );
+  const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isDeleting, setIsDeleting] = useState(false);
@@ -767,6 +986,7 @@ function OrdersTab({ orders }: OrdersTabProps) {
         toast.success(`Order ${id} and all history permanently deleted.`);
         if (selectedOrderId === id) {
           setSelectedOrderId(null);
+          setIsMobileDetailOpen(false);
         }
         setSelectedIds((prev) => prev.filter((item) => item !== id));
       } else {
@@ -790,6 +1010,7 @@ function OrdersTab({ orders }: OrdersTabProps) {
         toast.success(`Successfully deleted ${selectedIds.length} order(s) and their full history.`);
         if (selectedOrderId && selectedIds.includes(selectedOrderId)) {
           setSelectedOrderId(null);
+          setIsMobileDetailOpen(false);
         }
         setSelectedIds([]);
       } else {
@@ -798,24 +1019,29 @@ function OrdersTab({ orders }: OrdersTabProps) {
     }
   };
 
+  const handleOpenOrder = (id: string) => {
+    setSelectedOrderId(id);
+    setIsMobileDetailOpen(true);
+  };
+
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* TOP CONTROLS & BULK ACTION BAR */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-4 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 rounded-[1.5rem] sm:rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-3.5 sm:p-4 shadow-sm">
         {/* Search Input */}
-        <div className="relative flex-1 min-w-[240px] max-w-md">
+        <div className="relative flex-1 w-full sm:max-w-md">
           <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
           <input
             type="text"
             placeholder="Search by order ID, items, or address..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-xs bg-[oklch(0.98_0.005_75)] border border-[oklch(0.9_0.015_75)] rounded-xl focus:outline-none focus:border-brand"
+            className="w-full pl-9 pr-8 py-2 text-xs bg-[oklch(0.98_0.005_75)] border border-[oklch(0.9_0.015_75)] rounded-xl focus:outline-none focus:border-brand"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
+              className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 p-0.5"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -823,7 +1049,7 @@ function OrdersTab({ orders }: OrdersTabProps) {
         </div>
 
         {/* Global Select All & Bulk Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 sm:gap-3">
           <button
             type="button"
             onClick={handleSelectAllGlobal}
@@ -848,14 +1074,14 @@ function OrdersTab({ orders }: OrdersTabProps) {
                 type="button"
                 disabled={isDeleting}
                 onClick={handleBulkDelete}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-sm transition-all cursor-pointer disabled:opacity-50"
               >
                 {isDeleting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Trash2 className="h-4 w-4" />
                 )}
-                <span>Delete Selected ({selectedIds.length})</span>
+                <span>Delete ({selectedIds.length})</span>
               </button>
               <button
                 type="button"
@@ -869,13 +1095,13 @@ function OrdersTab({ orders }: OrdersTabProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-8">
-        {/* ORDERS LIST PANEL (LEFT 2/3) */}
-        <div className="col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+        {/* ORDERS LIST PANEL (LEFT 2/3 ON DESKTOP, FULL WIDTH ON MOBILE) */}
+        <div className="col-span-1 lg:col-span-2 space-y-6">
           {/* Active Orders List */}
-          <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm">
+          <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-4 sm:p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4 border-b border-[oklch(0.9_0.015_75)] pb-3">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5 sm:gap-3">
                 <button
                   type="button"
                   onClick={handleToggleSelectAllActive}
@@ -889,7 +1115,7 @@ function OrdersTab({ orders }: OrdersTabProps) {
                     <Square className="h-4 w-4" />
                   )}
                 </button>
-                <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">
+                <h3 className="text-sm sm:text-base font-bold text-[oklch(0.18_0.02_50)]">
                   Active Orders Stream
                 </h3>
               </div>
@@ -911,14 +1137,14 @@ function OrdersTab({ orders }: OrdersTabProps) {
                   return (
                     <li
                       key={o.id}
-                      onClick={() => setSelectedOrderId(o.id)}
-                      className={`group relative flex items-center justify-between p-4 -mx-4 rounded-2xl transition-all cursor-pointer ${
+                      onClick={() => handleOpenOrder(o.id)}
+                      className={`group relative flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 -mx-2 sm:-mx-4 rounded-2xl transition-all cursor-pointer gap-2.5 sm:gap-3 ${
                         isSelected
                           ? "bg-[oklch(0.94_0.018_75)]"
                           : "hover:bg-[oklch(0.97_0.012_75)]"
                       } ${isChecked ? "ring-2 ring-brand/40 bg-brand/5" : ""}`}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                         {/* Checkbox */}
                         <div
                           onClick={(e) => handleToggleSelect(o.id, e)}
@@ -934,45 +1160,48 @@ function OrdersTab({ orders }: OrdersTabProps) {
                         <img
                           src={o.image}
                           alt=""
-                          className="h-12 w-12 rounded-xl object-cover shrink-0"
+                          className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl object-cover shrink-0"
                         />
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <h4 className="font-bold text-sm text-[oklch(0.18_0.02_50)]">
+                            <h4 className="font-bold text-xs sm:text-sm text-[oklch(0.18_0.02_50)] truncate">
                               {o.id}
                             </h4>
-                            <span className="text-[10px] text-[oklch(0.5_0.02_60)]">
+                            <span className="text-[10px] text-[oklch(0.5_0.02_60)] shrink-0">
                               {o.date}
                             </span>
                           </div>
-                          <p className="truncate text-xs font-semibold text-[oklch(0.18_0.02_50)] mt-0.5 max-w-sm">
+                          <p className="truncate text-xs font-semibold text-[oklch(0.18_0.02_50)] mt-0.5">
                             {o.item}
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-between sm:justify-end gap-2.5 sm:gap-3 pl-8 sm:pl-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-[oklch(0.95_0.01_75)] shrink-0">
                         <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand">
                           <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
                           {o.stage === 0 && "Confirmed"}
                           {o.stage === 1 && "Cooking"}
                           {o.stage === 2 && "On the way"}
                         </span>
-                        <span className="font-bold text-sm text-[oklch(0.18_0.02_50)]">
-                          ₹{o.price.toFixed(2)}
-                        </span>
 
-                        {/* Individual Delete Button */}
-                        <button
-                          type="button"
-                          onClick={(e) => handleDeleteSingle(o.id, e)}
-                          className="grid h-7 w-7 place-items-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                          title="Permanently delete this order & history"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm text-[oklch(0.18_0.02_50)]">
+                            ₹{o.price.toFixed(2)}
+                          </span>
 
-                        <ChevronRight className="h-4 w-4 text-[oklch(0.5_0.02_60)] transition-transform group-hover:translate-x-0.5" />
+                          {/* Individual Delete Button */}
+                          <button
+                            type="button"
+                            onClick={(e) => handleDeleteSingle(o.id, e)}
+                            className="grid h-7 w-7 place-items-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            title="Permanently delete this order & history"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+
+                          <ChevronRight className="h-4 w-4 text-[oklch(0.5_0.02_60)] transition-transform group-hover:translate-x-0.5" />
+                        </div>
                       </div>
                     </li>
                   );
@@ -982,9 +1211,9 @@ function OrdersTab({ orders }: OrdersTabProps) {
           </div>
 
           {/* Past Orders List */}
-          <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm">
+          <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-4 sm:p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4 border-b border-[oklch(0.9_0.015_75)] pb-3">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5 sm:gap-3">
                 <button
                   type="button"
                   onClick={handleToggleSelectAllPast}
@@ -998,7 +1227,7 @@ function OrdersTab({ orders }: OrdersTabProps) {
                     <Square className="h-4 w-4" />
                   )}
                 </button>
-                <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">
+                <h3 className="text-sm sm:text-base font-bold text-[oklch(0.18_0.02_50)]">
                   Completed & Cancelled History
                 </h3>
               </div>
@@ -1019,14 +1248,14 @@ function OrdersTab({ orders }: OrdersTabProps) {
                   return (
                     <li
                       key={o.id}
-                      onClick={() => setSelectedOrderId(o.id)}
-                      className={`group flex items-center justify-between p-4 -mx-4 rounded-2xl transition-all cursor-pointer ${
+                      onClick={() => handleOpenOrder(o.id)}
+                      className={`group flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 -mx-2 sm:-mx-4 rounded-2xl transition-all cursor-pointer gap-2.5 sm:gap-3 ${
                         isSelected
                           ? "bg-[oklch(0.94_0.018_75)]"
                           : "hover:bg-[oklch(0.97_0.012_75)]"
                       } ${isChecked ? "ring-2 ring-brand/40 bg-brand/5" : ""}`}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                         {/* Checkbox */}
                         <div
                           onClick={(e) => handleToggleSelect(o.id, e)}
@@ -1042,24 +1271,24 @@ function OrdersTab({ orders }: OrdersTabProps) {
                         <img
                           src={o.image}
                           alt=""
-                          className="h-10 w-10 rounded-xl object-cover opacity-60 shrink-0"
+                          className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl object-cover opacity-60 shrink-0"
                         />
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <h4 className="font-bold text-sm text-[oklch(0.18_0.02_50)]">
+                            <h4 className="font-bold text-xs sm:text-sm text-[oklch(0.18_0.02_50)] truncate">
                               {o.id}
                             </h4>
-                            <span className="text-[10px] text-[oklch(0.5_0.02_60)]">
+                            <span className="text-[10px] text-[oklch(0.5_0.02_60)] shrink-0">
                               {o.date}
                             </span>
                           </div>
-                          <p className="truncate text-xs font-semibold text-[oklch(0.5_0.02_60)] mt-0.5 max-w-sm">
+                          <p className="truncate text-xs font-semibold text-[oklch(0.5_0.02_60)] mt-0.5">
                             {o.item}
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-between sm:justify-end gap-2.5 sm:gap-3 pl-8 sm:pl-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-[oklch(0.95_0.01_75)] shrink-0">
                         <span
                           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
                             o.status === "cancelled"
@@ -1069,21 +1298,24 @@ function OrdersTab({ orders }: OrdersTabProps) {
                         >
                           {o.status}
                         </span>
-                        <span className="font-bold text-sm text-[oklch(0.18_0.02_50)]">
-                          ₹{o.price.toFixed(2)}
-                        </span>
 
-                        {/* Individual Delete Button */}
-                        <button
-                          type="button"
-                          onClick={(e) => handleDeleteSingle(o.id, e)}
-                          className="grid h-7 w-7 place-items-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                          title="Permanently delete this order & history"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm text-[oklch(0.18_0.02_50)]">
+                            ₹{o.price.toFixed(2)}
+                          </span>
 
-                        <ChevronRight className="h-4 w-4 text-[oklch(0.5_0.02_60)] transition-transform group-hover:translate-x-0.5" />
+                          {/* Individual Delete Button */}
+                          <button
+                            type="button"
+                            onClick={(e) => handleDeleteSingle(o.id, e)}
+                            className="grid h-7 w-7 place-items-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            title="Permanently delete this order & history"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+
+                          <ChevronRight className="h-4 w-4 text-[oklch(0.5_0.02_60)] transition-transform group-hover:translate-x-0.5" />
+                        </div>
                       </div>
                     </li>
                   );
@@ -1093,8 +1325,8 @@ function OrdersTab({ orders }: OrdersTabProps) {
           </div>
         </div>
 
-        {/* DETAIL CONSOLE PANEL (RIGHT 1/3) */}
-        <div className="col-span-1">
+        {/* DESKTOP DETAIL CONSOLE PANEL (RIGHT 1/3) */}
+        <div className="hidden lg:block lg:col-span-1">
           {selectedOrder ? (
             <div className="sticky top-28 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm space-y-6 animate-fadeIn">
               <div className="border-b border-[oklch(0.9_0.015_75)] pb-4">
@@ -1267,6 +1499,188 @@ function OrdersTab({ orders }: OrdersTabProps) {
           )}
         </div>
       </div>
+
+      {/* MOBILE ORDER DETAIL BOTTOM SHEET DRAWER */}
+      {isMobileDetailOpen && selectedOrder && (
+        <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div
+            className="absolute inset-0"
+            onClick={() => setIsMobileDetailOpen(false)}
+          />
+          <div className="relative bg-white rounded-t-[2rem] max-h-[88vh] overflow-y-auto p-5 space-y-5 shadow-2xl border-t border-[oklch(0.9_0.015_75)]">
+            {/* Drawer Header */}
+            <div className="flex items-center justify-between border-b border-[oklch(0.9_0.015_75)] pb-3">
+              <div>
+                <span className="text-[10px] font-bold text-brand uppercase tracking-wider">
+                  Live Dispatch · {selectedOrder.date}
+                </span>
+                <h3 className="text-lg font-display font-extrabold text-[oklch(0.18_0.02_50)]">
+                  Order {selectedOrder.id}
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsMobileDetailOpen(false)}
+                className="grid h-8 w-8 place-items-center rounded-full bg-[oklch(0.94_0.018_75)] text-slate-600 hover:bg-[oklch(0.9_0.015_75)]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Items Summary */}
+            <div className="flex gap-3">
+              <img
+                src={selectedOrder.image}
+                alt=""
+                className="h-16 w-16 rounded-2xl object-cover shrink-0"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] text-[oklch(0.5_0.02_60)] font-bold uppercase tracking-wider">
+                  Items Summary
+                </p>
+                <h4 className="text-sm font-bold text-[oklch(0.18_0.02_50)] mt-0.5 leading-snug break-words">
+                  {selectedOrder.item}
+                </h4>
+              </div>
+            </div>
+
+            {/* Delivery Address */}
+            {selectedOrder.deliveryAddress && (
+              <div className="rounded-2xl bg-[oklch(0.97_0.012_75)] p-4 space-y-3">
+                <div className="flex items-start gap-2.5">
+                  <MapPin className="h-4 w-4 text-brand shrink-0 mt-0.5" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider mb-0.5">
+                      Delivery Address
+                    </p>
+                    <p className="text-xs text-[oklch(0.5_0.02_60)] leading-snug break-words">
+                      {selectedOrder.deliveryAddress}
+                    </p>
+                  </div>
+                </div>
+                <a
+                  href={
+                    selectedOrder.deliveryLat && selectedOrder.deliveryLng
+                      ? `https://maps.google.com/?q=${selectedOrder.deliveryLat},${selectedOrder.deliveryLng}`
+                      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                          selectedOrder.deliveryAddress
+                        )}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-full items-center justify-center gap-2 rounded-full border border-[oklch(0.9_0.015_75)] bg-white py-2 text-xs font-bold text-[oklch(0.18_0.02_50)] hover:bg-[oklch(0.98_0.005_75)] transition-colors"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  Navigate with Google Maps
+                </a>
+              </div>
+            )}
+
+            {/* Cooking Stream Progress */}
+            {selectedOrder.status === "active" && (
+              <div className="rounded-2xl bg-[oklch(0.97_0.012_75)] p-4 space-y-3">
+                <p className="text-[10px] font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">
+                  Update Cooking Stream
+                </p>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div
+                    className={`flex flex-col items-center p-2 rounded-xl text-center border ${
+                      selectedOrder.stage >= 0
+                        ? "bg-brand/10 border-brand/20 text-brand"
+                        : "bg-white border-transparent text-muted-foreground"
+                    }`}
+                  >
+                    <Check className="h-4 w-4" />
+                    <span className="text-[9px] font-bold mt-1 uppercase">Confirmed</span>
+                  </div>
+                  <div
+                    className={`flex flex-col items-center p-2 rounded-xl text-center border ${
+                      selectedOrder.stage >= 1
+                        ? "bg-brand/10 border-brand/20 text-brand"
+                        : "bg-white border-transparent text-muted-foreground"
+                    }`}
+                  >
+                    <Activity
+                      className={`h-4 w-4 ${selectedOrder.stage === 1 ? "animate-pulse" : ""}`}
+                    />
+                    <span className="text-[9px] font-bold mt-1 uppercase">Cooking</span>
+                  </div>
+                  <div
+                    className={`flex flex-col items-center p-2 rounded-xl text-center border ${
+                      selectedOrder.stage >= 2
+                        ? "bg-brand/10 border-brand/20 text-brand"
+                        : "bg-white border-transparent text-muted-foreground"
+                    }`}
+                  >
+                    <TrendingUp className="h-4 w-4" />
+                    <span className="text-[9px] font-bold mt-1 uppercase">In Transit</span>
+                  </div>
+                </div>
+
+                <div className="pt-1">
+                  {selectedOrder.stage === 0 && (
+                    <button
+                      onClick={() => handleAdvanceStage(selectedOrder.id, 0)}
+                      className="w-full rounded-full bg-brand py-3 text-xs font-bold text-brand-foreground hover:bg-brand/90 transition-colors cursor-pointer"
+                    >
+                      Advance to "Cooking"
+                    </button>
+                  )}
+                  {selectedOrder.stage === 1 && (
+                    <button
+                      onClick={() => handleAdvanceStage(selectedOrder.id, 1)}
+                      className="w-full rounded-full bg-primary py-3 text-xs font-bold text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer"
+                    >
+                      Advance to "On The Way"
+                    </button>
+                  )}
+                  {selectedOrder.stage === 2 && (
+                    <button
+                      onClick={() => handleAdvanceStage(selectedOrder.id, 2)}
+                      className="w-full rounded-full bg-emerald-600 py-3 text-xs font-bold text-white hover:bg-emerald-700 transition-colors cursor-pointer"
+                    >
+                      Mark as "Delivered"
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Price & Actions */}
+            <div className="border-t border-[oklch(0.9_0.015_75)] pt-3 space-y-3">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-[oklch(0.5_0.02_60)] font-semibold text-xs">
+                  Total Price (GST Incl.)
+                </span>
+                <span className="text-base font-extrabold text-[oklch(0.18_0.02_50)]">
+                  ₹{selectedOrder.price.toFixed(2)}
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                {selectedOrder.status === "active" && (
+                  <button
+                    onClick={() => handleCancelOrder(selectedOrder.id)}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-full border border-amber-300 text-amber-800 bg-amber-50 hover:bg-amber-100 transition-colors py-2.5 text-xs font-bold cursor-pointer"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    <span>Cancel Order</span>
+                  </button>
+                )}
+
+                <button
+                  disabled={isDeleting}
+                  onClick={() => handleDeleteSingle(selectedOrder.id)}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-full border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 hover:border-rose-300 transition-colors py-2.5 text-xs font-bold cursor-pointer disabled:opacity-50"
+                >
+                  <Trash2 className="h-3.5 w-3.5 text-rose-600" />
+                  <span>Permanently Delete Order & History</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1546,9 +1960,9 @@ function MenuTab({ menuItems }: MenuTabProps) {
   };
 
   return (
-    <div className="grid grid-cols-5 gap-8 animate-fadeIn">
-      {/* PRODUCTS LIST TABLE (LEFT 3/5) */}
-      <div className="col-span-3 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm flex flex-col gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 animate-fadeIn">
+      {/* PRODUCTS LIST TABLE (LEFT 3/5 ON DESKTOP, FULL ON MOBILE) */}
+      <div className="col-span-1 lg:col-span-3 rounded-[1.5rem] sm:rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-4 sm:p-6 shadow-sm flex flex-col gap-4 min-w-0">
         {/* Header & Stats */}
         <div className="flex flex-col gap-3 border-b border-[oklch(0.9_0.015_75)] pb-4">
           <div className="flex items-center justify-between">
@@ -1646,7 +2060,7 @@ function MenuTab({ menuItems }: MenuTabProps) {
               </p>
             </div>
           ) : (
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse min-w-[560px]">
               <thead>
                 <tr className="border-b border-[oklch(0.9_0.015_75)] text-xs font-bold text-[oklch(0.5_0.02_60)] uppercase tracking-wider">
                   <th className="pb-3 pl-2">Product</th>
@@ -1827,9 +2241,9 @@ function MenuTab({ menuItems }: MenuTabProps) {
         </div>
       </div>
 
-      {/* FORM MANAGEMENT (RIGHT 2/5) */}
-      <div className="col-span-2">
-        <div className="sticky top-28 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm space-y-5">
+      {/* FORM MANAGEMENT (RIGHT 2/5 ON DESKTOP, FULL ON MOBILE) */}
+      <div className="col-span-1 lg:col-span-2">
+        <div className="lg:sticky lg:top-28 rounded-[1.5rem] sm:rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-4 sm:p-6 shadow-sm space-y-5">
           <div className="flex items-center justify-between border-b border-[oklch(0.9_0.015_75)] pb-3">
             <div>
               <h3 className="text-base font-bold text-[oklch(0.18_0.02_50)]">
@@ -2620,9 +3034,9 @@ function UsersTab() {
   };
 
   return (
-    <div className="grid grid-cols-3 gap-8 animate-fadeIn">
-      {/* USERS LIST & BANNER CONTROLS PANEL (LEFT 2/3) */}
-      <div className="col-span-2 space-y-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 animate-fadeIn">
+      {/* USERS LIST & BANNER CONTROLS PANEL (LEFT 2/3 ON DESKTOP, FULL ON MOBILE) */}
+      <div className="col-span-1 lg:col-span-2 space-y-6">
 
         {/* DYNAMIC NOTIFICATION BANNERS CONFIGURATION CARD */}
         <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm">
@@ -3512,11 +3926,11 @@ function UsersTab() {
       {/* USER DETAIL CONSOLE PANEL (RIGHT 1/3) */}
       <div className="col-span-1">
         {detailLoading ? (
-          <div className="sticky top-28 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-12 shadow-sm flex justify-center items-center">
+          <div className="lg:sticky lg:top-28 rounded-[1.5rem] sm:rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-12 shadow-sm flex justify-center items-center">
             <span className="h-6 w-6 animate-spin rounded-full border-2 border-brand border-t-transparent" />
           </div>
         ) : userDetail ? (
-          <div className="sticky top-28 rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-6 shadow-sm space-y-6 overflow-y-auto max-h-[calc(100vh-180px)] animate-fadeIn">
+          <div className="lg:sticky lg:top-28 rounded-[1.5rem] sm:rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-4 sm:p-6 shadow-sm space-y-6 overflow-y-auto max-h-[calc(100vh-180px)] animate-fadeIn">
             <div className="border-b border-[oklch(0.9_0.015_75)] pb-4">
               <span className="text-[10px] font-bold text-brand uppercase tracking-wider">
                 User Details Console
@@ -4342,7 +4756,7 @@ function ManageAppTab() {
   return (
     <div className="space-y-8">
       {/* SECTION 1: MASTER STORE STATUS HERO */}
-      <div className={`rounded-[2rem] p-8 transition-all border shadow-sm ${
+      <div className={`rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-8 transition-all border shadow-sm ${
         isStoreClosed
           ? "bg-red-50/70 border-red-200"
           : isTimerActive
@@ -4392,7 +4806,7 @@ function ManageAppTab() {
       </div>
 
       {/* SECTION 2: CLOSING COUNTDOWN TIMER CONTROLLER */}
-      <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-8 shadow-sm space-y-6">
+      <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-4 sm:p-8 shadow-sm space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[oklch(0.92_0.015_75)] pb-6">
           <div>
             <div className="flex items-center gap-2.5">
@@ -4534,7 +4948,7 @@ function ManageAppTab() {
       </div>
 
       {/* SECTION 3: CUSTOM CLOSED ANNOUNCEMENT MESSAGE */}
-      <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-8 shadow-sm space-y-6">
+      <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-4 sm:p-8 shadow-sm space-y-6">
         <div>
           <h4 className="text-lg font-bold text-[oklch(0.18_0.02_50)]">
             Store Closed Announcement Message
@@ -4587,7 +5001,7 @@ function ManageAppTab() {
       </div>
 
       {/* SECTION 4: REAL-TIME CUSTOMER APP PREVIEW */}
-      <div className="rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-8 shadow-sm space-y-5">
+      <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-white border border-[oklch(0.9_0.015_75)] p-4 sm:p-8 shadow-sm space-y-5">
         <div className="flex items-center gap-2.5">
           <Smartphone className="h-5 w-5 text-brand" />
           <h4 className="text-base font-bold text-[oklch(0.18_0.02_50)]">

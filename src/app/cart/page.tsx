@@ -11,7 +11,7 @@ import { auth, useAuth } from "@/lib/auth-store";
 import { usePublicSettings } from "@/lib/public-settings-store";
 import { getImageUrl } from "@/lib/utils";
 
-import { Minus, Plus, Trash2, ShoppingBag, Coins, Loader2, ChevronDown, Banknote } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingBag, Coins, Loader2, ChevronDown, Banknote, CheckCircle2, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Cart() {
@@ -193,6 +193,12 @@ export default function Cart() {
       router.push("/profile/addresses/new?redirect=/cart");
       return;
     }
+
+    if (deliveryLat === undefined || deliveryLng === undefined || isNaN(deliveryLat) || isNaN(deliveryLng)) {
+      alert("Your selected delivery address is missing GPS coordinates. Please add a GPS-verified address to place your order.");
+      router.push("/profile/addresses/new?redirect=/cart");
+      return;
+    }
     
     setCheckingOut(true);
     
@@ -312,21 +318,38 @@ export default function Cart() {
             </div>
 
             {user?.addresses && user.addresses.length > 0 ? (
-              <div className="relative">
-                <select
-                  value={selectedAddressId}
-                  onChange={(e) => setSelectedAddressId(e.target.value)}
-                  className="w-full appearance-none rounded-xl border border-border bg-surface p-3 pr-10 text-sm font-semibold focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer"
-                >
-                  {user.addresses.map((addr) => (
-                    <option key={addr.id} value={addr.id}>
-                      {addr.label} {addr.name ? `(${addr.name})` : ""} - {addr.fullAddress}
-                    </option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground">
-                  <ChevronDown className="h-4 w-4" />
+              <div className="space-y-2">
+                <div className="relative">
+                  <select
+                    value={selectedAddressId}
+                    onChange={(e) => setSelectedAddressId(e.target.value)}
+                    className="w-full appearance-none rounded-xl border border-border bg-surface p-3 pr-10 text-sm font-semibold focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer"
+                  >
+                    {user.addresses.map((addr) => (
+                      <option key={addr.id} value={addr.id}>
+                        {addr.lat != null && addr.lng != null ? "📍 " : "⚠️ "}{addr.label} {addr.name ? `(${addr.name})` : ""} - {addr.fullAddress}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground">
+                    <ChevronDown className="h-4 w-4" />
+                  </div>
                 </div>
+
+                {(() => {
+                  const activeAddr = user.addresses.find((a) => a.id === selectedAddressId) || user.addresses[0];
+                  return activeAddr?.lat != null && activeAddr?.lng != null ? (
+                    <p className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      <span>GPS location verified for direct delivery</span>
+                    </p>
+                  ) : (
+                    <p className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-600">
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                      <span>Address missing GPS. Please click '+ Add New' above.</span>
+                    </p>
+                  );
+                })()}
               </div>
             ) : (
               <div>

@@ -125,8 +125,8 @@ export const auth = {
     fullAddress: string;
     city?: string;
     pincode?: string;
-    lat?: number;
-    lng?: number;
+    lat: number;
+    lng: number;
     isDefault?: boolean;
   }): Promise<{ success: boolean; error?: string; data?: unknown }> {
     try {
