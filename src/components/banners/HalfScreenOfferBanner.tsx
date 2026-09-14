@@ -120,7 +120,7 @@ export function HalfScreenOfferBanner({ config, isOpen, onClose }: HalfScreenOff
               onClick={onClose}
               className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-brand text-slate-950 font-extrabold text-sm shadow-xl shadow-brand/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
             >
-              <span>{config.buttonText || "Claim BOGO Offer"}</span>
+              <span>{config.buttonText || "Claim Offer"}</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
 

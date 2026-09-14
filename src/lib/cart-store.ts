@@ -19,66 +19,6 @@ type State = {
 
 const CART_STORAGE_KEY = "kaivu_cart";
 
-export function isBurgerItem(item: { name?: string; category?: string }) {
-  if (item.category) {
-    const cat = item.category.toLowerCase();
-    if (cat === "burgers" || cat === "loaded") return true;
-  }
-  const name = item.name?.toLowerCase() || "";
-  return (
-    name.includes("burger") ||
-    name.includes("smash") ||
-    name.includes("cluck") ||
-    name.includes("shroom") ||
-    name.includes("rooster") ||
-    name.includes("loaded")
-  );
-}
-
-export function getBogoInfo(items: CartItem[], userOrderCount?: number) {
-  // Rule 1: BOGO applies ONLY on 1st order! (If user has placed orders before, BOGO is disabled)
-  const isFirstOrder = userOrderCount === undefined || userOrderCount === 0;
-
-  if (!isFirstOrder) {
-    return {
-      freeUnitItemIds: new Map<string, number>(),
-      pairedFreeMap: new Map<string, string>(),
-      isEligible: false,
-    };
-  }
-
-  // Rule 3: Only BURGER items participate in BOGO pairing!
-  type Unit = { id: string; itemId: string; price: number; name: string };
-  const burgerUnits: Unit[] = [];
-
-  items.forEach((item) => {
-    if (isBurgerItem(item)) {
-      const qty = item.qty || 1;
-      for (let k = 0; k < qty; k++) {
-        burgerUnits.push({
-          id: `${item.id}-${k}`,
-          itemId: item.id,
-          price: item.price || 0,
-          name: item.name,
-        });
-      }
-    }
-  });
-
-  burgerUnits.sort((a, b) => b.price - a.price);
-
-  const freeUnitItemIds = new Map<string, number>();
-  const pairedFreeMap = new Map<string, string>();
-
-  for (let i = 0; i < burgerUnits.length - 1; i += 2) {
-    const paidUnit = burgerUnits[i];
-    const freeUnit = burgerUnits[i + 1];
-    freeUnitItemIds.set(freeUnit.itemId, (freeUnitItemIds.get(freeUnit.itemId) || 0) + 1);
-    pairedFreeMap.set(paidUnit.itemId, freeUnit.itemId);
-  }
-
-  return { freeUnitItemIds, pairedFreeMap, isEligible: true };
-}
 
 function getInitialState(): State {
   if (typeof window === "undefined") {
@@ -109,17 +49,7 @@ function emit() {
 }
 
 function setAndPersistItems(items: CartItem[], isLoading = false) {
-  const rawSubtotal = items.reduce((sum, i) => sum + (i.price || 0) * (i.qty || 1), 0);
-  const userOrderCount = auth.getState().user?.orderCount;
-  const { freeUnitItemIds } = getBogoInfo(items, userOrderCount);
-
-  let bogoDiscount = 0;
-  items.forEach((i) => {
-    const freeQty = freeUnitItemIds.get(i.id) || 0;
-    bogoDiscount += freeQty * (i.price || 0);
-  });
-
-  const subtotal = rawSubtotal - bogoDiscount;
+  const subtotal = items.reduce((sum, i) => sum + (i.price || 0) * (i.qty || 1), 0);
   const itemCount = items.reduce((sum, i) => sum + (i.qty || 1), 0);
   state = { items, subtotal, itemCount, isLoading };
   if (typeof window !== "undefined") {
@@ -251,16 +181,36 @@ export const cart = {
       console.error("Tracking failed", e);
     }
 
-    // Optimistic local update
-    const existingIndex = state.items.findIndex((i) => i.id === item.id);
+    const isFreeItem = item.price === 0 || item.name.toLowerCase().includes("(free)");
     let updated: CartItem[];
-    if (existingIndex > -1) {
-      updated = state.items.map((i, idx) =>
-        idx === existingIndex ? { ...i, qty: i.qty + 1 } : i
+
+    if (isFreeItem) {
+      // Find any existing free drink item in cart
+      const existingFreeIndex = state.items.findIndex(
+        (i) => i.price === 0 || i.name.toLowerCase().includes("(free)")
       );
+
+      if (existingFreeIndex > -1) {
+        // Replace existing free drink item with the newly selected free drink (max 1 free drink allowed)
+        updated = state.items.map((i, idx) =>
+          idx === existingFreeIndex ? { ...item, qty: 1 } : i
+        );
+      } else {
+        // Add single free drink
+        updated = [...state.items, { ...item, qty: 1 }];
+      }
     } else {
-      updated = [...state.items, { ...item, qty: 1 }];
+      // Normal paid item addition
+      const existingIndex = state.items.findIndex((i) => i.id === item.id);
+      if (existingIndex > -1) {
+        updated = state.items.map((i, idx) =>
+          idx === existingIndex ? { ...i, qty: i.qty + 1 } : i
+        );
+      } else {
+        updated = [...state.items, { ...item, qty: 1 }];
+      }
     }
+
     setAndPersistItems(updated);
 
     // Sync with server if authenticated
@@ -278,7 +228,7 @@ export const cart = {
   },
 
   /**
-   * Remove item from cart (and its paired BOGO free item if applicable).
+   * Remove item from cart.
    */
   async remove(id: string) {
     // Add tracking event
@@ -289,14 +239,8 @@ export const cart = {
       console.error("Tracking failed", e);
     }
 
-    const { pairedFreeMap } = getBogoInfo(state.items);
-    const pairedFreeId = pairedFreeMap.get(id);
-
-    // Optimistic local update: remove item and its paired free item if distinct
-    let updated = state.items.filter((i) => i.id !== id);
-    if (pairedFreeId && pairedFreeId !== id) {
-      updated = updated.filter((i) => i.id !== pairedFreeId);
-    }
+    // Optimistic local update
+    const updated = state.items.filter((i) => i.id !== id);
     setAndPersistItems(updated);
 
     // Sync with server if authenticated
@@ -305,11 +249,6 @@ export const cart = {
         await fetch(`/api/cart/${id}`, {
           method: "DELETE",
         });
-        if (pairedFreeId && pairedFreeId !== id) {
-          await fetch(`/api/cart/${pairedFreeId}`, {
-            method: "DELETE",
-          });
-        }
       } catch (e) {
         console.error("Failed to sync remove from cart", e);
       }
@@ -367,4 +306,19 @@ export function useCart<T>(selector: (s: State) => T): T {
     () => selector(state),
     () => selector(state)
   );
+}
+
+export function getPaidSubtotal(items: CartItem[]): number {
+  return items
+    .filter((i) => (i.price || 0) > 0 && !i.name?.toLowerCase().includes("(free)"))
+    .reduce((sum, i) => sum + (i.price || 0) * (i.qty || 1), 0);
+}
+
+export function getFreeDrinkItem(items: CartItem[]): CartItem | undefined {
+  return items.find((i) => (i.price === 0 || i.name?.toLowerCase().includes("(free)")));
+}
+
+export function getAmountNeededForFreeDrink(items: CartItem[], threshold = 400): number {
+  const paid = getPaidSubtotal(items);
+  return Math.max(0, threshold - paid);
 }

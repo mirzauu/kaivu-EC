@@ -3706,7 +3706,7 @@ function UsersTab() {
                           },
                         }))
                       }
-                      placeholder="e.g. BOGOFREE"
+                      placeholder="e.g. SPECIALOFFER"
                       className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] p-2.5 text-xs font-mono font-bold uppercase focus:border-brand focus:outline-none"
                     />
                   </div>
@@ -3779,7 +3779,7 @@ function UsersTab() {
                     onClick={() => setLivePreviewBanner("offer")}
                     className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-brand text-slate-950 font-extrabold text-xs shadow-md"
                   >
-                    {bannersConfig.halfScreenOffer.buttonText || "Claim BOGO Offer"}
+                    {bannersConfig.halfScreenOffer.buttonText || "Claim Offer"}
                   </button>
                 </div>
               </div>

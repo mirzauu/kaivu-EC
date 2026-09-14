@@ -245,134 +245,177 @@ export default function Orders() {
   
   const activeOrders = orders.filter((o) => o.status === "active");
   const pastOrders = orders.filter((o) => o.status === "delivered" || o.status === "cancelled");
-  const live = activeOrders[0];
+  const hasOrders = orders.length > 0;
 
   return (
     <MobileShell>
-      <header className="px-5 pt-6">
+      <header className="px-5 pt-6 pb-2">
         <h1 className="text-2xl font-bold">Orders</h1>
         <p className="text-sm text-muted-foreground">Live tracking & history.</p>
       </header>
 
-      {/* Live order */}
-      {live && (
-        <section className="pt-5 flex flex-col" style={{ minHeight: 'calc(100vh - 140px)' }}>
-          <div className="px-5">
-            <div className="overflow-hidden rounded-3xl bg-surface border border-border text-foreground shadow-sm">
-            <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 p-4">
-              <img
-                src={getImageUrl(live.image)}
-                alt={live.item}
-                loading="lazy"
-                width={768}
-                height={768}
-                className="h-14 w-14 shrink-0 rounded-2xl object-cover"
-              />
-              <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-brand">Order {live.id}</p>
-                <h3 className="truncate text-sm font-bold">{live.item}</h3>
-                <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                  <Clock className="h-3 w-3" /> ETA {live.eta}
-                </p>
-              </div>
+      <div className="px-5 pb-12 space-y-7 mt-3">
+        {/* Active Orders Section */}
+        {activeOrders.length > 0 && (
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold flex items-center gap-2">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand"></span>
+                </span>
+                Active Orders
+              </h2>
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-brand/10 text-brand border border-brand/20">
+                {activeOrders.length} {activeOrders.length === 1 ? "order" : "orders"}
+              </span>
             </div>
-            <div className="relative bg-surface px-4 pb-4 pt-2 border-t border-border/50">
-              <div className="relative">
-                {/* Inactive line connecting all stages */}
-                <div className="absolute top-[12px] left-[12.5%] right-[12.5%] h-0.5 -translate-y-1/2 bg-border" />
-                
-                {/* Active line showing progress */}
-                <div 
-                  className="absolute top-[12px] left-[12.5%] h-0.5 -translate-y-1/2 bg-brand transition-all duration-500 ease-out" 
-                  style={{ width: `${Math.max(0, live.stage) * 25}%` }}
-                />
 
-                <ol className="grid grid-cols-4 gap-1">
-                  {stages.map((s, idx) => {
-                    const done = idx <= live.stage;
-                    const current = idx === live.stage;
-                    return (
-                      <li key={s} className="relative z-10 flex flex-col items-center gap-1.5">
-                        <span
-                          className="relative grid h-6 w-6 place-items-center rounded-full"
-                          style={{
-                            background: done ? "var(--color-brand)" : "rgba(0,0,0,0.06)",
-                          }}
-                        >
-                          {/* Live ping animation for the current active step */}
-                          {current && (
-                            <span className="absolute inset-0 rounded-full bg-brand opacity-75 animate-ping" />
-                          )}
-                          {done && !current ? (
-                            <CheckCircle2 className="relative z-10 h-4 w-4 text-brand-foreground" strokeWidth={2.5} />
-                          ) : (
-                            <span className="relative z-10 h-2 w-2 rounded-full bg-current opacity-90" />
-                          )}
-                        </span>
-                        <span
-                          className="text-[10px] font-semibold"
-                          style={{ color: done ? "var(--color-brand)" : "var(--color-muted-foreground)" }}
-                        >
-                          {s}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ol>
-              </div>
-            </div>
-          </div>
-          </div>
-          <div className="flex-1 flex flex-col mt-6">
-            <OrderAnimation stage={live.stage} />
-          </div>
-        </section>
-      )}
-
-      {/* History */}
-      {!live && (
-        <section className="px-5 pt-7">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold">Past orders</h3>
-            <span className="text-xs text-muted-foreground">{pastOrders.length} total</span>
-          </div>
-          <ul className="mt-3 space-y-3">
-            {pastOrders.map((o) => (
-              <li key={o.id}>
-                <Link href={`/orders/${o.id}`}>
-                  <article className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-surface p-3 shadow-sm hover:bg-surface/80 transition-colors">
+            <div className="space-y-4">
+              {activeOrders.map((activeOrder) => (
+                <div key={activeOrder.id} className="overflow-hidden rounded-3xl bg-surface border border-border text-foreground shadow-sm">
+                  <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 p-4">
                     <img
-                      src={getImageUrl(o.image)}
-                      alt={o.item}
+                      src={getImageUrl(activeOrder.image)}
+                      alt={activeOrder.item}
                       loading="lazy"
                       width={768}
                       height={768}
-                      className="h-14 w-14 shrink-0 rounded-xl object-cover"
+                      className="h-14 w-14 shrink-0 rounded-2xl object-cover"
                     />
                     <div className="min-w-0">
-                      <h4 className="truncate text-sm font-bold">{o.item}</h4>
-                      <p className="text-[11px] text-muted-foreground">{o.date} · {o.id}</p>
+                      <div className="flex items-center justify-between gap-1">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-brand">Order {activeOrder.id}</p>
+                        <span className="text-[10px] text-muted-foreground">{activeOrder.date}</span>
+                      </div>
+                      <h3 className="truncate text-sm font-bold">{activeOrder.item}</h3>
+                      <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3 text-brand" /> ETA {activeOrder.eta}
+                      </p>
                     </div>
-                    <div className="flex shrink-0 flex-col items-end gap-1">
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                        o.status === "cancelled" ? "bg-destructive/10 text-destructive" : "bg-brand/10 text-brand"
-                      }`}>
-                        {o.status}
-                      </span>
+                  </div>
+                  <div className="relative bg-surface px-4 pb-4 pt-2 border-t border-border/50">
+                    <div className="relative">
+                      {/* Inactive line connecting all stages */}
+                      <div className="absolute top-[12px] left-[12.5%] right-[12.5%] h-0.5 -translate-y-1/2 bg-border" />
+                      
+                      {/* Active line showing progress */}
+                      <div 
+                        className="absolute top-[12px] left-[12.5%] h-0.5 -translate-y-1/2 bg-brand transition-all duration-500 ease-out" 
+                        style={{ width: `${Math.max(0, activeOrder.stage) * 25}%` }}
+                      />
+
+                      <ol className="grid grid-cols-4 gap-1">
+                        {stages.map((s, idx) => {
+                          const done = idx <= activeOrder.stage;
+                          const current = idx === activeOrder.stage;
+                          return (
+                            <li key={s} className="relative z-10 flex flex-col items-center gap-1.5">
+                              <span
+                                className="relative grid h-6 w-6 place-items-center rounded-full"
+                                style={{
+                                  background: done ? "var(--color-brand)" : "rgba(0,0,0,0.06)",
+                                }}
+                              >
+                                {current && (
+                                  <span className="absolute inset-0 rounded-full bg-brand opacity-75 animate-ping" />
+                                )}
+                                {done && !current ? (
+                                  <CheckCircle2 className="relative z-10 h-4 w-4 text-brand-foreground" strokeWidth={2.5} />
+                                ) : (
+                                  <span className="relative z-10 h-2 w-2 rounded-full bg-current opacity-90" />
+                                )}
+                              </span>
+                              <span
+                                className="text-[10px] font-semibold"
+                                style={{ color: done ? "var(--color-brand)" : "var(--color-muted-foreground)" }}
+                              >
+                                {s}
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ol>
                     </div>
-                  </article>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          {pastOrders.length === 0 && (
-            <div className="mt-6 grid place-items-center gap-2 rounded-3xl bg-surface p-10 text-center">
-              <Package className="h-6 w-6 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">No past orders yet.</p>
+                  </div>
+                  <div className="px-4 py-2.5 bg-surface/50 border-t border-border/30 flex justify-between items-center text-xs">
+                    <span className="font-bold text-foreground">₹{activeOrder.price.toFixed(2)}</span>
+                    <Link href={`/orders/${activeOrder.id}`} className="text-brand font-bold hover:underline flex items-center gap-1">
+                      View Details &rarr;
+                    </Link>
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
-        </section>
-      )}
+
+            {/* Animation for primary active order when stage is 0 */}
+            {activeOrders[0] && activeOrders[0].stage === 0 && (
+              <div className="mt-2">
+                <OrderAnimation stage={activeOrders[0].stage} />
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Past Orders Section */}
+        {pastOrders.length > 0 && (
+          <section className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold">Past orders</h3>
+              <span className="text-xs text-muted-foreground">{pastOrders.length} total</span>
+            </div>
+            <ul className="space-y-3">
+              {pastOrders.map((o) => (
+                <li key={o.id}>
+                  <Link href={`/orders/${o.id}`}>
+                    <article className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-surface p-3 shadow-sm hover:bg-surface/80 transition-colors">
+                      <img
+                        src={getImageUrl(o.image)}
+                        alt={o.item}
+                        loading="lazy"
+                        width={768}
+                        height={768}
+                        className="h-14 w-14 shrink-0 rounded-xl object-cover"
+                      />
+                      <div className="min-w-0">
+                        <h4 className="truncate text-sm font-bold">{o.item}</h4>
+                        <p className="text-[11px] text-muted-foreground">{o.date} · {o.id}</p>
+                        <p className="text-xs font-bold text-foreground mt-0.5">₹{o.price.toFixed(2)}</p>
+                      </div>
+                      <div className="flex shrink-0 flex-col items-end gap-1">
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                          o.status === "cancelled" ? "bg-destructive/10 text-destructive" : "bg-brand/10 text-brand"
+                        }`}>
+                          {o.status}
+                        </span>
+                      </div>
+                    </article>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Empty state when no orders exist */}
+        {!hasOrders && (
+          <div className="mt-6 grid place-items-center gap-3 rounded-3xl bg-surface p-10 text-center border border-border/50">
+            <div className="h-12 w-12 rounded-full bg-brand/10 grid place-items-center text-brand">
+              <Package className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="font-bold text-base">No orders yet</h3>
+              <p className="text-xs text-muted-foreground mt-1">When you place orders, they will appear here with live tracking.</p>
+            </div>
+            <Link
+              href="/"
+              className="mt-2 inline-flex items-center justify-center rounded-xl bg-brand px-4 py-2 text-xs font-bold text-brand-foreground shadow-sm hover:bg-brand/90 transition-colors"
+            >
+              Explore Menu
+            </Link>
+          </div>
+        )}
+      </div>
     </MobileShell>
   );
 }

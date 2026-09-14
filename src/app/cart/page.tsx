@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { MobileShell } from "@/components/MobileShell";
-import { cart, useCart, getBogoInfo, isBurgerItem } from "@/lib/cart-store";
+import { cart, useCart, getPaidSubtotal, getFreeDrinkItem, getAmountNeededForFreeDrink } from "@/lib/cart-store";
 import { ordersStore } from "@/lib/orders-store";
 import { auth, useAuth } from "@/lib/auth-store";
 import { usePublicSettings } from "@/lib/public-settings-store";
@@ -22,7 +22,10 @@ export default function Cart() {
   const storeStatus = usePublicSettings((s) => s.storeStatus);
   const isStoreClosed = !storeStatus?.isOpen;
   
-  const [isSummaryOpen, setIsSummaryOpen] = useState(false);
+  const freeDrinkItem = getFreeDrinkItem(items);
+  const amountNeededForFreeDrink = getAmountNeededForFreeDrink(items, 400);
+
+  const [isSummaryOpen, setIsSummaryOpen] = useState(true);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [redeemCoins, setRedeemCoins] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
@@ -62,96 +65,29 @@ export default function Cart() {
     }
   });
 
-  const isFirstOrder = user?.orderCount === undefined || user?.orderCount === 0;
-  const burgerUnits = allUnits.filter((u) => isBurgerItem(u)).sort((a, b) => b.price - a.price);
-  const nonBurgerUnits = allUnits.filter((u) => !isBurgerItem(u));
-
-  const displayRows: DisplayRow[] = [];
-  const pairMap = new Map<string, string>(); // paidRowId -> freeRowId
-
-  if (isFirstOrder) {
-    for (let i = 0; i < burgerUnits.length; i += 2) {
-      const paidUnit = burgerUnits[i];
-      const freeUnit = burgerUnits[i + 1];
-
-      displayRows.push({
-        rowId: paidUnit.unitId,
-        originalItemId: paidUnit.itemId,
-        name: paidUnit.name,
-        price: paidUnit.price,
-        image: paidUnit.image,
-        isFree: false,
-        pairedRowId: freeUnit?.unitId,
-      });
-
-      if (freeUnit) {
-        pairMap.set(paidUnit.unitId, freeUnit.unitId);
-        displayRows.push({
-          rowId: freeUnit.unitId,
-          originalItemId: freeUnit.itemId,
-          name: freeUnit.name,
-          price: freeUnit.price,
-          image: freeUnit.image,
-          isFree: true,
-        });
-      }
-    }
-  } else {
-    // Repeat customer: all burger units are paid
-    burgerUnits.forEach((u) => {
-      displayRows.push({
-        rowId: u.unitId,
-        originalItemId: u.itemId,
-        name: u.name,
-        price: u.price,
-        image: u.image,
-        isFree: false,
-      });
-    });
-  }
-
-  // Non-burger units (sides, drinks) are always paid
-  nonBurgerUnits.forEach((u) => {
-    displayRows.push({
-      rowId: u.unitId,
-      originalItemId: u.itemId,
-      name: u.name,
-      price: u.price,
-      image: u.image,
-      isFree: false,
-    });
-  });
+  const displayRows: DisplayRow[] = allUnits.map(u => ({
+    rowId: u.unitId,
+    originalItemId: u.itemId,
+    name: u.name,
+    price: u.price,
+    image: u.image,
+    isFree: false,
+  }));
 
   const handleDeleteRow = (row: DisplayRow) => {
-    const pairedFreeRowId = pairMap.get(row.rowId);
-    
-    // Count how many units of each original item ID we need to remove
-    const itemsToRemove = new Map<string, number>();
-    itemsToRemove.set(row.originalItemId, (itemsToRemove.get(row.originalItemId) || 0) + 1);
-
-    if (pairedFreeRowId) {
-      const freeRow = displayRows.find((r) => r.rowId === pairedFreeRowId);
-      if (freeRow) {
-        itemsToRemove.set(freeRow.originalItemId, (itemsToRemove.get(freeRow.originalItemId) || 0) + 1);
+    const cartItem = items.find((i) => i.id === row.originalItemId);
+    if (cartItem) {
+      const newQty = cartItem.qty - 1;
+      if (newQty <= 0) {
+        cart.remove(row.originalItemId);
+      } else {
+        cart.setQty(row.originalItemId, newQty);
       }
     }
-
-    itemsToRemove.forEach((countToRemove, itemId) => {
-      const cartItem = items.find((i) => i.id === itemId);
-      if (cartItem) {
-        const newQty = cartItem.qty - countToRemove;
-        if (newQty <= 0) {
-          cart.remove(itemId);
-        } else {
-          cart.setQty(itemId, newQty);
-        }
-      }
-    });
   };
 
   const rawSubtotal = displayRows.reduce((sum, r) => sum + r.price, 0);
-  const bogoDiscount = displayRows.filter((r) => r.isFree).reduce((sum, r) => sum + r.price, 0);
-  const subtotal = rawSubtotal - bogoDiscount;
+  const subtotal = rawSubtotal;
   const delivery = 0;
 
   // Calculate coin discount if checked: 100 coins = ₹10 off (₹0.10 per coin)
@@ -172,6 +108,11 @@ export default function Cart() {
 
   const handleCheckout = async () => {
     if (items.length === 0 || checkingOut) return;
+
+    if (freeDrinkItem && amountNeededForFreeDrink > 0) {
+      alert(`Add ₹${amountNeededForFreeDrink} more worth of items to unlock your free drink (${freeDrinkItem.name.replace(" (Free)", "")}) with this order!`);
+      return;
+    }
 
     if (!user) {
       auth.openModal();
@@ -213,6 +154,7 @@ export default function Cart() {
 
       if (orderId) {
         setRedeemCoins(false);
+        await cart.clear();
         router.push("/orders");
       }
     } catch (err) {
@@ -249,6 +191,29 @@ export default function Cart() {
         </div>
       ) : (
         <>
+          {/* Free Drink Threshold Banner */}
+          {freeDrinkItem && (
+            <div className="mx-5 mt-4">
+              {amountNeededForFreeDrink > 0 ? (
+                <div className="rounded-2xl bg-amber-50 border border-amber-200 p-3.5 text-amber-900 flex items-center gap-3 shadow-xs">
+                  <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+                  <div className="text-xs">
+                    <p className="font-extrabold text-amber-950">Add ₹{amountNeededForFreeDrink} more to get free drink</p>
+                    <p className="text-[11px] text-amber-700 mt-0.5">Order paid items must reach ₹400+ to claim your free {freeDrinkItem.name.replace(" (Free)", "")}.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-emerald-900 flex items-center gap-3 shadow-xs">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                  <div className="text-xs">
+                    <p className="font-extrabold text-emerald-950">Free Drink Unlocked! (₹0)</p>
+                    <p className="text-[11px] text-emerald-700 mt-0.5">Your order total is ₹400+. Enjoy your free {freeDrinkItem.name.replace(" (Free)", "")} with your order!</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           <ul className="space-y-3 px-5 pt-5">
             {displayRows.map((row) => (
               <li key={row.rowId}>
@@ -269,34 +234,19 @@ export default function Cart() {
                     </div>
 
                     <div className="mt-0.5">
-                      {row.isFree ? (
-                        <div>
-                          <span className="line-through text-xs text-muted-foreground mr-1.5">
-                            ₹{row.price.toFixed(2)}
-                          </span>
-                          <span className="text-sm font-extrabold text-emerald-600">FREE</span>
-                        </div>
-                      ) : (
-                        <span className="text-sm font-bold text-brand">
-                          ₹{row.price.toFixed(2)}
-                        </span>
-                      )}
+                      <span className="text-sm font-bold text-brand">
+                        ₹{row.price.toFixed(2)}
+                      </span>
                     </div>
                   </div>
 
-                  {!row.isFree ? (
-                    <button
-                      onClick={() => handleDeleteRow(row)}
-                      aria-label={`Remove ${row.name}`}
-                      className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent cursor-pointer"
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </button>
-                  ) : (
-                    <div className="h-9 w-9 shrink-0 flex items-center justify-center">
-                      <span className="text-xs font-extrabold text-emerald-600">FREE</span>
-                    </div>
-                  )}
+                  <button
+                    onClick={() => handleDeleteRow(row)}
+                    aria-label={`Remove ${row.name}`}
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent cursor-pointer"
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </button>
                 </article>
               </li>
             ))}
@@ -505,14 +455,6 @@ export default function Cart() {
                       <dd className="font-semibold">₹{rawSubtotal.toFixed(2)}</dd>
                     </div>
 
-                    {bogoDiscount > 0 && (
-                      <div className="flex justify-between items-center text-[#661E28] font-bold bg-[#FEF3D6] p-2.5 rounded-2xl border border-amber-300">
-                        <dt className="flex items-center gap-1.5 text-xs">
-                          <span>🎁</span> BOGO Offer (Lower Price Item Free)
-                        </dt>
-                        <dd className="text-xs font-black">-₹{bogoDiscount.toFixed(2)}</dd>
-                      </div>
-                    )}
 
                     <div className="flex justify-between">
                       <dt className="text-muted-foreground">Subtotal</dt>

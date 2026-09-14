@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { auth } from "./auth-store";
+import { cart } from "./cart-store";
 import { toast } from "sonner";
 import assets from "./cloudinary-assets.json";
 
@@ -252,7 +253,8 @@ export const ordersStore = {
           console.error("Tracking order placed failed", err);
         }
 
-        // Refresh user profile (coins and wallet balance updated)
+        // Immediately clear cart and then refresh user profile and load orders
+        await cart.clear();
         await auth.refreshUser();
         await loadOrders();
         

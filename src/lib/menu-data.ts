@@ -3,6 +3,7 @@ import assets from "./cloudinary-assets.json";
 const kaivuMacBurger = assets.menuImages["kaivu-mac-burger.jpg"];
 const kaivuCluckBurger = assets.menuImages["kaivu-cluck-burger.jpg"];
 const kaivuLoadedBowl = assets.menuImages["kaivu-loaded-bowl.jpg"];
+const kaivuShake = assets.menuImages["shake.jpg"];
 
 export type MenuItem = {
   id: string;
@@ -36,6 +37,18 @@ export const menu: MenuItem[] = [
   { id: "nashville-loaded", name: "Nashville Loaded", desc: "Nashville-style loaded dish", price: 230, image: kaivuLoadedBowl, category: "Sides", tag: "Spicy", rating: 4.7 },
   { id: "beef-loaded", name: "Beef Loaded", desc: "Beef loaded dish", price: 240, image: kaivuLoadedBowl, category: "Sides", rating: 4.8 },
   { id: "mac-and-cheese", name: "Mac & Cheese", desc: "Creamy mac & cheese", price: 215, image: kaivuLoadedBowl, category: "Sides", rating: 4.6 },
+  { id: "7up-1ltr", name: "7Up (1 Litre)", desc: "Refreshing 7Up 1 Litre bottle", price: 60, image: kaivuLoadedBowl, category: "Drinks", tag: "Chilled", rating: 4.8 },
+  { id: "belgian-choco-shake", name: "Belgian Chocolate Shake", desc: "Thick, rich & chilled artisanal chocolate shake", price: 120, image: kaivuShake, category: "Drinks", tag: "Bestseller", rating: 4.9 },
+  { id: "classic-cold-coffee", name: "Classic Cold Coffee", desc: "Creamy brewed chilled coffee perfection", price: 95, image: kaivuShake, category: "Drinks", tag: "Popular", rating: 4.8 },
+  { id: "pepsi-can-330", name: "Pepsi Can (330ml)", desc: "Classic ice-cold fizzy refreshment", price: 40, image: kaivuLoadedBowl, category: "Drinks", rating: 4.6 },
+  { id: "mirinda-can-330", name: "Mirinda Orange (330ml)", desc: "Tangy sweet fizzy orange punch", price: 40, image: kaivuLoadedBowl, category: "Drinks", rating: 4.5 },
+  { id: "mountain-dew-330", name: "Mountain Dew (330ml)", desc: "Citrus blast with energizing fizz", price: 40, image: kaivuLoadedBowl, category: "Drinks", rating: 4.6 },
+  { id: "fresh-lime-soda", name: "Fresh Lime Soda", desc: "Sparkling lime refresher with sweet & salt", price: 50, image: kaivuLoadedBowl, category: "Drinks", tag: "Fresh", rating: 4.7 },
+  { id: "mango-passion-smoothie", name: "Mango Passion Smoothie", desc: "Tropical mango blend with passion fruit twist", price: 110, image: kaivuShake, category: "Drinks", tag: "Tropical", rating: 4.9 },
+  { id: "iced-berry-lemonade", name: "Iced Berry Lemonade", desc: "Chilled wild berry lemonade with crushed ice", price: 85, image: kaivuShake, category: "Drinks", tag: "Refreshing", rating: 4.8 },
+  { id: "red-bull-energy", name: "Red Bull Energy (250ml)", desc: "Vitalizes body and mind - 250ml energy can", price: 125, image: kaivuShake, category: "Drinks", tag: "Energy", rating: 4.9 },
+  { id: "sprite-1ltr", name: "Sprite Crisp Lime (1 Litre)", desc: "Crisp, clean & refreshing lemon-lime 1L bottle", price: 60, image: kaivuLoadedBowl, category: "Drinks", tag: "Chilled", rating: 4.8 },
+  { id: "oreo-cookies-shake", name: "Oreo Cookies & Cream Shake", desc: "Blended real Oreos with vanilla ice cream & whipped top", price: 135, image: kaivuShake, category: "Drinks", tag: "Bestseller", rating: 5.0 },
   
   // COMBOS (Party Packs for 4, 6, 8 People)
   { id: "squad-pack-feeds-4", name: "Squad Party Pack (Feeds 4)", desc: "4 Smash Burgers + 2 Loaded Bowls + 4 Cold Beverages. Perfect for 4 people!", price: 899, image: kaivuMacBurger, category: "Combos", tag: "Party Pack", rating: 4.9 },

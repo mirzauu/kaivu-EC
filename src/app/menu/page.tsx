@@ -16,9 +16,8 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 
 const PROMO_CYCLES = [
-  { icon: "🎁", title: "BOGO 1+1 FREE", sub: "1ST ORDER ONLY" },
-  { icon: "🍔", title: "BUY 1 GET 1", sub: "SMASH BURGERS" },
   { icon: "✨", title: "COMBO SPECIALS", sub: "PARTY PACKS" },
+  { icon: "🍔", title: "CRAFT BURGERS", sub: "SMASH SPECIALS" },
   { icon: "🛵", title: "FREE DELIVERY", sub: "ALL ORDERS" },
 ];
 
@@ -61,9 +60,7 @@ function MenuContent() {
     const isQueryMatch = m.name.toLowerCase().includes(q.toLowerCase());
     return isCategoryMatch && isQueryMatch;
   });
-  const isAuthenticated = useAuth((s) => s.isAuthenticated);
-  const user = useAuth((s) => s.user);
-  const isBogoEligible = user?.orderCount === undefined || user?.orderCount === 0;
+
   const { flyToCart } = useFlyToCart();
 
   const handleAdd = (e: React.MouseEvent<HTMLButtonElement>, item: any) => {
@@ -92,7 +89,6 @@ function MenuContent() {
                 transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
                 onClick={() => {
                   setActive("Burgers");
-                  toast.success("BOGO 1+1 Free is active on your 1st order! 🍔🎉");
                 }}
                 className="flex items-center gap-2 text-right cursor-pointer focus:outline-none select-none py-1 group"
               >

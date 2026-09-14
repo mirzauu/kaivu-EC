@@ -451,56 +451,22 @@ const topCategories = [
                         </div>
                       </div>
 
-                      {/* BOTTOM BAR: Buy 2 Offer Price, and Add Button */}
+                      {/* BOTTOM BAR: Empty unless coming soon */}
                       <div className="relative z-20 p-5 pt-0 flex items-end justify-between">
-                        {Boolean(item.isComingSoon) || item.tag?.toLowerCase() === "coming soon" ? (
-                          <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-300 drop-shadow-xs">
-                              Unreleased
-                            </span>
-                            <span className="text-base font-extrabold text-white/95 drop-shadow-md">
-                              Stay Tuned ✨
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col">
-                            {/* Strikethrough Original 2x Price with 50% OFF Badge */}
-                            <div className="flex items-center gap-1.5 mb-1">
-                              <span className="text-[11px] font-bold text-white/70 line-through drop-shadow-xs">
-                                ₹{(item.price * 2).toFixed(0)}
+                        {(Boolean(item.isComingSoon) || item.tag?.toLowerCase() === "coming soon") && (
+                          <>
+                            <div className="flex flex-col">
+                              <span className="text-[10px] font-black uppercase tracking-widest text-amber-300 drop-shadow-xs">
+                                Unreleased
                               </span>
-                              <span className="rounded-md bg-rose-600 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-xs">
-                                50% OFF
+                              <span className="text-base font-extrabold text-white/95 drop-shadow-md">
+                                Stay Tuned ✨
                               </span>
                             </div>
-
-                            {/* Buy 2 at Price Row with High-Visibility Yellow Badge */}
-                            <div className="flex items-center gap-2">
-                              <span className="inline-block px-3 py-1 rounded-lg bg-[#FFE600] text-slate-950 font-black text-sm sm:text-base tracking-wide uppercase shadow-lg">
-                                BUY 2 AT
-                              </span>
-                              <span className="text-lg sm:text-xl font-extrabold text-white drop-shadow-md leading-none">
-                                ₹{Math.round(item.price)}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-
-                        {Boolean(item.isComingSoon) || item.tag?.toLowerCase() === "coming soon" ? (
-                          <span className="flex items-center gap-1.5 rounded-full bg-amber-500 text-slate-950 font-black px-4 py-2 text-xs shadow-xl shrink-0 uppercase tracking-wider select-none">
-                            🚀 COMING SOON
-                          </span>
-                        ) : (
-                          <motion.button
-                            whileTap={{ scale: 0.85 }}
-                            whileHover={{ scale: 1.05 }}
-                            onClick={(e) => handleAdd(e, item)}
-                            aria-label={`Add ${item.name}`}
-                            className="flex items-center gap-1.5 rounded-full bg-white text-slate-950 font-black px-4 py-2 text-xs shadow-xl hover:bg-slate-100 active:scale-95 transition-all shrink-0"
-                          >
-                            <Plus className="h-3.5 w-3.5 stroke-[3]" />
-                            <span>ADD</span>
-                          </motion.button>
+                            <span className="flex items-center gap-1.5 rounded-full bg-amber-500 text-slate-950 font-black px-4 py-2 text-xs shadow-xl shrink-0 uppercase tracking-wider select-none">
+                              🚀 COMING SOON
+                            </span>
+                          </>
                         )}
                       </div>
                     </div>

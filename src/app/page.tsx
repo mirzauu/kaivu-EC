@@ -16,8 +16,9 @@ import { MobileShell } from "@/components/MobileShell";
 import { ProductDetailModal } from "@/components/ProductDetailModal";
 import { useMenu } from "@/lib/menu-store";
 import { useAuth } from "@/lib/auth-store";
-import { useCart } from "@/lib/cart-store";
-import { PushingHandBanner } from "@/components/PushingHandBanner";
+import { useCart, getPaidSubtotal, getFreeDrinkItem, getAmountNeededForFreeDrink } from "@/lib/cart-store";
+import { FreeDrinkGrabArea } from "@/components/FreeDrinkGrabArea";
+import { ActiveOrderFloatingBanner } from "@/components/ActiveOrderFloatingBanner";
 import { useLocation, locationStore } from "@/lib/location-store";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFlyToCart } from "@/components/FlyToCartProvider";
@@ -177,13 +178,13 @@ export default function Home() {
   if (displayCombos.length === 0) displayCombos.push(...allItems.slice(0, 5));
   const recommended = allItems.slice(0, 4);
   const user = useAuth((s) => s.user);
-  const isBogoEligible = user?.orderCount === undefined || user?.orderCount === 0;
   const { flyToCart } = useFlyToCart();
 
   const locationAddress = useLocation((s) => s.address);
   const locationLoading = useLocation((s) => s.isLoading);
   const itemCount = useCart((s) => s.itemCount);
   const items = useCart((s) => s.items);
+  const cartTotal = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
   const mounted = useSyncExternalStore(
     emptySubscribe,
@@ -191,16 +192,24 @@ export default function Home() {
     () => false
   );
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
   const [selectedDetailItem, setSelectedDetailItem] = useState<MenuItem | null>(null);
   const [showCartBar, setShowCartBar] = useState(true);
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
     let idleTimer: NodeJS.Timeout;
+    let scrollIdleTimer: NodeJS.Timeout;
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
+      setIsScrolling(true);
+      clearTimeout(scrollIdleTimer);
+      scrollIdleTimer = setTimeout(() => {
+        setIsScrolling(false);
+      }, 1000);
+
       if (currentScrollY > 30) {
         setIsScrolled(true);
       } else {
@@ -225,22 +234,14 @@ export default function Home() {
     return () => {
       window.removeEventListener("scroll", handleScroll);
       clearTimeout(idleTimer);
+      clearTimeout(scrollIdleTimer);
     };
   }, []);
 
 
-  const [bogoToastVisible, setBogoToastVisible] = useState(false);
-
   const handleAdd = (e: React.MouseEvent<HTMLButtonElement>, item: MenuItem) => {
     e.stopPropagation();
     flyToCart(e, item);
-    
-    if (item.category === "Burgers" || !item.category) {
-      setBogoToastVisible(true);
-      setTimeout(() => {
-        setBogoToastVisible(false);
-      }, 4000);
-    }
   };
 
   return (
@@ -310,10 +311,9 @@ export default function Home() {
             {/* Pull Handle Indicator */}
             <div className="mx-auto h-1.5 w-12 rounded-full bg-gray-200 mb-4" />
 
-
-            {/* Interactive Hero Banner inside Floating White Screen */}
+            {/* Free Drink Grab Area inside Floating White Screen */}
             <div className="mb-5">
-              <PushingHandBanner isBogoEligible={isBogoEligible} />
+              <FreeDrinkGrabArea />
             </div>
 
             {/* Promo Deal Banners & Sub-Offer Cards */}
@@ -327,10 +327,10 @@ export default function Home() {
                   
                   <div className="z-10 max-w-[60%]">
                     <span className="text-[9px] font-bold uppercase tracking-wider text-[#661E28] block">
-                      {isBogoEligible ? "FIRST ORDER OFFER" : "CRAFT BURGERS"}
+                      CRAFT BURGERS
                     </span>
                     <h4 className="text-[16px] font-black tracking-tight text-[#661E28] leading-tight mt-1">
-                      {isBogoEligible ? "BUY 1 GET 1" : "SMASH SPECIALS"}
+                      SMASH SPECIALS
                     </h4>
                   </div>
                   
@@ -552,13 +552,21 @@ export default function Home() {
             className="fixed bottom-6 left-5 right-5 z-50 max-w-md mx-auto"
           >
             <div className="relative">
-              {/* BOGO Tag pill above cart bar (only when BOGO eligible) */}
-              {isBogoEligible && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#FFB703] px-3.5 py-0.5 text-[9.5px] font-black uppercase text-[#661E28] shadow-md whitespace-nowrap tracking-wider flex items-center gap-1 border border-amber-300 z-10">
-                  <span>🎁</span>
-                  <span>Buy 1 Get 1 FREE Offer</span>
-                </div>
-              )}
+              {/* Free Drink Threshold Hint Pill */}
+              {(() => {
+                const freeDrink = getFreeDrinkItem(items);
+                const amountNeeded = getAmountNeededForFreeDrink(items, 400);
+                if (freeDrink && amountNeeded > 0) {
+                  return (
+                    <div className="mb-2 text-center">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/95 border border-amber-400/50 px-3 py-1 text-[10.5px] font-black uppercase text-amber-300 shadow-md backdrop-blur-md">
+                        ⚡ Add ₹{amountNeeded} more to get free drink
+                      </span>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
 
               <Link
                 href="/cart"
@@ -570,9 +578,7 @@ export default function Home() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">
-                      {isBogoEligible
-                        ? (itemCount === 1 ? "Add 2nd item for FREE!" : "Buy 1 Get 1 Active")
-                        : "Items in Cart"}
+                      Items in Cart
                     </span>
                     <span className="text-xs font-bold leading-tight truncate max-w-[150px] opacity-90">
                       {items.length === 1 ? items[0].name : `${itemCount} items in cart`}
@@ -580,13 +586,16 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 font-bold text-sm">
-                  View Cart <ShoppingBag className="h-4 w-4" />
+                  ₹{cartTotal.toFixed(2)} <ShoppingBag className="h-4 w-4" />
                 </div>
               </Link>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Floating Active Order Status Banner at Top (Closes/hides on scroll up or down) */}
+      <ActiveOrderFloatingBanner isVisible={!isScrolling} />
     </MobileShell>
   );
 }
