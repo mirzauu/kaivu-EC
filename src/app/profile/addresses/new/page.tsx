@@ -343,7 +343,7 @@ function NewAddressForm() {
             </label>
             <input
               type="text"
-              placeholder="e.g. Bangalore"
+              placeholder="e.g. Perinthalmanna"
               value={place}
               onChange={(e) => setPlace(e.target.value)}
               className="w-full rounded-xl border border-border bg-surface p-3 text-sm placeholder:text-muted-foreground focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand transition-colors"
@@ -356,7 +356,7 @@ function NewAddressForm() {
             </label>
             <input
               type="text"
-              placeholder="e.g. 560001"
+              placeholder="e.g. 679322"
               value={pincode}
               onChange={(e) => setPincode(e.target.value)}
               className="w-full rounded-xl border border-border bg-surface p-3 text-sm placeholder:text-muted-foreground focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand transition-colors"

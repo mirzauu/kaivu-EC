@@ -77,7 +77,7 @@ export const POST = withAdmin(async (_req: AuthenticatedRequest) => {
       });
     }
 
-    const deliveryFee = subtotal >= 500 ? 0 : 29;
+    const deliveryFee = 0;
     const total = subtotal + deliveryFee;
 
     // Generate unique order number
@@ -100,9 +100,9 @@ export const POST = withAdmin(async (_req: AuthenticatedRequest) => {
         total: new Prisma.Decimal(total),
         coinsEarned,
         status: "CONFIRMED",
-        deliveryAddress: "Simulated Delivery Street, Bangalore",
-        deliveryLat: new Prisma.Decimal(12.9716),
-        deliveryLng: new Prisma.Decimal(77.5946),
+        deliveryAddress: "Simulated Delivery Street, Perinthalmanna",
+        deliveryLat: new Prisma.Decimal(10.9760),
+        deliveryLng: new Prisma.Decimal(76.2254),
         paymentMethod: "WALLET",
         estimatedDelivery: new Date(Date.now() + 25 * 60 * 1000),
       },
@@ -153,9 +153,9 @@ export const POST = withAdmin(async (_req: AuthenticatedRequest) => {
           orderNumber,
           total,
           paymentMethod: "WALLET",
-          deliveryAddress: "Simulated Delivery Street, Bangalore",
-          deliveryLat: 12.9716,
-          deliveryLng: 77.5946,
+          deliveryAddress: "Simulated Delivery Street, Perinthalmanna",
+          deliveryLat: 10.9760,
+          deliveryLng: 76.2254,
           items: selectedItems.map((si) => ({
             itemName: si.item.name,
             quantity: si.quantity,

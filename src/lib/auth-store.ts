@@ -103,6 +103,9 @@ export const auth = {
       const res = await fetch("/api/auth/me");
       const data = await res.json();
       if (data.success && data.data?.user) {
+        if (data.data.user.role !== "ADMIN") {
+          localStorage.removeItem("csuite_auth");
+        }
         localStorage.setItem("kaivu_user", JSON.stringify(data.data.user));
         state = {
           ...state,
@@ -205,6 +208,9 @@ export const auth = {
         return { success: false, error: data.error || "Verification failed" };
       }
 
+      if (data.data.user.role !== "ADMIN") {
+        localStorage.removeItem("csuite_auth");
+      }
       localStorage.setItem("kaivu_user", JSON.stringify(data.data.user));
       state = {
         isAuthenticated: true,
@@ -267,6 +273,7 @@ export const auth = {
     }
 
     localStorage.removeItem("kaivu_user");
+    localStorage.removeItem("csuite_auth");
     state = {
       isAuthenticated: false,
       isAuthModalOpen: false,

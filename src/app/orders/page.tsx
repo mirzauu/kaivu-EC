@@ -339,7 +339,14 @@ export default function Orders() {
                     </div>
                   </div>
                   <div className="px-4 py-2.5 bg-surface/50 border-t border-border/30 flex justify-between items-center text-xs">
-                    <span className="font-bold text-foreground">₹{activeOrder.price.toFixed(2)}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-foreground">₹{activeOrder.price.toFixed(2)}</span>
+                      {activeOrder.discount && activeOrder.discount > 0 ? (
+                        <span className="text-[10px] text-amber-700 bg-amber-50 rounded px-1.5 py-0.2 font-semibold">
+                          -₹{activeOrder.discount.toFixed(2)} coins
+                        </span>
+                      ) : null}
+                    </div>
                     <Link href={`/orders/${activeOrder.id}`} className="text-brand font-bold hover:underline flex items-center gap-1">
                       View Details &rarr;
                     </Link>
@@ -380,7 +387,14 @@ export default function Orders() {
                       <div className="min-w-0">
                         <h4 className="truncate text-sm font-bold">{o.item}</h4>
                         <p className="text-[11px] text-muted-foreground">{o.date} · {o.id}</p>
-                        <p className="text-xs font-bold text-foreground mt-0.5">₹{o.price.toFixed(2)}</p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <p className="text-xs font-bold text-foreground">₹{o.price.toFixed(2)}</p>
+                          {o.discount && o.discount > 0 ? (
+                            <span className="text-[10px] text-amber-700 bg-amber-50 rounded px-1.5 py-0.2 font-semibold">
+                              -₹{o.discount.toFixed(2)} coins
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
                       <div className="flex shrink-0 flex-col items-end gap-1">
                         <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${

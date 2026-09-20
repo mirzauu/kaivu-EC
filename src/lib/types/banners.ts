@@ -43,7 +43,7 @@ export interface NotificationBannersConfig {
 
 export const DEFAULT_NOTIFICATION_BANNERS_CONFIG: NotificationBannersConfig = {
   fullScreenInstall: {
-    enabled: true,
+    enabled: false,
     targetAudience: "ALL",
     routes: ["/"],
     delaySeconds: 4,

@@ -36,7 +36,7 @@ async function main() {
     },
     {
       key: "coin_min_redeem",
-      value: "100",
+      value: "1",
       type: "number",
       label: "Minimum Coins to Redeem",
       description: "Users must have at least this many coins to redeem.",
@@ -91,7 +91,7 @@ async function main() {
     // Delivery Settings
     {
       key: "delivery_fee",
-      value: "29",
+      value: "0",
       type: "number",
       label: "Delivery Fee (₹)",
       description: "Standard delivery fee per order.",
@@ -99,7 +99,7 @@ async function main() {
     },
     {
       key: "free_delivery_threshold",
-      value: "500",
+      value: "0",
       type: "number",
       label: "Free Delivery Threshold (₹)",
       description: "Orders above this amount get free delivery.",

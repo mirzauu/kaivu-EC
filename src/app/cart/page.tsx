@@ -86,25 +86,24 @@ export default function Cart() {
     }
   };
 
-  const rawSubtotal = displayRows.reduce((sum, r) => sum + r.price, 0);
-  const subtotal = rawSubtotal;
+  const subtotal = displayRows.reduce((sum, r) => sum + r.price, 0);
   const delivery = 0;
 
   // Calculate coin discount if checked: 100 coins = ₹10 off (₹0.10 per coin)
   const maxCoinsToRedeem = user?.kaivuCoins || 0;
-  const potentialDiscount = maxCoinsToRedeem * 0.1;
+  const potentialDiscount = Math.round(maxCoinsToRedeem * 10) / 100;
   // Cap discount at 50% of subtotal
-  const maxDiscountAllowed = subtotal * 0.5;
+  const maxDiscountAllowed = Math.round(subtotal * 0.5 * 100) / 100;
   const coinDiscount = redeemCoins 
     ? Math.min(potentialDiscount, maxDiscountAllowed) 
     : 0;
 
   // Calculate coins actually redeemed for this discount
   const coinsRedeemedCount = redeemCoins 
-    ? Math.ceil(coinDiscount / 0.1) 
+    ? Math.min(maxCoinsToRedeem, Math.ceil((coinDiscount / 0.1) - 0.001)) 
     : 0;
 
-  const total = Math.max(0, subtotal + delivery - coinDiscount);
+  const total = Math.max(0, Math.round((subtotal + delivery - coinDiscount) * 100) / 100);
 
   const handleCheckout = async () => {
     if (items.length === 0 || checkingOut) return;
@@ -325,17 +324,24 @@ export default function Cart() {
           </section>
 
           {/* Kaivu Coins Rewards Section */}
-          {rewardSectionEnabled && user && user.kaivuCoins > 0 && (
-            <section className="mx-5 mt-4 rounded-3xl bg-surface p-4 shadow-sm border border-brand/10">
-              <label className="flex items-center justify-between cursor-pointer">
+          {user && user.kaivuCoins > 0 ? (
+            <section className="mx-5 mt-4 rounded-3xl bg-surface p-4 shadow-sm border border-brand/20">
+              <label className="flex items-center justify-between cursor-pointer select-none">
                 <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-2xl bg-brand/10 text-brand">
+                  <div className="grid h-10 w-10 place-items-center rounded-2xl bg-amber-500/10 text-amber-600">
                     <Coins className="h-5 w-5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold">Apply Kaivu Coins</h4>
-                    <p className="text-[10px] text-muted-foreground">
-                      Balance: {user.kaivuCoins} coins (Save up to ₹{potentialDiscount.toFixed(2)})
+                    <h4 className="text-xs font-bold flex items-center gap-1.5">
+                      <span>Use remaining Kaivu Coins</span>
+                      <span className="rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold px-2 py-0.5">
+                        {user.kaivuCoins} coins
+                      </span>
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      {redeemCoins
+                        ? `Applying ${coinsRedeemedCount} coins for -₹${coinDiscount.toFixed(2)} off`
+                        : `Redeem up to ${user.kaivuCoins} coins (save ₹${potentialDiscount.toFixed(2)})`}
                     </p>
                   </div>
                 </div>
@@ -347,7 +353,21 @@ export default function Cart() {
                 />
               </label>
             </section>
-          )}
+          ) : !user ? (
+            <section className="mx-5 mt-4 rounded-3xl bg-surface p-3.5 shadow-sm border border-dashed border-border/80 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <Coins className="h-4 w-4 text-amber-500" />
+                <span className="text-xs text-muted-foreground font-medium">Have Kaivu Coins?</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => auth.openModal()}
+                className="text-xs font-bold text-brand hover:underline cursor-pointer"
+              >
+                Log in to use coins
+              </button>
+            </section>
+          ) : null}
 
           {/* Payment Method Section (Cash on Delivery Only - Collapsible, Collapsed by Default) */}
           <section className="mx-5 mt-4 rounded-3xl bg-surface p-5 shadow-sm border border-border">
@@ -452,13 +472,7 @@ export default function Cart() {
                   <dl className="mt-4 space-y-2 text-sm border-t border-border/60 pt-3">
                     <div className="flex justify-between">
                       <dt className="text-muted-foreground">Item Total</dt>
-                      <dd className="font-semibold">₹{rawSubtotal.toFixed(2)}</dd>
-                    </div>
-
-
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Subtotal</dt>
-                      <dd className="font-bold text-slate-900">₹{subtotal.toFixed(2)}</dd>
+                      <dd className="font-semibold text-slate-900">₹{subtotal.toFixed(2)}</dd>
                     </div>
 
                     <div className="flex justify-between items-center">

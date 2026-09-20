@@ -3,7 +3,7 @@
 import { useOrders } from "@/lib/orders-store";
 import { MobileShell } from "@/components/MobileShell";
 import { getImageUrl } from "@/lib/utils";
-import { ArrowLeft, Clock, MapPin, Package, Receipt } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Package, Receipt, Coins } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { use } from "react";
@@ -11,7 +11,7 @@ import { use } from "react";
 export default function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const orders = useOrders((s) => s.orders);
-  const order = orders.find((o) => o.id === id);
+  const order = orders.find((o) => o.id === id || o.dbId === id);
 
   if (!order) {
     return (
@@ -52,7 +52,9 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
               <div className="flex justify-between items-start gap-2">
                 <h2 className="text-base font-bold leading-tight">{order.item}</h2>
               </div>
-              <p className="text-sm font-bold mt-2">₹{order.price.toFixed(2)}</p>
+              <p className="text-sm font-bold mt-2">
+                ₹{(order.subtotal ?? (order.price + (order.discount || 0))).toFixed(2)}
+              </p>
               <div className="mt-2 flex items-center gap-2">
                 <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
                   isCancelled ? "bg-destructive/10 text-destructive" : "bg-brand/10 text-brand"
@@ -92,15 +94,28 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
           <div className="rounded-2xl bg-surface p-4 shadow-sm space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Items Total</span>
-              <span className="font-medium">₹{order.price.toFixed(2)}</span>
+              <span className="font-medium">
+                ₹{(order.subtotal ?? (order.price + (order.discount || 0))).toFixed(2)}
+              </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Delivery Fee</span>
-              <span className="font-medium">Free</span>
+              <span className="font-medium">
+                {order.deliveryFee && order.deliveryFee > 0 ? `₹${order.deliveryFee.toFixed(2)}` : "Free"}
+              </span>
             </div>
+            {(order.discount || 0) > 0 && (
+              <div className="flex justify-between text-sm text-brand font-semibold">
+                <span className="flex items-center gap-1.5">
+                  <Coins className="h-4 w-4 text-amber-500" />
+                  Kaivu Coins Discount {order.coinsRedeemed ? `(${order.coinsRedeemed} coins)` : ""}
+                </span>
+                <span>-₹{order.discount!.toFixed(2)}</span>
+              </div>
+            )}
             <div className="border-t border-border/50 pt-3 flex justify-between text-base font-bold">
               <span>Total Paid</span>
-              <span>₹{order.price.toFixed(2)}</span>
+              <span className="text-brand font-extrabold">₹{order.price.toFixed(2)}</span>
             </div>
           </div>
         </section>

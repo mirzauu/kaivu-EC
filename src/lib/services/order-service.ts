@@ -64,9 +64,9 @@ export async function placeOrder(params: {
       0
     );
 
-    // Get dynamic delivery fee and threshold from settings
-    const deliveryFeeAmount = await getSettingNumber("delivery_fee", 29);
-    const freeDeliveryThreshold = await getSettingNumber("free_delivery_threshold", 500);
+    // Get dynamic delivery fee and threshold from settings (default 0 for free delivery)
+    const deliveryFeeAmount = await getSettingNumber("delivery_fee", 0);
+    const freeDeliveryThreshold = await getSettingNumber("free_delivery_threshold", 0);
     const deliveryFee = subtotal >= freeDeliveryThreshold ? 0 : deliveryFeeAmount;
 
     // 3. Handle coin redemption
@@ -81,7 +81,7 @@ export async function placeOrder(params: {
 
       if (!user) throw new Error("User not found");
 
-      const minRedeem = await getSettingNumber("coin_min_redeem", 100);
+      const minRedeem = await getSettingNumber("coin_min_redeem", 1);
       const maxRedeemPercent = await getSettingNumber("coin_max_redeem_percent", 50);
       const redemptionRate = await getSettingNumber("coin_redemption_rate", 10);
 
@@ -95,10 +95,10 @@ export async function placeOrder(params: {
 
       if (actualCoinsRedeemed > 0) {
         // Convert coins to ₹ discount (dynamic rate)
-        coinDiscount = (actualCoinsRedeemed / 100) * redemptionRate;
+        coinDiscount = Math.round(((actualCoinsRedeemed / 100) * redemptionRate) * 100) / 100;
 
         // Cap at max percentage of order
-        const maxDiscount = (subtotal * maxRedeemPercent) / 100;
+        const maxDiscount = Math.round(((subtotal * maxRedeemPercent) / 100) * 100) / 100;
         if (coinDiscount > maxDiscount) {
           coinDiscount = maxDiscount;
           // Recalculate coins needed for this capped discount
@@ -107,7 +107,7 @@ export async function placeOrder(params: {
       }
     }
 
-    const total = subtotal + deliveryFee - coinDiscount;
+    const total = Math.max(0, Math.round((subtotal + deliveryFee - coinDiscount) * 100) / 100);
 
     // 4. Generate unique order number
     let orderNumber = generateOrderNumber();

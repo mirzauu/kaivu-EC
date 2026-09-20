@@ -6,11 +6,17 @@ import assets from "./cloudinary-assets.json";
 
 export type Order = {
   id: string;
+  dbId?: string;
   item: string;
   image: string;
   eta: string;
   stage: number; // 0: Confirmed, 1: Cooking, 2: On the way, 3: Delivered, -1: Cancelled
-  price: number;
+  price: number; // Final total amount paid
+  subtotal?: number;
+  deliveryFee?: number;
+  discount?: number;
+  coinsRedeemed?: number;
+  coinsEarned?: number;
   date: string;
   status: "active" | "delivered" | "cancelled";
   deliveryAddress?: string;
@@ -158,7 +164,12 @@ async function loadOrders() {
           image: imageUrl,
           eta,
           stage,
-          price: order.total,
+          price: Number(order.total),
+          subtotal: Number(order.subtotal ?? order.total),
+          deliveryFee: Number(order.deliveryFee ?? 0),
+          discount: Number(order.discount ?? 0),
+          coinsRedeemed: Number(order.coinsRedeemed ?? 0),
+          coinsEarned: Number(order.coinsEarned ?? 0),
           date: formatDate(order.createdAt),
           status,
           deliveryAddress: order.deliveryAddress,

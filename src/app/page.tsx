@@ -544,7 +544,7 @@ export default function Home() {
 
 
       <AnimatePresence>
-        {itemCount > 0 && mounted && showCartBar && (
+        {itemCount > 0 && mounted && showCartBar && !selectedDetailItem && (
           <motion.div
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
