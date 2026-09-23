@@ -308,8 +308,8 @@ export function BottomNav() {
                       className={cn(
                         "group relative grid place-items-center rounded-full transition-all duration-300 ease-out",
                         isCenter
-                          ? "h-16 w-16 bg-primary text-primary-foreground shadow-lg translate-y-[-10px]"
-                          : "h-11 w-11 bg-surface text-primary shadow-sm hover:bg-secondary/50",
+                          ? "h-16 w-16 bg-[#661E28] text-[#FFF8E7] shadow-lg shadow-[#661E28]/40 translate-y-[-10px]"
+                          : "h-11 w-11 bg-[#2A2A2A] text-[#A0937D] hover:bg-[#333333] hover:text-[#FFF8E7]",
                       )}
                     >
                       {isCenter ? (
@@ -321,7 +321,7 @@ export function BottomNav() {
                               animate={{ rotateY: 0, opacity: 1, scale: 1 }}
                               exit={{ rotateY: 90, opacity: 0, scale: 0.7 }}
                               transition={{ duration: 0.3, ease: "easeInOut" }}
-                              className="text-[11px] font-black uppercase tracking-wider text-primary-foreground font-display drop-shadow-sm select-none"
+                              className="text-[11px] font-black uppercase tracking-wider text-[#FFF8E7] font-display drop-shadow-sm select-none"
                             >
                               kaivu
                             </motion.span>
@@ -353,7 +353,7 @@ export function BottomNav() {
                           animate={{ scale: [0.5, 1.4, 1], opacity: 1 }}
                           transition={{ duration: 0.35, ease: "easeOut" }}
                           className={cn(
-                            "absolute grid place-items-center rounded-full bg-foreground px-1 text-[10px] font-bold text-background transition-all duration-300",
+                            "absolute grid place-items-center rounded-full bg-[#FFF8E7] px-1 text-[10px] font-bold text-[#1A1A1A] transition-all duration-300",
                             isCenter
                               ? "-right-0.5 -top-0.5 h-5 min-w-5"
                               : "-right-1 -top-1 h-4 min-w-4",

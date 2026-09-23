@@ -24,6 +24,8 @@ export type MenuItem = {
 };
 
 export const menu: MenuItem[] = [
+  { id: "cluck-riot", name: "CLUCK RIOT", desc: "Crispy fried chicken tossed in Nashville hot oil...", price: 229, image: kaivuCluckBurger, category: "Burgers", tag: "CHICKEN", rating: 4.9 },
+  { id: "we-are-smashing", name: "WE ARE SMASHING", desc: "Smash-pressed beef patty, American cheese...", price: 0, image: null, isComingSoon: true, category: "Burgers", tag: "BEEF", rating: 4.9 },
   { id: "og-smash-beef", name: "OG Smash (Beef)", desc: "Classic beef smash burger", price: 210, image: kaivuCluckBurger, category: "Burgers", tag: "Bestseller", rating: 4.8 },
   { id: "classic-smash-burger-beef", name: "Classic Smash Burger (Beef)", desc: "Classic-style beef smash burger", price: 320, image: kaivuMacBurger, category: "Burgers", rating: 4.7 },
   { id: "jalapeno-jam-beef", name: "Jalapeño Jam (Beef)", desc: "Beef smash burger with jalapeño jam", price: 220, image: kaivuCluckBurger, category: "Burgers", tag: "Spicy", rating: 4.9 },

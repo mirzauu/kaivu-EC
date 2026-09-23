@@ -32,6 +32,8 @@
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
   --color-surface: var(--surface);
+  --color-cream: var(--cream);
+  --color-cream-dark: var(--cream-dark);
   --font-display: var(--font-display), system-ui, sans-serif;
   --font-sans: var(--font-sans), system-ui, sans-serif;
   --font-brand: var(--font-brand), display;
@@ -39,28 +41,30 @@
 
 :root {
   --radius: 1.25rem;
-  --background: #FAF8F5;
-  --foreground: #1E293B;
-  --surface: #FFFFFF;
-  --card: #FFFFFF;
-  --card-foreground: #1E293B;
-  --popover: #FFFFFF;
-  --popover-foreground: #1E293B;
+  --background: #1A1A1A;
+  --foreground: #FFF8E7;
+  --surface: #242424;
+  --card: #242424;
+  --card-foreground: #FFF8E7;
+  --popover: #242424;
+  --popover-foreground: #FFF8E7;
   --primary: #661E28;
-  --primary-foreground: #FFFFFF;
+  --primary-foreground: #FFF8E7;
   --brand: #661E28;
-  --brand-foreground: #FFFFFF;
-  --secondary: #F1F5F9;
-  --secondary-foreground: #1E293B;
-  --muted: #F1F5F9;
-  --muted-foreground: #64748B;
-  --accent: #F8FAFC;
-  --accent-foreground: #1E293B;
+  --brand-foreground: #FFF8E7;
+  --secondary: #2A2A2A;
+  --secondary-foreground: #FFF8E7;
+  --muted: #2A2A2A;
+  --muted-foreground: #A0937D;
+  --accent: #FFF8E7;
+  --accent-foreground: #1A1A1A;
   --destructive: #B83A26;
-  --destructive-foreground: #FFFFFF;
-  --border: #E2E8F0;
-  --input: #E2E8F0;
+  --destructive-foreground: #FFF8E7;
+  --border: #333333;
+  --input: #333333;
   --ring: #661E28;
+  --cream: #FFF8E7;
+  --cream-dark: #F5EDD6;
 }
 
 @layer base {
@@ -81,13 +85,47 @@
   h3,
   h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 }
 
 @layer utilities {
   .animate-cart-shake {
     animation: cart-shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+  }
+
+  /* Cream background for cart page */
+  .bg-cart-cream {
+    background-color: #FFF8F0;
+    color: #1A1A1A;
+  }
+
+  /* Dot matrix background pattern matching the reference header section */
+  .bg-dot-pattern {
+    background-color: #121212;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1.2px, transparent 1.2px);
+    background-size: 16px 16px;
+  }
+
+  /* Maroon diagonal stripe pattern for "photo coming soon" card */
+  .bg-maroon-stripes {
+    background-color: #66101F;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      #7A1424,
+      #7A1424 16px,
+      #5C0B17 16px,
+      #5C0B17 32px
+    );
+  }
+
+  /* Heading display utility — for inline use without semantic heading */
+  .font-display-upper {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
   }
 }
 

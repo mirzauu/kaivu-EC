@@ -74,15 +74,15 @@ export function ActiveOrderFloatingBanner({
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ y: -90, opacity: 0, scale: 0.95 }}
+          initial={{ y: 90, opacity: 0, scale: 0.95 }}
           animate={{ y: 0, opacity: 1, scale: 1 }}
-          exit={{ y: -90, opacity: 0, scale: 0.95 }}
+          exit={{ y: 90, opacity: 0, scale: 0.95 }}
           transition={{ type: "spring", damping: 25, stiffness: 220 }}
-          className="fixed top-4 left-5 right-5 z-50 max-w-md mx-auto pointer-events-auto"
+          className="fixed bottom-6 left-5 right-5 z-50 max-w-md mx-auto pointer-events-auto"
         >
           <Link
             href="/orders"
-            className="group relative flex items-center justify-between overflow-hidden rounded-full bg-slate-950/95 p-3 sm:p-3.5 text-white shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl border border-slate-800 hover:border-slate-700 active:scale-[0.98] transition-all"
+            className="group relative flex items-center justify-between overflow-hidden rounded-full bg-[#1A1A1A]/95 p-3 sm:p-3.5 text-[#FFF8E7] shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl border border-[#333] hover:border-[#661E28]/50 active:scale-[0.98] transition-all"
           >
             {/* Subtle Ambient Background Light */}
             <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#00F0FF]/15 blur-xl" />

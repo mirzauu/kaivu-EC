@@ -11,7 +11,7 @@ import { auth, useAuth } from "@/lib/auth-store";
 import { usePublicSettings } from "@/lib/public-settings-store";
 import { getImageUrl } from "@/lib/utils";
 
-import { Minus, Plus, Trash2, ShoppingBag, Coins, Loader2, ChevronDown, Banknote, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Minus, Plus, X, ShoppingBag, Coins, Loader2, ChevronDown, Banknote, CheckCircle2, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Cart() {
@@ -29,7 +29,6 @@ export default function Cart() {
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [redeemCoins, setRedeemCoins] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
-  const [addressInput, setAddressInput] = useState("");
   const [selectedAddressId, setSelectedAddressId] = useState<string>("new");
 
   useEffect(() => {
@@ -39,54 +38,7 @@ export default function Cart() {
     }
   }, [user]);
 
-  type DisplayRow = {
-    rowId: string;
-    originalItemId: string;
-    name: string;
-    price: number;
-    image: string;
-    isFree: boolean;
-    pairedRowId?: string;
-  };
-
-  // Expand all items into individual units for separate row display
-  type Unit = { unitId: string; itemId: string; name: string; price: number; image: string; category?: string };
-  const allUnits: Unit[] = [];
-  items.forEach((item) => {
-    for (let k = 0; k < item.qty; k++) {
-      allUnits.push({
-        unitId: `${item.id}-${k}`,
-        itemId: item.id,
-        name: item.name,
-        price: item.price,
-        image: item.image,
-        category: item.category,
-      });
-    }
-  });
-
-  const displayRows: DisplayRow[] = allUnits.map(u => ({
-    rowId: u.unitId,
-    originalItemId: u.itemId,
-    name: u.name,
-    price: u.price,
-    image: u.image,
-    isFree: false,
-  }));
-
-  const handleDeleteRow = (row: DisplayRow) => {
-    const cartItem = items.find((i) => i.id === row.originalItemId);
-    if (cartItem) {
-      const newQty = cartItem.qty - 1;
-      if (newQty <= 0) {
-        cart.remove(row.originalItemId);
-      } else {
-        cart.setQty(row.originalItemId, newQty);
-      }
-    }
-  };
-
-  const subtotal = displayRows.reduce((sum, r) => sum + r.price, 0);
+  const subtotal = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
   const delivery = 0;
 
   // Calculate coin discount if checked: 100 coins = ₹10 off (₹0.10 per coin)
@@ -164,26 +116,32 @@ export default function Cart() {
   };
 
   return (
-    <MobileShell>
-      <header className="px-5 pt-6">
-        <h1 className="text-2xl font-bold">Your cart</h1>
-        <p className="text-sm text-muted-foreground">
-          {items.length ? `${items.length} item${items.length > 1 ? "s" : ""}` : "Empty for now"}
-        </p>
+    <MobileShell theme="light">
+      {/* Header */}
+      <header className="px-5 pt-6 pb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-[#661E28] font-display uppercase tracking-wide">
+          Your Order
+        </h1>
+        <button
+          onClick={() => router.back()}
+          className="grid h-9 w-9 place-items-center rounded-full bg-[#1A1A1A] text-[#FFF8E7] hover:bg-[#333] transition-colors cursor-pointer"
+        >
+          <X className="h-4 w-4" />
+        </button>
       </header>
 
       {items.length === 0 ? (
-        <div className="mx-5 mt-10 grid place-items-center gap-4 rounded-3xl bg-surface p-10 text-center shadow-sm">
-          <div className="grid h-16 w-16 place-items-center rounded-full bg-accent">
-            <ShoppingBag className="h-7 w-7 text-brand" />
+        <div className="mx-5 mt-10 grid place-items-center gap-4 rounded-3xl bg-white p-10 text-center shadow-sm border border-[#E5DDD0]">
+          <div className="grid h-16 w-16 place-items-center rounded-full bg-[#FFF8E7]">
+            <ShoppingBag className="h-7 w-7 text-[#661E28]" />
           </div>
           <div>
-            <p className="text-base font-bold">Your cart is empty</p>
-            <p className="mt-1 text-xs text-muted-foreground">Add a burger and we'll get cooking.</p>
+            <p className="text-base font-bold text-[#1A1A1A] font-display uppercase">Your cart is empty</p>
+            <p className="mt-1 text-xs text-[#1A1A1A]/60">Add a burger and we&apos;ll get cooking.</p>
           </div>
           <Link
             href="/menu"
-            className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-foreground"
+            className="rounded-full bg-[#661E28] px-5 py-2.5 text-sm font-semibold text-[#FFF8E7]"
           >
             Browse the menu
           </Link>
@@ -192,7 +150,7 @@ export default function Cart() {
         <>
           {/* Free Drink Threshold Banner */}
           {freeDrinkItem && (
-            <div className="mx-5 mt-4">
+            <div className="mx-5 mt-2 mb-3">
               {amountNeededForFreeDrink > 0 ? (
                 <div className="rounded-2xl bg-amber-50 border border-amber-200 p-3.5 text-amber-900 flex items-center gap-3 shadow-xs">
                   <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
@@ -213,53 +171,77 @@ export default function Cart() {
             </div>
           )}
 
-          <ul className="space-y-3 px-5 pt-5">
-            {displayRows.map((row) => (
-              <li key={row.rowId}>
-                <article className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl p-3 shadow-sm border ${
-                  row.isFree ? "bg-emerald-50/40 border-emerald-200" : "bg-surface border-border"
-                }`}>
+          {/* Cart Items */}
+          <ul className="space-y-0 divide-y divide-[#E5DDD0]">
+            {items.map((item) => (
+              <li key={item.id} className="px-5 py-4">
+                <div className="flex items-start gap-3">
+                  {/* Thumbnail */}
                   <img
-                    src={getImageUrl(row.image)}
-                    alt={row.name}
+                    src={getImageUrl(item.image)}
+                    alt={item.name}
                     loading="lazy"
                     width={768}
                     height={768}
                     className="h-16 w-16 shrink-0 rounded-xl object-cover"
                   />
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <h4 className="truncate text-sm font-bold">{row.name}</h4>
-                    </div>
 
-                    <div className="mt-0.5">
-                      <span className="text-sm font-bold text-brand">
-                        ₹{row.price.toFixed(2)}
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="text-sm font-bold text-[#1A1A1A]">{item.name}</h4>
+                        <p className="text-xs text-[#1A1A1A]/50 mt-0.5">₹{item.price} each</p>
+                      </div>
+                      <span className="text-base font-bold text-[#1A1A1A] shrink-0">
+                        ₹{(item.price * item.qty)}
                       </span>
                     </div>
-                  </div>
 
-                  <button
-                    onClick={() => handleDeleteRow(row)}
-                    aria-label={`Remove ${row.name}`}
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent cursor-pointer"
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </button>
-                </article>
+                    {/* Quantity controls */}
+                    <div className="flex items-center justify-between mt-3">
+                      <div className="flex items-center gap-0">
+                        <button
+                          onClick={() => {
+                            if (item.qty <= 1) cart.remove(item.id);
+                            else cart.setQty(item.id, item.qty - 1);
+                          }}
+                          className="h-8 w-8 grid place-items-center rounded-l-lg bg-[#661E28] text-[#FFF8E7] text-lg font-bold hover:bg-[#7a2432] transition-colors cursor-pointer"
+                        >
+                          <Minus className="h-3.5 w-3.5" strokeWidth={3} />
+                        </button>
+                        <span className="h-8 w-10 grid place-items-center bg-[#FFF8E7] border-y border-[#E5DDD0] text-sm font-bold text-[#1A1A1A]">
+                          {item.qty}
+                        </span>
+                        <button
+                          onClick={() => cart.setQty(item.id, item.qty + 1)}
+                          className="h-8 w-8 grid place-items-center rounded-r-lg bg-[#661E28] text-[#FFF8E7] text-lg font-bold hover:bg-[#7a2432] transition-colors cursor-pointer"
+                        >
+                          <Plus className="h-3.5 w-3.5" strokeWidth={3} />
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => cart.remove(item.id)}
+                        className="text-xs text-[#1A1A1A]/50 hover:text-[#661E28] transition-colors cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </li>
             ))}
           </ul>
 
-          {/* Delivery Address Section (Saved Addresses / GPS Only) */}
-          <section className="mx-5 mt-4 rounded-3xl bg-surface p-5 shadow-sm border border-border">
+          {/* Delivery Address Section */}
+          <section className="mx-5 mt-4 rounded-2xl bg-white p-5 border border-[#E5DDD0]">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold">Delivery Address</h3>
+              <h3 className="text-sm font-bold text-[#1A1A1A] font-display uppercase">Delivery Address</h3>
               {user && user.addresses && user.addresses.length > 0 && (
                 <button
                   type="button"
                   onClick={() => router.push("/profile/addresses/new?redirect=/cart")}
-                  className="text-xs font-bold text-brand hover:underline"
+                  className="text-xs font-bold text-[#661E28] hover:underline"
                 >
                   + Add New
                 </button>
@@ -272,7 +254,7 @@ export default function Cart() {
                   <select
                     value={selectedAddressId}
                     onChange={(e) => setSelectedAddressId(e.target.value)}
-                    className="w-full appearance-none rounded-xl border border-border bg-surface p-3 pr-10 text-sm font-semibold focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer"
+                    className="w-full appearance-none rounded-xl border border-[#E5DDD0] bg-[#FFF8F0] p-3 pr-10 text-sm font-semibold text-[#1A1A1A] focus:border-[#661E28] focus:outline-none focus:ring-1 focus:ring-[#661E28] cursor-pointer"
                   >
                     {user.addresses.map((addr) => (
                       <option key={addr.id} value={addr.id}>
@@ -280,7 +262,7 @@ export default function Cart() {
                       </option>
                     ))}
                   </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground">
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#A0937D]">
                     <ChevronDown className="h-4 w-4" />
                   </div>
                 </div>
@@ -295,7 +277,7 @@ export default function Cart() {
                   ) : (
                     <p className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-600">
                       <AlertTriangle className="h-3.5 w-3.5" />
-                      <span>Address missing GPS. Please click '+ Add New' above.</span>
+                      <span>Address missing GPS. Please click &apos;+ Add New&apos; above.</span>
                     </p>
                   );
                 })()}
@@ -306,7 +288,7 @@ export default function Cart() {
                   <button
                     type="button"
                     onClick={() => router.push("/profile/addresses/new?redirect=/cart")}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand/10 border border-brand/20 py-3.5 text-sm font-bold text-brand transition-colors hover:bg-brand/15 cursor-pointer"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#661E28]/10 border border-[#661E28]/20 py-3.5 text-sm font-bold text-[#661E28] transition-colors hover:bg-[#661E28]/15 cursor-pointer"
                   >
                     + Add Delivery Address
                   </button>
@@ -314,7 +296,7 @@ export default function Cart() {
                   <button
                     type="button"
                     onClick={() => auth.openModal()}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand/10 border border-brand/20 py-3.5 text-sm font-bold text-brand transition-colors hover:bg-brand/15 cursor-pointer"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#661E28]/10 border border-[#661E28]/20 py-3.5 text-sm font-bold text-[#661E28] transition-colors hover:bg-[#661E28]/15 cursor-pointer"
                   >
                     Log in to select delivery address
                   </button>
@@ -325,20 +307,20 @@ export default function Cart() {
 
           {/* Kaivu Coins Rewards Section */}
           {user && user.kaivuCoins > 0 ? (
-            <section className="mx-5 mt-4 rounded-3xl bg-surface p-4 shadow-sm border border-brand/20">
+            <section className="mx-5 mt-4 rounded-2xl bg-white p-4 border border-[#661E28]/20">
               <label className="flex items-center justify-between cursor-pointer select-none">
                 <div className="flex items-center gap-3">
                   <div className="grid h-10 w-10 place-items-center rounded-2xl bg-amber-500/10 text-amber-600">
                     <Coins className="h-5 w-5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold flex items-center gap-1.5">
+                    <h4 className="text-xs font-bold text-[#1A1A1A] flex items-center gap-1.5">
                       <span>Use remaining Kaivu Coins</span>
                       <span className="rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold px-2 py-0.5">
                         {user.kaivuCoins} coins
                       </span>
                     </h4>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                    <p className="text-[11px] text-[#1A1A1A]/50 mt-0.5">
                       {redeemCoins
                         ? `Applying ${coinsRedeemedCount} coins for -₹${coinDiscount.toFixed(2)} off`
                         : `Redeem up to ${user.kaivuCoins} coins (save ₹${potentialDiscount.toFixed(2)})`}
@@ -349,51 +331,48 @@ export default function Cart() {
                   type="checkbox"
                   checked={redeemCoins}
                   onChange={(e) => setRedeemCoins(e.target.checked)}
-                  className="h-5 w-5 rounded-lg border-gray-300 text-brand focus:ring-brand accent-brand cursor-pointer"
+                  className="h-5 w-5 rounded-lg border-gray-300 text-[#661E28] focus:ring-[#661E28] accent-[#661E28] cursor-pointer"
                 />
               </label>
             </section>
           ) : !user ? (
-            <section className="mx-5 mt-4 rounded-3xl bg-surface p-3.5 shadow-sm border border-dashed border-border/80 flex items-center justify-between">
+            <section className="mx-5 mt-4 rounded-2xl bg-white p-3.5 border border-dashed border-[#E5DDD0] flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <Coins className="h-4 w-4 text-amber-500" />
-                <span className="text-xs text-muted-foreground font-medium">Have Kaivu Coins?</span>
+                <span className="text-xs text-[#1A1A1A]/60 font-medium">Have Kaivu Coins?</span>
               </div>
               <button
                 type="button"
                 onClick={() => auth.openModal()}
-                className="text-xs font-bold text-brand hover:underline cursor-pointer"
+                className="text-xs font-bold text-[#661E28] hover:underline cursor-pointer"
               >
                 Log in to use coins
               </button>
             </section>
           ) : null}
 
-          {/* Payment Method Section (Cash on Delivery Only - Collapsible, Collapsed by Default) */}
-          <section className="mx-5 mt-4 rounded-3xl bg-surface p-5 shadow-sm border border-border">
-            {/* Collapsible Header Row */}
+          {/* Payment Method Section */}
+          <section className="mx-5 mt-4 rounded-2xl bg-white p-5 border border-[#E5DDD0]">
             <button
               type="button"
               onClick={() => setIsPaymentOpen(!isPaymentOpen)}
               className="flex w-full items-center justify-between cursor-pointer select-none"
             >
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold">Payment Method</h3>
+                <h3 className="text-sm font-bold text-[#1A1A1A] font-display uppercase">Payment Method</h3>
                 <motion.div
                   animate={{ rotate: isPaymentOpen ? 180 : 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <ChevronDown className="h-4 w-4 text-[#A0937D]" />
                 </motion.div>
               </div>
 
-              {/* Status indicator on header */}
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-bold text-brand">Cash on Delivery</span>
+                <span className="text-xs font-bold text-[#661E28]">Cash on Delivery</span>
               </div>
             </button>
 
-            {/* Collapsible Details */}
             <AnimatePresence>
               {isPaymentOpen && (
                 <motion.div
@@ -403,28 +382,27 @@ export default function Cart() {
                   transition={{ duration: 0.25 }}
                   className="overflow-hidden"
                 >
-                  <div className="mt-4 pt-3 border-t border-border/60">
-                    <div className="flex items-center justify-between p-3.5 rounded-2xl bg-brand/5 border border-brand/20">
+                  <div className="mt-4 pt-3 border-t border-[#E5DDD0]">
+                    <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#661E28]/5 border border-[#661E28]/20">
                       <div className="flex items-center gap-3">
-                        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-brand text-brand-foreground shadow-xs">
+                        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[#661E28] text-[#FFF8E7] shadow-xs">
                           <Banknote className="h-5 w-5" />
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <h4 className="text-xs font-bold text-foreground">Cash on Delivery (COD)</h4>
-                            <span className="rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold px-1.5 py-0.2">
+                            <h4 className="text-xs font-bold text-[#1A1A1A]">Cash on Delivery (COD)</h4>
+                            <span className="rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold px-1.5 py-0.5">
                               Active
                             </span>
                           </div>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                          <p className="text-[10px] text-[#1A1A1A]/50 mt-0.5">
                             Pay with cash or UPI at your doorstep
                           </p>
                         </div>
                       </div>
 
-                      {/* Locked default radio circle */}
                       <div className="relative flex items-center justify-center">
-                        <div className="h-5 w-5 rounded-full border-2 border-brand flex items-center justify-center bg-brand">
+                        <div className="h-5 w-5 rounded-full border-2 border-[#661E28] flex items-center justify-center bg-[#661E28]">
                           <div className="h-2 w-2 rounded-full bg-white" />
                         </div>
                       </div>
@@ -435,79 +413,46 @@ export default function Cart() {
             </AnimatePresence>
           </section>
 
-          <section className="mx-5 mt-4 rounded-3xl bg-surface p-5 shadow-sm border border-border">
-            {/* Collapsible Header Row with Title + Chevron on left, and OUTSIDE TOTAL on right */}
-            <button
-              type="button"
-              onClick={() => setIsSummaryOpen(!isSummaryOpen)}
-              className="flex w-full items-center justify-between cursor-pointer select-none"
-            >
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold">Order Summary</h3>
-                <motion.div
-                  animate={{ rotate: isSummaryOpen ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                </motion.div>
+          {/* Order Summary / Subtotal */}
+          <section className="mx-5 mt-4 pt-4 border-t border-[#E5DDD0]">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-bold text-[#661E28] font-display uppercase tracking-wide">
+                Subtotal
+              </h3>
+              <span className="text-xl font-bold text-[#1A1A1A]">₹{subtotal}</span>
+            </div>
+
+            {coinDiscount > 0 && (
+              <div className="flex justify-between text-sm font-semibold text-[#661E28] mb-2">
+                <span className="flex items-center gap-1">
+                  <Coins className="h-3.5 w-3.5" /> Coin Discount ({coinsRedeemedCount} coins)
+                </span>
+                <span>-₹{coinDiscount.toFixed(2)}</span>
               </div>
+            )}
 
-              {/* Total displayed OUTSIDE on header row */}
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs text-muted-foreground font-semibold">Total:</span>
-                <span className="text-base font-extrabold text-brand">₹{total.toFixed(2)}</span>
+            {coinDiscount > 0 && (
+              <div className="flex justify-between text-base font-bold border-t border-[#E5DDD0] pt-2 mb-2">
+                <span className="text-[#1A1A1A]">Grand Total</span>
+                <span className="text-[#661E28]">₹{total.toFixed(2)}</span>
               </div>
-            </button>
+            )}
 
-            {/* Collapsible Breakdown Details */}
-            <AnimatePresence>
-              {isSummaryOpen && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="overflow-hidden"
-                >
-                  <dl className="mt-4 space-y-2 text-sm border-t border-border/60 pt-3">
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Item Total</dt>
-                      <dd className="font-semibold text-slate-900">₹{subtotal.toFixed(2)}</dd>
-                    </div>
+            <p className="text-[11px] text-[#1A1A1A]/50 mt-2 leading-relaxed">
+              One or more items are priced on confirmation — final total will be shared over WhatsApp.
+            </p>
+            <p className="text-[11px] text-[#1A1A1A]/50 mt-1 leading-relaxed">
+              Delivery charge, if any, is confirmed over WhatsApp — not calculated here.
+            </p>
 
-                    <div className="flex justify-between items-center">
-                      <dt className="text-muted-foreground">Delivery Fee</dt>
-                      <dd className="flex items-center gap-1.5 font-semibold">
-                        <span className="line-through text-muted-foreground text-xs">₹40.00</span>
-                        <span className="font-extrabold text-emerald-600">FREE</span>
-                      </dd>
-                    </div>
-
-                    {coinDiscount > 0 && (
-                      <div className="flex justify-between text-brand font-semibold">
-                        <dt className="flex items-center gap-1">
-                          <Coins className="h-3.5 w-3.5" /> Coin Discount ({coinsRedeemedCount} coins)
-                        </dt>
-                        <dd>-₹{coinDiscount.toFixed(2)}</dd>
-                      </div>
-                    )}
-
-                    <div className="mt-2 flex justify-between border-t border-border pt-3 text-base">
-                      <dt className="font-bold">Grand Total</dt>
-                      <dd className="font-bold text-brand">₹{total.toFixed(2)}</dd>
-                    </div>
-                  </dl>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
+            {/* Checkout Button */}
             <button
               onClick={handleCheckout}
               disabled={checkingOut || isStoreClosed}
-              className={`mt-4 grid w-full place-items-center rounded-full py-3.5 text-sm font-bold transition-all shadow-md ${
+              className={`mt-5 grid w-full place-items-center rounded-full py-4 text-sm font-bold transition-all shadow-md ${
                 isStoreClosed
-                  ? "bg-muted text-muted-foreground cursor-not-allowed opacity-80"
-                  : "bg-brand text-brand-foreground active:scale-[0.98] cursor-pointer disabled:opacity-70"
+                  ? "bg-[#E5DDD0] text-[#A0937D] cursor-not-allowed opacity-80"
+                  : "bg-[#661E28] text-[#FFF8E7] active:scale-[0.98] cursor-pointer disabled:opacity-70 hover:bg-[#7a2432]"
               }`}
             >
               {checkingOut ? (
@@ -518,6 +463,16 @@ export default function Cart() {
                 `Checkout · ₹${total.toFixed(2)}`
               )}
             </button>
+
+            {/* Continue browsing */}
+            <div className="text-center mt-3 mb-4">
+              <Link
+                href="/menu"
+                className="text-sm font-bold text-[#661E28] hover:underline"
+              >
+                Continue browsing
+              </Link>
+            </div>
           </section>
         </>
       )}

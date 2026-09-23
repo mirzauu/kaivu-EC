@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Inter, DynaPuff } from "next/font/google";
+import { Oswald, Inter, DynaPuff } from "next/font/google";
 import "./globals.css";
 import { ClientShell } from "@/components/ClientShell";
 
-const displayFont = Bricolage_Grotesque({
+const displayFont = Oswald({
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-display",
 });
 

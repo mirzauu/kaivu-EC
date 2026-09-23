@@ -101,7 +101,7 @@ export function AuthModal() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="w-[90%] max-w-md rounded-[32px] p-6 sm:rounded-[32px]">
+      <DialogContent className="w-[90%] max-w-md rounded-[32px] p-6 sm:rounded-[32px] bg-[#1A1A1A] border-[#333] text-[#FFF8E7]">
         <DialogHeader>
           <div className="flex items-center mb-2">
             <img

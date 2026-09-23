@@ -43,32 +43,32 @@ export function FreeDrinkGrabArea({ items }: FreeDrinkGrabAreaProps) {
       {/* Ticket Coupon Container */}
       <div
         id="free-drink-coupon"
-        className="relative overflow-hidden rounded-[22px] shadow-[0_12px_30px_rgba(0,0,0,0.18)] border border-slate-200 bg-background"
+        className="relative overflow-hidden rounded-[22px] shadow-[0_12px_30px_rgba(0,0,0,0.18)] border border-[#333] bg-[#1A1A1A]"
       >
         {/* Semicircular Ticket Cutout Notches on Left & Right Sides */}
-        <div className="absolute -left-3.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-background z-30 border-r border-slate-300" />
-        <div className="absolute -right-3.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-background z-30 border-l border-slate-300" />
+        <div className="absolute -left-3.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#1A1A1A] z-30 border-r border-[#333]" />
+        <div className="absolute -right-3.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#1A1A1A] z-30 border-l border-[#333]" />
 
         <div className="grid grid-cols-[64px_1fr] sm:grid-cols-[78px_1fr] min-h-[220px]">
           {/* Left White Coupon Stub */}
-          <div className="relative bg-white flex flex-col justify-between items-center py-4 px-1 border-r-2 border-dashed border-red-300 text-slate-900 z-20">
+          <div className="relative bg-[#242424] flex flex-col justify-between items-center py-4 px-1 border-r-2 border-dashed border-[#661E28] text-[#FFF8E7] z-20">
             {/* Vertical Sub-Text */}
-            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 rotate-180 [writing-mode:vertical-lr] whitespace-nowrap">
+            <span className="text-[9px] font-black uppercase tracking-widest text-[#A0937D] rotate-180 [writing-mode:vertical-lr] whitespace-nowrap">
               FREE DRINK TICKET
             </span>
 
             {/* Giant Outlined Typography (100% OFF) */}
             <div className="my-auto rotate-180 [writing-mode:vertical-lr] flex items-center justify-center">
-              <span className="text-3xl sm:text-4xl font-black tracking-tighter text-transparent stroke-red-600 [-webkit-text-stroke:2px_#DC2626] leading-none">
+              <span className="text-3xl sm:text-4xl font-black tracking-tighter text-transparent stroke-[#661E28] [-webkit-text-stroke:2px_#661E28] leading-none">
                 100%
               </span>
             </div>
 
-            <Ticket className="h-4 w-4 text-red-600 shrink-0" />
+            <Ticket className="h-4 w-4 text-[#661E28] shrink-0" />
           </div>
 
           {/* Main Red Coupon Body */}
-          <div className="relative bg-gradient-to-br from-[#DC2626] via-[#C91A25] to-[#990F17] p-3.5 sm:p-5 text-white flex flex-col justify-between overflow-hidden">
+          <div className="relative bg-gradient-to-br from-[#661E28] via-[#551A22] to-[#3D1018] p-3.5 sm:p-5 text-[#FFF8E7] flex flex-col justify-between overflow-hidden">
             {/* Background Accent Graphics */}
             <div className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-white/10 blur-xl" />
 
