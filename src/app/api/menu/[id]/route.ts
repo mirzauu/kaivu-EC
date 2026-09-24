@@ -36,6 +36,7 @@ export async function GET(
         isAvailable: item.isAvailable,
         isComingSoon: Boolean((item as any).isComingSoon) || item.tag?.toLowerCase() === "coming soon",
         isFeatured: Boolean((item as any).isFeatured),
+        variants: item.variants ?? null,
       })
     );
   } catch (error) {
@@ -73,6 +74,7 @@ export const PUT = withAdmin(async (req: AuthenticatedRequest, context) => {
         isComingSoon: body.isComingSoon !== undefined ? Boolean(body.isComingSoon) : (item as any).isComingSoon,
         isFeatured: body.isFeatured !== undefined ? Boolean(body.isFeatured) : (item as any).isFeatured,
         sortOrder: body.sortOrder !== undefined ? body.sortOrder : item.sortOrder,
+        variants: body.variants !== undefined ? body.variants : (item as any).variants,
       },
     });
 
@@ -88,6 +90,7 @@ export const PUT = withAdmin(async (req: AuthenticatedRequest, context) => {
         isAvailable: updated.isAvailable,
         isComingSoon: Boolean((updated as any).isComingSoon) || updated.tag?.toLowerCase() === "coming soon",
         isFeatured: Boolean((updated as any).isFeatured),
+        variants: updated.variants ?? null,
       })
     );
   } catch (error) {

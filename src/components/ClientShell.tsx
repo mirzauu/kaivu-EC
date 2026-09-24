@@ -9,7 +9,6 @@ import { useEffect, useState, Suspense } from "react";
 import { tracker } from "@/lib/tracking/tracker";
 import { trackNewVisitor } from "@/lib/tracking/visitor-tracker";
 import { LocationPermissionModal } from "./LocationPermissionModal";
-import { InstallPrompt } from "./InstallPrompt";
 import { FlyToCartProvider } from "./FlyToCartProvider";
 import { KaivuLoadingScreen } from "./KaivuLoadingScreen";
 import { AnimatePresence, motion } from "framer-motion";
@@ -77,7 +76,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
         <Suspense fallback={null}>
           <AuthModal />
         </Suspense>
-        <InstallPrompt />
         <LocationPermissionModal />
         <NotificationBannerManager />
       </FlyToCartProvider>

@@ -16,9 +16,28 @@ import makeWASocket, {
   type ConnectionState,
 } from '@whiskeysockets/baileys';
 import dotenv from 'dotenv';
+import { Pool } from 'pg';
+import { SignJWT } from 'jose';
 
 // Load environment variables
 dotenv.config();
+
+// PostgreSQL Database Connection Pool
+const dbPool = process.env.DATABASE_URL
+  ? new Pool({
+      connectionString: process.env.DATABASE_URL,
+      max: 5,
+      idleTimeoutMillis: 30000,
+    })
+  : null;
+
+if (dbPool) {
+  dbPool.query('SELECT NOW()').then(() => {
+    console.log('✅ [Baileys] PostgreSQL database connected successfully for WhatsApp Auth.');
+  }).catch((err) => {
+    console.warn('⚠️ [Baileys] PostgreSQL connection warning:', err.message);
+  });
+}
 
 // Safety handlers for uncaught stream exceptions
 process.on('uncaughtException', (err) => {
@@ -87,6 +106,184 @@ function formatToJid(target: string): string {
 }
 
 /**
+ * Handle incoming "LOGIN KV-XXXX" verification message
+ */
+async function handleLoginCode(jid: string, rawText: string): Promise<boolean> {
+  const match = rawText.match(/^(?:LOGIN\s+)?(KV-[A-Z0-9]{4})$/i);
+  if (!match) return false;
+
+  const token = match[1].toUpperCase();
+  console.log(`[Baileys Auth] 🔑 Detected login attempt with token: ${token} from ${jid}`);
+
+  // Format phone number
+  const rawSender = jid.split('@')[0].split(':')[0].replace(/\D/g, '');
+  let phone = rawSender;
+  if (/^\d{10}$/.test(phone)) phone = '+91' + phone;
+  else if (/^91\d{10}$/.test(phone)) phone = '+' + phone;
+  else if (!phone.startsWith('+')) phone = '+' + phone;
+
+  if (!dbPool) {
+    console.error('[Baileys Auth] ⚠️ Database pool not initialized! Check DATABASE_URL in .env');
+    return false;
+  }
+
+  try {
+    // 1. Look up session in whatsapp_login_sessions
+    const sessionRes = await dbPool.query(
+      `SELECT * FROM whatsapp_login_sessions WHERE token = $1`,
+      [token]
+    );
+
+    if (sessionRes.rows.length === 0) {
+      console.warn(`[Baileys Auth] ⚠️ Token ${token} not found in database.`);
+      if (sock) {
+        await sock.sendMessage(jid, {
+          text: `❌ *Invalid Login Code*\n\nThe code *${token}* was not recognized. Please return to Kaivu and click "Continue with WhatsApp" to get a new code.`
+        });
+      }
+      return true;
+    }
+
+    const session = sessionRes.rows[0];
+
+    // Check expiration
+    if (new Date(session.expires_at) < new Date()) {
+      console.warn(`[Baileys Auth] ⚠️ Token ${token} has expired.`);
+      if (sock) {
+        await sock.sendMessage(jid, {
+          text: `⏱️ *Code Expired*\n\nThe code *${token}* has expired. Please return to Kaivu and click "Continue with WhatsApp" to generate a fresh code.`
+        });
+      }
+      return true;
+    }
+
+    // 2. Find or create User
+    const userRes = await dbPool.query(
+      `SELECT id, phone, role FROM users WHERE phone = $1 LIMIT 1`,
+      [phone]
+    );
+
+    let user = userRes.rows[0];
+    let isNewUser = false;
+
+    if (!user) {
+      isNewUser = true;
+      // Generate referral code
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let refCode = "KV-";
+      for (let i = 0; i < 6; i++) {
+        refCode += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+
+      // Check if session had a referrer
+      let referrerId: string | null = null;
+      let initialCoins = 0;
+      if (session.referral_code) {
+        const refRes = await dbPool.query(`SELECT id FROM users WHERE referral_code = $1 LIMIT 1`, [session.referral_code]);
+        if (refRes.rows.length > 0) {
+          referrerId = refRes.rows[0].id;
+          initialCoins = 25; // Default referral referee bonus
+        }
+      }
+
+      const insertRes = await dbPool.query(
+        `INSERT INTO users (id, phone, referral_code, referred_by_id, kaivu_coins, role, created_at, updated_at)
+         VALUES (gen_random_uuid(), $1, $2, $3, $4, 'USER', NOW(), NOW())
+         RETURNING id, phone, role`,
+        [phone, refCode, referrerId, initialCoins]
+      );
+      user = insertRes.rows[0];
+
+      if (referrerId && initialCoins > 0) {
+        try {
+          await dbPool.query(
+            `INSERT INTO coin_transactions (id, user_id, amount, type, description, created_at)
+             VALUES (gen_random_uuid(), $1, $2, 'SIGNUP_BONUS', 'Welcome bonus from referral code', NOW())`,
+            [user.id, initialCoins]
+          );
+          await dbPool.query(
+            `UPDATE users SET kaivu_coins = kaivu_coins + 50 WHERE id = $1`,
+            [referrerId]
+          );
+          await dbPool.query(
+            `INSERT INTO coin_transactions (id, user_id, amount, type, description, created_at)
+             VALUES (gen_random_uuid(), $1, 50, 'REFERRAL_BONUS', $2, NOW())`,
+            [referrerId, `Referral bonus — ${phone} joined using your code`]
+          );
+        } catch (coinErr) {
+          console.error('[Baileys Auth] Error recording referral coin transactions:', coinErr);
+        }
+      }
+    }
+
+    // 3. Generate JWT Token
+    const jwtSecret = new TextEncoder().encode(
+      process.env.JWT_SECRET || 'kaivu-dev-secret-change-this-in-production-to-a-random-64-char-string'
+    );
+    const authToken = await new SignJWT({
+      userId: user.id,
+      phone: user.phone,
+      role: user.role,
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('7d')
+      .setIssuer('kaivu')
+      .sign(jwtSecret);
+
+    // 4. Update session to VERIFIED
+    await dbPool.query(
+      `UPDATE whatsapp_login_sessions
+       SET status = 'VERIFIED',
+           phone = $1,
+           user_id = $2,
+           auth_token = $3,
+           updated_at = NOW()
+       WHERE token = $4`,
+      [phone, user.id, authToken, token]
+    );
+
+    console.log(`[Baileys Auth] ✅ Successfully verified session ${token} for user ${phone} (User ID: ${user.id})`);
+
+    // 5. Send WhatsApp reply with magic link directly from active socket
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kaivu.co';
+    const magicLink = `${appUrl}/api/auth/magic-link?token=${token}`;
+
+    const welcomeMessage = isNewUser
+      ? `*kaivu.*\n\nWelcome! You're logged in ✅\n\nTap to continue:\n${magicLink}`
+      : `*kaivu.*\n\nWelcome back! You're logged in ✅\n\nTap to continue:\n${magicLink}`;
+
+    if (sock) {
+      await sock.sendMessage(jid, { text: welcomeMessage });
+      console.log(`[Baileys Auth] 📤 Magic link and welcome message sent to ${jid}`);
+    }
+
+    // 6. Non-blocking webhook notification if configured
+    if (process.env.NEXT_PUBLIC_APP_URL) {
+      fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/whatsapp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: 'messages.upsert',
+          data: {
+            messages: {
+              key: { cleanedSenderPn: phone, remoteJid: jid },
+              messageBody: rawText,
+            },
+          },
+        }),
+        signal: AbortSignal.timeout(3000),
+      }).catch(() => {});
+    }
+
+    return true;
+  } catch (err) {
+    console.error('[Baileys Auth] Error verifying login code:', err);
+    return false;
+  }
+}
+
+/**
  * Initialize Baileys WhatsApp Socket
  */
 async function startWhatsAppSocket() {
@@ -138,6 +335,33 @@ async function startWhatsAppSocket() {
 
     // Save credentials whenever updated
     socketInstance.ev.on('creds.update', saveCreds);
+
+    // Handle incoming WhatsApp messages
+    socketInstance.ev.on('messages.upsert', async ({ messages, type }) => {
+      if (type !== 'notify') return;
+
+      for (const msg of messages) {
+        if (!msg.message || msg.key.fromMe) continue;
+
+        const jid = msg.key.remoteJid || '';
+        if (!jid || jid.endsWith('@g.us') || jid.endsWith('@broadcast')) continue;
+
+        const senderPn = jid.split('@')[0].split(':')[0].replace(/\D/g, '');
+        const messageBody = (
+          msg.message.conversation ||
+          msg.message.extendedTextMessage?.text ||
+          msg.message.imageMessage?.caption ||
+          ''
+        ).trim();
+
+        if (!messageBody || !senderPn) continue;
+
+        console.log(`[Baileys Service] 📩 Incoming message from ${senderPn} (${jid}): "${messageBody}"`);
+
+        // Check and process 1-tap WhatsApp Login token
+        await handleLoginCode(jid, messageBody);
+      }
+    });
 
     // Monitor connection events
     socketInstance.ev.on('connection.update', async (update: Partial<ConnectionState>) => {

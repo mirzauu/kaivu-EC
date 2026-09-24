@@ -11,7 +11,7 @@ export const POST = withAdmin(async (req: AuthenticatedRequest) => {
   try {
     const body = await req.json();
 
-    const { name, description, desc, price, imageUrl, image, videoUrl, category, tag, rating, sortOrder, isComingSoon, isFeatured } = body;
+    const { name, description, desc, price, imageUrl, image, videoUrl, category, tag, rating, sortOrder, isComingSoon, isFeatured, variants } = body;
     const finalDescription = description || desc;
 
     if (!name || !finalDescription || price === undefined || !category) {
@@ -43,6 +43,7 @@ export const POST = withAdmin(async (req: AuthenticatedRequest) => {
         isComingSoon: Boolean(isComingSoon) || tag?.toLowerCase() === "coming soon",
         isFeatured: Boolean(isFeatured),
         sortOrder: sortOrder || 0,
+        variants: variants || null,
       },
     });
 
@@ -58,6 +59,7 @@ export const POST = withAdmin(async (req: AuthenticatedRequest) => {
           desc: item.description,
           isComingSoon: Boolean((item as any).isComingSoon) || item.tag?.toLowerCase() === "coming soon",
           isFeatured: Boolean((item as any).isFeatured),
+          variants: item.variants ?? null,
         },
         "Menu item created"
       ),

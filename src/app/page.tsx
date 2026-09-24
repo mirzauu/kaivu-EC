@@ -6,8 +6,10 @@ import {
   Plus,
   ShoppingBag,
   X,
+  HelpCircle,
 } from "lucide-react";
 import { MobileShell } from "@/components/MobileShell";
+import { HelpSupportModal } from "@/components/HelpSupportModal";
 import { ProductDetailModal } from "@/components/ProductDetailModal";
 import { useMenu } from "@/lib/menu-store";
 import { useAuth } from "@/lib/auth-store";
@@ -51,6 +53,7 @@ export default function Home() {
   const [isScrolling, setIsScrolling] = useState(false);
   const [selectedDetailItem, setSelectedDetailItem] = useState<MenuItem | null>(null);
   const [showCartBar, setShowCartBar] = useState(true);
+  const [showSupportModal, setShowSupportModal] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   useEffect(() => {
@@ -104,8 +107,8 @@ export default function Home() {
     }, 2500);
   };
 
-  // Group items by category
-  const categoryGroups = topCategories.map((cat) => {
+  // Group items by category (filtered if a category is selected)
+  const allCategoryGroups = topCategories.map((cat) => {
     const categoryItems = allItems.filter((m) => {
       if (cat.name === "Burgers") return !m.category || m.category.toLowerCase() === "burgers";
       if (cat.name === "Burrito") return m.category?.toLowerCase() === "burrito" || m.category?.toLowerCase() === "burritos" || m.category?.toLowerCase() === "burito";
@@ -114,56 +117,61 @@ export default function Home() {
     return { ...cat, items: categoryItems };
   });
 
-  const scrollToCategory = (name: string) => {
-    setActiveCategory(name);
-    const el = document.getElementById(`section-${name}`);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  const categoryGroups = activeCategory
+    ? allCategoryGroups.filter((g) => g.name === activeCategory)
+    : allCategoryGroups;
+
+  const handleCategoryClick = (name: string) => {
+    if (activeCategory === name) {
+      setActiveCategory(null);
+    } else {
+      setActiveCategory(name);
+      // Cleanly scroll to top of product grid right below sticky header & nav
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#111111] text-[#FFF8E7] pb-20">
-      <main className="mx-auto max-w-md bg-[#111111] overflow-hidden min-h-screen">
-        {/* Top Header Bar */}
-        <div className="sticky top-0 z-50 bg-[#161616]/95 backdrop-blur-md px-4 py-3 flex items-center justify-between border-b border-white/10">
+      <main className="mx-auto max-w-md bg-[#111111] min-h-screen">
+        {/* Top Header Bar — Sticky on Scroll */}
+        <div className="sticky top-0 z-50 bg-[#161616] px-4 py-3 flex items-center justify-between border-b border-white/10">
           <span className="text-base font-bold text-white tracking-wide font-display uppercase">
             Kaivu — Order Online
           </span>
 
-          <Link
-            href="/cart"
-            className="relative grid h-9 w-9 place-items-center rounded-full bg-white/10 text-[#FFF8E7] hover:bg-white/20 active:scale-95 transition-all cursor-pointer"
-            aria-label="View Cart"
-          >
-            <ShoppingBag className="h-5 w-5" />
-            {itemCount > 0 && (
-              <span className="absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full bg-[#7A1424] px-1 text-[10px] font-black text-white shadow-sm">
-                {itemCount}
-              </span>
-            )}
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowSupportModal(true)}
+              className="relative grid h-9 w-9 place-items-center rounded-full bg-white/10 text-[#FFF8E7] hover:bg-white/20 active:scale-95 transition-all cursor-pointer"
+              aria-label="Help & Support"
+            >
+              <HelpCircle className="h-5 w-5" />
+            </button>
+            <Link
+              href="/cart"
+              className="relative grid h-9 w-9 place-items-center rounded-full bg-white/10 text-[#FFF8E7] hover:bg-white/20 active:scale-95 transition-all cursor-pointer"
+              aria-label="View Cart"
+            >
+              <ShoppingBag className="h-5 w-5" />
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full bg-[#7A1424] px-1 text-[10px] font-black text-white shadow-sm">
+                  {itemCount}
+                </span>
+              )}
+            </Link>
+          </div>
         </div>
 
-        {/* Hero Section with Dot Matrix Background & 'See the menu' button card */}
-        <section className="bg-dot-pattern px-4 pt-4 pb-5 border-b border-black">
-          <Link
-            href="/menu"
-            className="inline-block rounded-none bg-[#FFF8E7] px-6 py-2.5 shadow-sm active:scale-95 transition-transform"
-          >
-            <span className="text-sm font-extrabold text-[#5C0B17] font-display uppercase tracking-wide">
-              See the menu
-            </span>
-          </Link>
-        </section>
-
-        {/* Category Navigation Bar — Full-width White strip with circular icons */}
-        <nav className="bg-white py-2.5 px-3">
+        {/* Category Navigation Bar — Sticky below Header on Scroll */}
+        <nav className="sticky top-[57px] z-40 bg-white py-2.5 px-3 shadow-md border-b border-black/5">
           <ul className="flex items-center justify-between gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {topCategories.map((cat) => {
-              const isSelected = (activeCategory === cat.name) || (!activeCategory && cat.name === "Burrito");
+              const isSelected = activeCategory === cat.name;
               return (
                 <li key={cat.name} className="flex-1 flex flex-col items-center min-w-[58px]">
                   <button
-                    onClick={() => scrollToCategory(cat.name)}
+                    onClick={() => handleCategoryClick(cat.name)}
                     className="group flex flex-col items-center cursor-pointer transition-transform active:scale-95"
                   >
                     <div
@@ -177,15 +185,22 @@ export default function Home() {
                         {cat.emoji}
                       </span>
                     </div>
-                    <span
-                      className={`text-[10px] mt-1 tracking-tight select-none ${
-                        isSelected
-                          ? "font-extrabold text-[#111111]"
-                          : "font-medium text-[#777777]"
-                      }`}
-                    >
-                      {cat.name}
-                    </span>
+                    <div className="flex items-center gap-1 mt-1">
+                      <span
+                        className={`text-[10px] tracking-tight select-none ${
+                          isSelected
+                            ? "font-extrabold text-[#111111]"
+                            : "font-medium text-[#777777]"
+                        }`}
+                      >
+                        {cat.name}
+                      </span>
+                      {isSelected && (
+                        <span className="grid h-3.5 w-3.5 place-items-center rounded-full bg-[#7A1424] text-white">
+                          <X className="h-2 w-2 stroke-[3]" />
+                        </span>
+                      )}
+                    </div>
                   </button>
                 </li>
               );
@@ -203,7 +218,7 @@ export default function Home() {
         {/* Food Categories & Product Grid */}
         <div className="px-3.5 pt-6 space-y-8">
           {categoryGroups.map((group) => (
-            <section key={group.name} id={`section-${group.name}`} className="scroll-mt-14">
+            <section key={group.name} id={`section-${group.name}`} className="scroll-mt-36">
               {/* Section Header (e.g. BURGERS / BURRITO) */}
               <h2 className="text-2xl font-black text-white font-display uppercase tracking-wider mb-3.5">
                 {group.name}
@@ -357,6 +372,11 @@ export default function Home() {
       <ProductDetailModal
         item={selectedDetailItem}
         onClose={() => setSelectedDetailItem(null)}
+      />
+
+      <HelpSupportModal 
+        isOpen={showSupportModal} 
+        onClose={() => setShowSupportModal(false)} 
       />
     </div>
   );

@@ -1606,6 +1606,15 @@ function MenuTab({ menuItems }: MenuTabProps) {
   const [image, setImage] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
 
+  // Variants / Sub-categories State
+  const [hasVariants, setHasVariants] = useState(false);
+  const [variantGroupTitle, setVariantGroupTitle] = useState("Size");
+  const [variantOptions, setVariantOptions] = useState<Array<{ name: string; price: string }>>([
+    { name: "Small", price: "" },
+    { name: "Medium", price: "" },
+    { name: "Large", price: "" },
+  ]);
+
   // Upload States
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
@@ -1662,6 +1671,13 @@ function MenuTab({ menuItems }: MenuTabProps) {
     setIsFeatured(false);
     setImage("");
     setVideoUrl("");
+    setHasVariants(false);
+    setVariantGroupTitle("Size");
+    setVariantOptions([
+      { name: "Small", price: "" },
+      { name: "Medium", price: "" },
+      { name: "Large", price: "" },
+    ]);
     setIsUploadingImage(false);
     setIsUploadingVideo(false);
     setShowManualImageUrl(false);
@@ -1682,6 +1698,26 @@ function MenuTab({ menuItems }: MenuTabProps) {
     setIsFeatured(Boolean((item as any).isFeatured));
     setImage(item.imageUrl || item.image || "");
     setVideoUrl(item.videoUrl || "");
+
+    if (item.variants?.options && item.variants.options.length > 0) {
+      setHasVariants(true);
+      setVariantGroupTitle(item.variants.groupTitle || "Size");
+      setVariantOptions(
+        item.variants.options.map((o) => ({
+          name: o.name,
+          price: o.price.toString(),
+        }))
+      );
+    } else {
+      setHasVariants(false);
+      setVariantGroupTitle("Size");
+      setVariantOptions([
+        { name: "Small", price: "" },
+        { name: "Medium", price: "" },
+        { name: "Large", price: "" },
+      ]);
+    }
+
     setShowManualImageUrl(false);
     setShowManualVideoUrl(false);
   };
@@ -1806,6 +1842,26 @@ function MenuTab({ menuItems }: MenuTabProps) {
       return;
     }
 
+    let variantsPayload: any = null;
+    if (hasVariants) {
+      const validOptions = variantOptions
+        .filter((o) => o.name.trim() !== "" && !isNaN(parseFloat(o.price)))
+        .map((o) => ({
+          name: o.name.trim(),
+          price: parseFloat(o.price),
+        }));
+
+      if (validOptions.length === 0) {
+        toast.error("Please add at least one valid sub-category option with name and price");
+        return;
+      }
+
+      variantsPayload = {
+        groupTitle: variantGroupTitle.trim() || "Size",
+        options: validOptions,
+      };
+    }
+
     // Default fallback avatar burger item if image is missing
     const defaultImage = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=60";
     const finalImageUrl = image.trim() || defaultImage;
@@ -1823,6 +1879,7 @@ function MenuTab({ menuItems }: MenuTabProps) {
       imageUrl: finalImageUrl,
       videoUrl: videoUrl.trim() || undefined,
       rating: editingItem ? editingItem.rating : 5.0,
+      variants: variantsPayload,
     };
 
     if (editingItem) {
@@ -2026,6 +2083,11 @@ function MenuTab({ menuItems }: MenuTabProps) {
                                   ⭐ Main Carousel
                                 </span>
                               )}
+                              {item.variants?.options && item.variants.options.length > 0 && (
+                                <span className="inline-flex items-center gap-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-700 px-1.5 py-0.2 text-[9px] font-bold">
+                                  ⚡ {item.variants.options.length} {item.variants.groupTitle || "Sizes"}
+                                </span>
+                              )}
                               {item.videoUrl && (
                                 <span className="inline-flex items-center gap-0.5 rounded-full bg-blue-500/10 px-1.5 py-0.2 text-[9px] font-bold text-blue-600">
                                   <Video className="h-2.5 w-2.5" /> Video
@@ -2058,7 +2120,18 @@ function MenuTab({ menuItems }: MenuTabProps) {
                         </span>
                       </td>
                       <td className="py-3 font-bold text-[oklch(0.18_0.02_50)]">
-                        ₹{item.price.toFixed(2)}
+                        {item.variants?.options && item.variants.options.length > 0 ? (
+                          <div>
+                            <span className="text-[10px] text-[oklch(0.5_0.02_60)] block font-medium">
+                              From
+                            </span>
+                            <span>
+                              ₹{Math.min(...item.variants.options.map((o) => o.price)).toFixed(2)}
+                            </span>
+                          </div>
+                        ) : (
+                          `₹${item.price.toFixed(2)}`
+                        )}
                       </td>
                       <td className="py-3 text-right pr-2">
                         <div className="inline-flex items-center gap-1.5">
@@ -2209,6 +2282,112 @@ function MenuTab({ menuItems }: MenuTabProps) {
                   <option value="Combos">Combos</option>
                 </select>
               </div>
+            </div>
+
+            {/* --- SUB-CATEGORIES / VARIANTS (OPTIONAL) --- */}
+            <div className="rounded-2xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.99_0.003_75)] p-3.5 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-[11px] font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider block">
+                    Sub-Categories / Variants (Optional)
+                  </label>
+                  <p className="text-[10px] text-[oklch(0.5_0.02_60)]">
+                    Add custom sizes (e.g. Small / Med / Large) or portions (e.g. 4pc / 6pc)
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setHasVariants(!hasVariants)}
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    hasVariants ? "bg-brand" : "bg-slate-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      hasVariants ? "translate-x-4" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {hasVariants && (
+                <div className="pt-2 border-t border-[oklch(0.92_0.01_75)] space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-[oklch(0.4_0.02_50)] uppercase tracking-wider">
+                      Option Group Title
+                    </label>
+                    <input
+                      type="text"
+                      value={variantGroupTitle}
+                      onChange={(e) => setVariantGroupTitle(e.target.value)}
+                      placeholder="e.g. Size, Portion, Pieces"
+                      className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-white px-3 py-1.5 text-xs focus:border-brand focus:outline-none font-medium"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-[oklch(0.4_0.02_50)] uppercase tracking-wider">
+                      Option Choices & Prices
+                    </label>
+                    {variantOptions.map((opt, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={opt.name}
+                          onChange={(e) => {
+                            const updated = [...variantOptions];
+                            updated[idx].name = e.target.value;
+                            setVariantOptions(updated);
+                          }}
+                          placeholder="Name (e.g. Small / 4 Pcs)"
+                          className="flex-1 rounded-xl border border-[oklch(0.9_0.015_75)] bg-white px-3 py-1.5 text-xs focus:border-brand focus:outline-none"
+                        />
+                        <div className="relative w-28">
+                          <span className="absolute left-2.5 top-1.5 text-[10px] font-bold text-slate-400">
+                            ₹
+                          </span>
+                          <input
+                            type="number"
+                            step="any"
+                            value={opt.price}
+                            onChange={(e) => {
+                              const updated = [...variantOptions];
+                              updated[idx].price = e.target.value;
+                              setVariantOptions(updated);
+                            }}
+                            placeholder="Price"
+                            className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-white pl-6 pr-2 py-1.5 text-xs focus:border-brand focus:outline-none"
+                          />
+                        </div>
+                        {variantOptions.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setVariantOptions(variantOptions.filter((_, i) => i !== idx));
+                            }}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setVariantOptions([
+                          ...variantOptions,
+                          { name: "", price: "" },
+                        ])
+                      }
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-brand hover:underline pt-1 cursor-pointer"
+                    >
+                      <Plus className="h-3 w-3" /> Add Another Option
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* --- PRODUCT PHOTO UPLOAD (CLOUDINARY) --- */}

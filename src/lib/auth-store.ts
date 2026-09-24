@@ -242,6 +242,37 @@ export const auth = {
   },
 
   /**
+   * Sets the user directly into state (used after 1-tap WhatsApp login or magic link).
+   */
+  async setSessionUser(userData: User) {
+    if (userData.role !== "ADMIN") {
+      localStorage.removeItem("csuite_auth");
+    }
+    localStorage.setItem("kaivu_user", JSON.stringify(userData));
+    state = {
+      ...state,
+      isAuthenticated: true,
+      isAuthModalOpen: false,
+      user: userData,
+      isLoading: false,
+    };
+    emit();
+
+    try {
+      const { tracker } = await import("@/lib/tracking/tracker");
+      tracker.track("LOGIN", { userId: userData.id });
+    } catch (err) {
+      console.error("Tracking failed during setSessionUser", err);
+    }
+
+    if (pendingAction) {
+      const action = pendingAction;
+      pendingAction = null;
+      action();
+    }
+  },
+
+  /**
    * Updates the user's name.
    */
   async updateName(name: string): Promise<{ success: boolean; error?: string }> {

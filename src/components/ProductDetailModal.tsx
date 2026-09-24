@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Star, Plus, Minus, ShoppingBag } from "lucide-react";
+import { X, Star, Plus, Minus, ShoppingBag, Check } from "lucide-react";
 import { useFlyToCart } from "./FlyToCartProvider";
+import { VariantGroup, VariantOption } from "@/lib/menu-data";
 
 type ProductItem = {
   id: string;
@@ -16,6 +17,7 @@ type ProductItem = {
   rating?: number;
   tag?: string;
   isComingSoon?: boolean;
+  variants?: VariantGroup | null;
 };
 
 type Props = {
@@ -25,17 +27,24 @@ type Props = {
 
 export function ProductDetailModal({ item, onClose }: Props) {
   const [quantity, setQuantity] = useState(1);
+  const [selectedVariant, setSelectedVariant] = useState<VariantOption | null>(null);
 
   const { flyToCart } = useFlyToCart();
 
   useEffect(() => {
     if (item) {
       setQuantity(1);
+      if (item.variants?.options && item.variants.options.length > 0) {
+        setSelectedVariant(item.variants.options[0]);
+      } else {
+        setSelectedVariant(null);
+      }
     }
   }, [item]);
 
   if (!item) return null;
 
+  const hasVariants = Boolean(item.variants?.options && item.variants.options.length > 0);
   const isComingSoon = Boolean(item.isComingSoon) || item.tag?.toLowerCase() === "coming soon";
   const imageSrc = item.image?.src || item.image || item.imageUrl || "";
   const descriptionText =
@@ -43,13 +52,16 @@ export function ProductDetailModal({ item, onClose }: Props) {
     item.description ||
     "Crafted with 100% fresh ingredients, grilled to perfection on a high-heat flat top for signature crispy edges and juicy savory flavor.";
 
-  const totalPrice = item.price * quantity;
+  const activeUnitPrice = selectedVariant ? selectedVariant.price : item.price;
+  const totalPrice = activeUnitPrice * quantity;
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     flyToCart(e, {
       id: item.id,
-      name: item.name,
-      price: item.price,
+      menuItemId: item.id,
+      variantName: selectedVariant?.name,
+      name: selectedVariant ? `${item.name} (${selectedVariant.name})` : item.name,
+      price: activeUnitPrice,
       image: imageSrc,
     });
     onClose();
@@ -148,29 +160,81 @@ export function ProductDetailModal({ item, onClose }: Props) {
                 </p>
               </div>
             ) : (
-              /* Quantity Selector */
-              <div className="flex items-center justify-between rounded-2xl bg-[#242424] p-3.5 border border-[#333]">
-                <span className="text-xs font-bold text-[#FFF8E7]">Quantity</span>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="grid h-8 w-8 place-items-center rounded-full bg-[#333] text-[#FFF8E7] hover:bg-[#444] cursor-pointer transition-colors"
-                  >
-                    <Minus className="h-3.5 w-3.5" />
-                  </button>
-                  <span className="text-sm font-extrabold text-[#FFF8E7] w-4 text-center">
-                    {quantity}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setQuantity((q) => q + 1)}
-                    className="grid h-8 w-8 place-items-center rounded-full bg-[#661E28] text-[#FFF8E7] hover:bg-[#7a2432] cursor-pointer transition-colors"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                  </button>
+              <>
+                {/* Variant / Sub-category Selector */}
+                {hasVariants && item.variants && (
+                  <div className="space-y-3 rounded-2xl bg-[#242424] p-4 border border-[#333]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-[#FFF8E7] font-display">
+                        Choose {item.variants.groupTitle || "Size / Portion"}
+                      </span>
+                      <span className="text-[10px] font-bold text-[#FFF8E7]/80 bg-[#66101F]/50 border border-[#66101F] px-2 py-0.5 rounded-full uppercase">
+                        Option Required
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      {item.variants.options.map((opt) => {
+                        const isSelected = selectedVariant?.name === opt.name;
+                        return (
+                          <button
+                            key={opt.name}
+                            type="button"
+                            onClick={() => setSelectedVariant(opt)}
+                            className={`flex flex-col items-start justify-between p-3 rounded-xl border transition-all text-left cursor-pointer ${
+                              isSelected
+                                ? "bg-[#66101F] border-[#9A1E31] text-[#FFF8E7] shadow-md ring-2 ring-[#FFF8E7]/40 scale-[1.02]"
+                                : "bg-[#1A1A1A] border-[#333] text-[#FFF8E7]/80 hover:border-[#555] hover:bg-[#202020]"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <span className="text-xs font-bold leading-tight line-clamp-1">
+                                {opt.name}
+                              </span>
+                              {isSelected && (
+                                <span className="h-4 w-4 rounded-full bg-[#FFF8E7] text-[#66101F] grid place-items-center shrink-0">
+                                  <Check className="h-2.5 w-2.5 stroke-[3]" />
+                                </span>
+                              )}
+                            </div>
+                            <span
+                              className={`text-xs font-black mt-2 font-display tracking-wider ${
+                                isSelected ? "text-[#FFF8E7]" : "text-[#E6C687]"
+                              }`}
+                            >
+                              ₹{opt.price}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Quantity Selector */}
+                <div className="flex items-center justify-between rounded-2xl bg-[#242424] p-3.5 border border-[#333]">
+                  <span className="text-xs font-bold text-[#FFF8E7]">Quantity</span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      className="grid h-8 w-8 place-items-center rounded-full bg-[#333] text-[#FFF8E7] hover:bg-[#444] cursor-pointer transition-colors"
+                    >
+                      <Minus className="h-3.5 w-3.5" />
+                    </button>
+                    <span className="text-sm font-extrabold text-[#FFF8E7] w-4 text-center">
+                      {quantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setQuantity((q) => q + 1)}
+                      className="grid h-8 w-8 place-items-center rounded-full bg-[#661E28] text-[#FFF8E7] hover:bg-[#7a2432] cursor-pointer transition-colors"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </>
             )}
           </div>
 

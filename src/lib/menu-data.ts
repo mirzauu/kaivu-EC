@@ -2,8 +2,25 @@ import assets from "./cloudinary-assets.json";
 
 const kaivuMacBurger = assets.menuImages["kaivu-mac-burger.jpg"];
 const kaivuCluckBurger = assets.menuImages["kaivu-cluck-burger.jpg"];
-const kaivuLoadedBowl = assets.menuImages["kaivu-loaded-bowl.jpg"];
-const kaivuShake = assets.menuImages["shake.jpg"];
+
+export const categories = [
+  "All",
+  "Burgers",
+  "Burrito",
+  "Sides",
+  "Drinks",
+  "Combos",
+] as const;
+
+export type VariantOption = {
+  name: string;
+  price: number;
+};
+
+export type VariantGroup = {
+  groupTitle: string; // e.g. "Size", "Portion", "Pieces"
+  options: VariantOption[];
+};
 
 export type MenuItem = {
   id: string;
@@ -21,41 +38,313 @@ export type MenuItem = {
   isAvailable?: boolean;
   isComingSoon?: boolean;
   isFeatured?: boolean;
+  variants?: VariantGroup | null;
 };
 
 export const menu: MenuItem[] = [
-  { id: "cluck-riot", name: "CLUCK RIOT", desc: "Crispy fried chicken tossed in Nashville hot oil...", price: 229, image: kaivuCluckBurger, category: "Burgers", tag: "CHICKEN", rating: 4.9 },
-  { id: "we-are-smashing", name: "WE ARE SMASHING", desc: "Smash-pressed beef patty, American cheese...", price: 0, image: null, isComingSoon: true, category: "Burgers", tag: "BEEF", rating: 4.9 },
-  { id: "og-smash-beef", name: "OG Smash (Beef)", desc: "Classic beef smash burger", price: 210, image: kaivuCluckBurger, category: "Burgers", tag: "Bestseller", rating: 4.8 },
-  { id: "classic-smash-burger-beef", name: "Classic Smash Burger (Beef)", desc: "Classic-style beef smash burger", price: 320, image: kaivuMacBurger, category: "Burgers", rating: 4.7 },
-  { id: "jalapeno-jam-beef", name: "Jalapeño Jam (Beef)", desc: "Beef smash burger with jalapeño jam", price: 220, image: kaivuCluckBurger, category: "Burgers", tag: "Spicy", rating: 4.9 },
-  { id: "the-dirty-shroom-beef", name: "The Dirty Shroom (Beef)", desc: "Beef burger featuring mushrooms", price: 340, image: kaivuCluckBurger, category: "Burgers", rating: 4.8 },
-  { id: "nashville-cluck-chicken", name: "Nashville Cluck (Chicken)", desc: "Nashville-style chicken burger", price: 210, image: kaivuCluckBurger, category: "Burgers", tag: "Spicy", rating: 4.7 },
-  { id: "mac-and-rooster-chicken", name: "Mac & Rooster (Chicken)", desc: "Chicken burger with mac & cheese", price: 240, image: kaivuMacBurger, category: "Burgers", rating: 4.8 },
-  { id: "hot-bird-tenders-box-of-4", name: "Hot Bird Tenders — Box of 4", desc: "4 pieces of hot chicken tenders", price: 270, image: kaivuCluckBurger, category: "Sides", tag: "Spicy", rating: 4.8 },
-  { id: "hot-bird-tenders-box-of-6", name: "Hot Bird Tenders — Box of 6", desc: "6 pieces of hot chicken tenders", price: 380, image: kaivuCluckBurger, category: "Sides", tag: "Spicy", rating: 4.9 },
-  { id: "honey-hot-bird-tenders-4", name: "Honey Hot Bird Tenders — 4", desc: "4 pieces of chicken tenders with honey", price: 390, image: kaivuLoadedBowl, category: "Sides", rating: 4.9 },
-  { id: "honey-hot-bird-tenders-6", name: "Honey Hot Bird Tenders — 6", desc: "6 pieces of chicken tenders with honey", price: 520, image: kaivuLoadedBowl, category: "Sides", tag: "Bestseller", rating: 5.0 },
-  { id: "nashville-loaded", name: "Nashville Loaded", desc: "Nashville-style loaded dish", price: 230, image: kaivuLoadedBowl, category: "Sides", tag: "Spicy", rating: 4.7 },
-  { id: "beef-loaded", name: "Beef Loaded", desc: "Beef loaded dish", price: 240, image: kaivuLoadedBowl, category: "Sides", rating: 4.8 },
-  { id: "mac-and-cheese", name: "Mac & Cheese", desc: "Creamy mac & cheese", price: 215, image: kaivuLoadedBowl, category: "Sides", rating: 4.6 },
-  { id: "7up-1ltr", name: "7Up (1 Litre)", desc: "Refreshing 7Up 1 Litre bottle", price: 60, image: kaivuLoadedBowl, category: "Drinks", tag: "Chilled", rating: 4.8 },
-  { id: "belgian-choco-shake", name: "Belgian Chocolate Shake", desc: "Thick, rich & chilled artisanal chocolate shake", price: 120, image: kaivuShake, category: "Drinks", tag: "Bestseller", rating: 4.9 },
-  { id: "classic-cold-coffee", name: "Classic Cold Coffee", desc: "Creamy brewed chilled coffee perfection", price: 95, image: kaivuShake, category: "Drinks", tag: "Popular", rating: 4.8 },
-  { id: "pepsi-can-330", name: "Pepsi Can (330ml)", desc: "Classic ice-cold fizzy refreshment", price: 40, image: kaivuLoadedBowl, category: "Drinks", rating: 4.6 },
-  { id: "mirinda-can-330", name: "Mirinda Orange (330ml)", desc: "Tangy sweet fizzy orange punch", price: 40, image: kaivuLoadedBowl, category: "Drinks", rating: 4.5 },
-  { id: "mountain-dew-330", name: "Mountain Dew (330ml)", desc: "Citrus blast with energizing fizz", price: 40, image: kaivuLoadedBowl, category: "Drinks", rating: 4.6 },
-  { id: "fresh-lime-soda", name: "Fresh Lime Soda", desc: "Sparkling lime refresher with sweet & salt", price: 50, image: kaivuLoadedBowl, category: "Drinks", tag: "Fresh", rating: 4.7 },
-  { id: "mango-passion-smoothie", name: "Mango Passion Smoothie", desc: "Tropical mango blend with passion fruit twist", price: 110, image: kaivuShake, category: "Drinks", tag: "Tropical", rating: 4.9 },
-  { id: "iced-berry-lemonade", name: "Iced Berry Lemonade", desc: "Chilled wild berry lemonade with crushed ice", price: 85, image: kaivuShake, category: "Drinks", tag: "Refreshing", rating: 4.8 },
-  { id: "red-bull-energy", name: "Red Bull Energy (250ml)", desc: "Vitalizes body and mind - 250ml energy can", price: 125, image: kaivuShake, category: "Drinks", tag: "Energy", rating: 4.9 },
-  { id: "sprite-1ltr", name: "Sprite Crisp Lime (1 Litre)", desc: "Crisp, clean & refreshing lemon-lime 1L bottle", price: 60, image: kaivuLoadedBowl, category: "Drinks", tag: "Chilled", rating: 4.8 },
-  { id: "oreo-cookies-shake", name: "Oreo Cookies & Cream Shake", desc: "Blended real Oreos with vanilla ice cream & whipped top", price: 135, image: kaivuShake, category: "Drinks", tag: "Bestseller", rating: 5.0 },
-  
-  // COMBOS (Party Packs for 4, 6, 8 People)
-  { id: "squad-pack-feeds-4", name: "Squad Party Pack (Feeds 4)", desc: "4 Smash Burgers + 2 Loaded Bowls + 4 Cold Beverages. Perfect for 4 people!", price: 899, image: kaivuMacBurger, category: "Combos", tag: "Party Pack", rating: 4.9 },
-  { id: "mega-pack-feeds-6", name: "Mega Party Pack (Feeds 6)", desc: "6 Smash Burgers + 3 Hot Bird Tenders (6pc) + 6 Cold Beverages + Large Fries. Feeds 6 people!", price: 1299, image: kaivuCluckBurger, category: "Combos", tag: "Best Value", rating: 5.0 },
-  { id: "ultimate-feast-feeds-8", name: "Ultimate Feast Pack (Feeds 8)", desc: "8 Smash Burgers + 4 Loaded Bowls + 2 Tenders Boxes + 8 Cold Beverages. Grand feast for 8 people!", price: 1699, image: kaivuLoadedBowl, category: "Combos", tag: "Grand Feast", rating: 5.0 },
-];
+  // ─── BURGERS ─────────────────────────────────────────────────────────────
+  {
+    id: "cluck-riot",
+    name: "Cluck Riot",
+    desc: "Crispy fried chicken tossed in Nashville hot oil, dusted with our own seasoning, and piled high with slaw.",
+    price: 229,
+    image: kaivuCluckBurger,
+    category: "Burgers",
+    tag: "Nashville Hot",
+    rating: 4.9,
+  },
+  {
+    id: "mac-and-rooster",
+    name: "Mac and Rooster",
+    desc: "Crispy Nashville fried chicken stacked with creamy mac and cheese. A comfort-food favourite with a little heat.",
+    price: 269,
+    image: kaivuMacBurger,
+    category: "Burgers",
+    tag: "Comfort",
+    rating: 4.9,
+  },
+  {
+    id: "classic-fried-bird",
+    name: "Classic Fried Bird",
+    desc: "A crispy fried chicken burger made for those who love a classic crunch.",
+    price: 219,
+    image: null,
+    category: "Burgers",
+    tag: "Classic",
+    rating: 4.8,
+  },
+  {
+    id: "og-buff-smash",
+    name: "OG Buff Smash",
+    desc: "A double smashed beef patty burger, built for a rich, satisfying bite.",
+    price: 339,
+    image: null,
+    category: "Burgers",
+    tag: "Double Beef",
+    rating: 5.0,
+  },
+  {
+    id: "classic-smash",
+    name: "Classic Smash",
+    desc: "A single smashed beef patty finished with chimichurri for a fresh, herby kick.",
+    price: 239,
+    image: null,
+    category: "Burgers",
+    tag: "Single Beef",
+    rating: 4.8,
+  },
+  {
+    id: "yolk-me-up",
+    name: "Yolk Me Up",
+    desc: "Double smashed beef patties topped with a fried bullseye egg. Rich, hearty, and seriously satisfying.",
+    price: 369,
+    image: null,
+    category: "Burgers",
+    tag: "Bullseye Egg",
+    rating: 5.0,
+  },
 
-export const categories = ["All", "Burgers", "Burrito", "Sides", "Drinks", "Combos"] as const;
+  // ─── SANDOS ──────────────────────────────────────────────────────────────
+  {
+    id: "beef-patty-melt",
+    name: "Beef Patty Melt",
+    desc: "A hearty beef patty sandwich made for a rich, savoury bite.",
+    price: 219,
+    image: null,
+    category: "Burgers",
+    tag: "Sando",
+    rating: 4.8,
+  },
+  {
+    id: "grilled-chicken-sando",
+    name: "Grilled Chicken Sando",
+    desc: "Juicy grilled chicken served sandwich-style for a satisfying, savoury bite.",
+    price: 229,
+    image: null,
+    category: "Burgers",
+    tag: "Sando",
+    rating: 4.8,
+  },
+
+  // ─── TENDERS ─────────────────────────────────────────────────────────────
+  {
+    id: "normal-tenders",
+    name: "Normal Tenders",
+    desc: "Golden, crispy chicken tenders with a satisfying crunch.",
+    price: 259,
+    image: null,
+    category: "Sides",
+    tag: "Crispy",
+    rating: 4.8,
+    variants: {
+      groupTitle: "Portion",
+      options: [
+        { name: "Box of 4", price: 259 },
+        { name: "Box of 6", price: 359 },
+      ],
+    },
+  },
+  {
+    id: "hot-bird-tenders",
+    name: "Hot Bird Tenders",
+    desc: "Crispy chicken tenders coated in bold Nashville-style heat.",
+    price: 279,
+    image: null,
+    category: "Sides",
+    tag: "Nashville Spicy",
+    rating: 4.9,
+    variants: {
+      groupTitle: "Portion",
+      options: [
+        { name: "Box of 4", price: 279 },
+        { name: "Box of 6", price: 369 },
+      ],
+    },
+  },
+  {
+    id: "honey-bbq-glazed-tenders",
+    name: "Honey BBQ Glazed Tenders",
+    desc: "Crispy chicken tenders coated in a sweet, smoky honey BBQ glaze.",
+    price: 299,
+    image: null,
+    category: "Sides",
+    tag: "Honey BBQ",
+    rating: 5.0,
+    variants: {
+      groupTitle: "Portion",
+      options: [
+        { name: "Box of 4", price: 299 },
+        { name: "Box of 6", price: 399 },
+      ],
+    },
+  },
+
+  // ─── WINGS ───────────────────────────────────────────────────────────────
+  {
+    id: "hot-honey-wings",
+    name: "Hot Honey Wings",
+    desc: "Crispy chicken wings coated in a sweet honey glaze with a spicy kick.",
+    price: 269,
+    image: null,
+    category: "Sides",
+    tag: "Hot Honey",
+    rating: 4.9,
+    variants: {
+      groupTitle: "Portion",
+      options: [
+        { name: "Box of 3", price: 269 },
+        { name: "Box of 5", price: 379 },
+      ],
+    },
+  },
+  {
+    id: "hot-chicken-wings",
+    name: "Hot Chicken Wings",
+    desc: "Crispy chicken wings tossed in bold, fiery Nashville-style seasoning.",
+    price: 249,
+    image: null,
+    category: "Sides",
+    tag: "Fiery",
+    rating: 4.8,
+    variants: {
+      groupTitle: "Portion",
+      options: [
+        { name: "Box of 3", price: 249 },
+        { name: "Box of 5", price: 359 },
+      ],
+    },
+  },
+  {
+    id: "honey-bbq-wings",
+    name: "Honey BBQ Wings",
+    desc: "Crispy chicken wings glazed with a sweet and smoky honey BBQ sauce.",
+    price: 259,
+    image: null,
+    category: "Sides",
+    tag: "Smoky BBQ",
+    rating: 4.9,
+    variants: {
+      groupTitle: "Portion",
+      options: [
+        { name: "Box of 3", price: 259 },
+        { name: "Box of 5", price: 369 },
+      ],
+    },
+  },
+
+  // ─── PASTA / BURRITO / LOADED ────────────────────────────────────────────
+  {
+    id: "mac-and-cheese-with-hot-tender",
+    name: "Mac and Cheese with Hot Tender",
+    desc: "Creamy mac and cheese topped with a crispy hot chicken tender and a drizzle of chipotle mayo.",
+    price: 249,
+    image: null,
+    category: "Burrito",
+    tag: "Special",
+    rating: 4.9,
+  },
+  {
+    id: "nashville-loaded",
+    name: "Nashville Loaded",
+    desc: "Crispy fries loaded with bold Nashville flavour.",
+    price: 239,
+    image: null,
+    category: "Sides",
+    tag: "Loaded Fries",
+    rating: 4.8,
+  },
+
+  // ─── ADD-ONS & DIPS ──────────────────────────────────────────────────────
+  {
+    id: "hot-tender-addon",
+    name: "Hot Tender (Single)",
+    desc: "An extra crispy hot chicken tender.",
+    price: 89,
+    image: null,
+    category: "Sides",
+    tag: "Add-on",
+    rating: 4.8,
+  },
+  {
+    id: "ranch-dip",
+    name: "Ranch Dip (50ml)",
+    desc: "Creamy cooling ranch dip (50 ml).",
+    price: 25,
+    image: null,
+    category: "Sides",
+    tag: "Dip",
+    rating: 4.8,
+  },
+  {
+    id: "hot-honey-dip",
+    name: "Hot Honey Dip (50ml)",
+    desc: "Sweet golden honey infused with a spicy kick (50 ml).",
+    price: 30,
+    image: null,
+    category: "Sides",
+    tag: "Dip",
+    rating: 4.8,
+  },
+  {
+    id: "chipotle-mayo-dip",
+    name: "Chipotle Mayo (50ml)",
+    desc: "Creamy chipotle mayo with a smoky kick (50 ml).",
+    price: 30,
+    image: null,
+    category: "Sides",
+    tag: "Dip",
+    rating: 4.8,
+  },
+  {
+    id: "bread-addon",
+    name: "Bread",
+    desc: "An extra serving of fresh soft toasted bun bread.",
+    price: 5,
+    image: null,
+    category: "Sides",
+    tag: "Add-on",
+    rating: 4.7,
+  },
+
+  // ─── DRINKS ──────────────────────────────────────────────────────────────
+  {
+    id: "cola",
+    name: "Cola",
+    desc: "A chilled, refreshing cola.",
+    price: 20,
+    image: null,
+    category: "Drinks",
+    tag: "Chilled",
+    rating: 4.7,
+  },
+  {
+    id: "sprite",
+    name: "Sprite",
+    desc: "A crisp, refreshing lemon-lime soft drink.",
+    price: 20,
+    image: null,
+    category: "Drinks",
+    tag: "Chilled",
+    rating: 4.7,
+  },
+  {
+    id: "7up",
+    name: "7UP",
+    desc: "A refreshing lemon-lime soft drink.",
+    price: 20,
+    image: null,
+    category: "Drinks",
+    tag: "Chilled",
+    rating: 4.7,
+  },
+  {
+    id: "pepsi",
+    name: "Pepsi",
+    desc: "A chilled, refreshing cola.",
+    price: 20,
+    image: null,
+    category: "Drinks",
+    tag: "Chilled",
+    rating: 4.7,
+  },
+];

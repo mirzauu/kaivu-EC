@@ -40,9 +40,22 @@ export async function POST(request: NextRequest) {
       if (messageData) {
         const key = messageData.key || {};
         const sender = key.cleanedParticipantPn || key.cleanedSenderPn || key.remoteJid;
-        const messageBody = messageData.messageBody || messageData.message?.conversation || "";
+        const messageBody = (messageData.messageBody || messageData.message?.conversation || "").trim();
 
         console.log(`[WASenderAPI Webhook] Incoming message from ${sender}: "${messageBody}"`);
+
+        // Check if message is a 1-tap WhatsApp Login token, e.g. "LOGIN KV-8X29" or "KV-8X29"
+        const loginMatch = messageBody.match(/^(?:LOGIN\s+)?(KV-[A-Z0-9]{4})$/i);
+        if (loginMatch && sender) {
+          const token = loginMatch[1].toUpperCase();
+          try {
+            const { verifyWhatsAppLoginMessage } = await import("@/lib/auth/wa-session");
+            const res = await verifyWhatsAppLoginMessage(sender, token);
+            console.log(`[WhatsApp Auth Webhook] Verification for token ${token} result:`, res.success);
+          } catch (verifyErr) {
+            console.error(`[WhatsApp Auth Webhook] Error verifying token ${token}:`, verifyErr);
+          }
+        }
       }
       return NextResponse.json({ status: "success" }, { status: 200 });
     }

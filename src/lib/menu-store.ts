@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { MenuItem } from "./menu-data";
+import { MenuItem, menu as defaultMenu } from "./menu-data";
 
 type State = {
   menu: MenuItem[];
@@ -8,8 +8,8 @@ type State = {
 };
 
 let state: State = {
-  menu: [],
-  isLoading: true,
+  menu: defaultMenu,
+  isLoading: false,
   error: null,
 };
 

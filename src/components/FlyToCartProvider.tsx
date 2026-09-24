@@ -7,6 +7,8 @@ import { auth } from "@/lib/auth-store";
 
 export type FlyItemOptions = {
   id: string;
+  menuItemId?: string;
+  variantName?: string;
   name: string;
   price: number;
   image?: string;
@@ -121,6 +123,8 @@ export function FlyToCartProvider({ children }: { children: React.ReactNode }) {
       setFlyingItems((prev) => prev.filter((fi) => fi.key !== key));
       cart.add({
         id: itemData.item.id,
+        menuItemId: itemData.item.menuItemId,
+        variantName: itemData.item.variantName,
         name: itemData.item.name,
         price: itemData.item.price,
         image: itemData.item.image || "",

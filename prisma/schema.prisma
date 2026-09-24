@@ -117,6 +117,7 @@ model MenuItem {
   isComingSoon Boolean     @default(false) @map("is_coming_soon")
   isFeatured  Boolean      @default(false) @map("is_featured")
   sortOrder   Int          @default(0) @map("sort_order")
+  variants    Json?
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
 
@@ -417,3 +418,22 @@ model Notification {
   @@index([userId])
   @@map("notifications")
 }
+
+// ─── WHATSAPP LOGIN SESSIONS (One-Tap Reverse WhatsApp Login) ───────────────────
+
+model WhatsAppLoginSession {
+  id           String   @id @default(uuid()) @db.Uuid
+  token        String   @unique
+  phone        String?
+  status       String   @default("PENDING") // PENDING | VERIFIED | EXPIRED
+  referralCode String?  @map("referral_code")
+  userId       String?  @map("user_id") @db.Uuid
+  authToken    String?  @map("auth_token") @db.Text
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([token])
+  @@map("whatsapp_login_sessions")
+}
+

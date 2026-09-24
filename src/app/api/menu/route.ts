@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
       isAvailable: item.isAvailable,
       isComingSoon: Boolean((item as any).isComingSoon) || item.tag?.toLowerCase() === "coming soon",
       isFeatured: Boolean((item as any).isFeatured),
+      variants: item.variants ?? null,
       category: item.category
         ? item.category.charAt(0).toUpperCase() + item.category.slice(1).toLowerCase()
         : "Burgers",

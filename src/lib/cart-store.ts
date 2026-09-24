@@ -2,7 +2,9 @@ import { useSyncExternalStore } from "react";
 import { auth } from "./auth-store";
 
 export type CartItem = {
-  id: string; // maps to menuItemId for frontend compatibility
+  id: string; // unique cart line ID: menuItemId or `${menuItemId}__${variantName}`
+  menuItemId?: string;
+  variantName?: string;
   name: string;
   price: number;
   image: string;
@@ -184,6 +186,19 @@ export const cart = {
     const isFreeItem = item.price === 0 || item.name.toLowerCase().includes("(free)");
     let updated: CartItem[];
 
+    const finalId = item.variantName
+      ? `${item.menuItemId || item.id}__${item.variantName}`
+      : item.id;
+    const finalItem: Omit<CartItem, "qty"> = {
+      ...item,
+      id: finalId,
+      menuItemId: item.menuItemId || item.id,
+      name:
+        item.variantName && !item.name.includes(`(${item.variantName})`)
+          ? `${item.name} (${item.variantName})`
+          : item.name,
+    };
+
     if (isFreeItem) {
       // Find any existing free drink item in cart
       const existingFreeIndex = state.items.findIndex(
@@ -193,21 +208,21 @@ export const cart = {
       if (existingFreeIndex > -1) {
         // Replace existing free drink item with the newly selected free drink (max 1 free drink allowed)
         updated = state.items.map((i, idx) =>
-          idx === existingFreeIndex ? { ...item, qty: 1 } : i
+          idx === existingFreeIndex ? { ...finalItem, qty: 1 } : i
         );
       } else {
         // Add single free drink
-        updated = [...state.items, { ...item, qty: 1 }];
+        updated = [...state.items, { ...finalItem, qty: 1 }];
       }
     } else {
       // Normal paid item addition
-      const existingIndex = state.items.findIndex((i) => i.id === item.id);
+      const existingIndex = state.items.findIndex((i) => i.id === finalId);
       if (existingIndex > -1) {
         updated = state.items.map((i, idx) =>
           idx === existingIndex ? { ...i, qty: i.qty + 1 } : i
         );
       } else {
-        updated = [...state.items, { ...item, qty: 1 }];
+        updated = [...state.items, { ...finalItem, qty: 1 }];
       }
     }
 
@@ -219,7 +234,10 @@ export const cart = {
         await fetch("/api/cart", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ menuItemId: item.id, quantity: 1 }),
+          body: JSON.stringify({
+            menuItemId: finalItem.menuItemId,
+            quantity: 1,
+          }),
         });
       } catch (e) {
         console.error("Failed to sync add to cart", e);
