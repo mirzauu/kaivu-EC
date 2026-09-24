@@ -73,6 +73,7 @@ import {
   Cell,
   Legend
 } from "recharts";
+import { ShopSettingsTab } from "@/components/admin/ShopSettingsTab";
 
 export default function CSuiteRoot() {
   return <AdminConsole />;
@@ -80,7 +81,7 @@ export default function CSuiteRoot() {
 
 // --- ADMIN CONSOLE COMPONENT ---
 function AdminConsole() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "orders" | "menu" | "users" | "settings" | "activity" | "instagram" | "manage-app">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "orders" | "menu" | "users" | "settings" | "activity" | "instagram" | "manage-app" | "shop">("dashboard");
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const orders = useOrders((s) => s.orders);
   const menuItems = useMenu((s) => s.menu);
@@ -101,7 +102,7 @@ function AdminConsole() {
     adminAuth.logout();
   };
 
-  const handleSelectTab = (tab: "dashboard" | "orders" | "menu" | "users" | "settings" | "activity" | "instagram" | "manage-app") => {
+  const handleSelectTab = (tab: "dashboard" | "orders" | "menu" | "users" | "settings" | "activity" | "instagram" | "manage-app" | "shop") => {
     setActiveTab(tab);
     setIsMoreOpen(false);
     // Scroll to top when switching tab
@@ -163,6 +164,17 @@ function AdminConsole() {
           >
             <Store className="h-5 w-5 shrink-0" />
             <span>Manage App</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("shop")}
+            className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all cursor-pointer ${activeTab === "shop"
+                ? "bg-brand text-brand-foreground shadow-lg shadow-brand/15"
+                : "text-[oklch(0.5_0.02_60)] hover:bg-[oklch(0.94_0.018_75)] hover:text-[oklch(0.18_0.02_50)]"
+              }`}
+          >
+            <MapPin className="h-5 w-5 shrink-0" />
+            <span>Shop Settings</span>
           </button>
 
           <button
@@ -324,6 +336,7 @@ function AdminConsole() {
           {activeTab === "users" && <UsersTab />}
           {activeTab === "settings" && <SettingsTab />}
           {activeTab === "activity" && <ActivityTab />}
+          {activeTab === "shop" && <ShopSettingsTab />}
         </main>
       </div>
 
@@ -433,6 +446,22 @@ function AdminConsole() {
                 <div className="text-left flex-1">
                   <p className="font-bold">Instagram Stories</p>
                   <p className="text-[11px] opacity-75 font-normal">Manage top story feed & video highlights</p>
+                </div>
+                <ChevronRight className="h-4 w-4 opacity-50" />
+              </button>
+
+              <button
+                onClick={() => handleSelectTab("shop")}
+                className={`flex w-full items-center gap-3.5 p-3.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer ${
+                  activeTab === "shop"
+                    ? "bg-brand text-brand-foreground shadow-sm"
+                    : "bg-[oklch(0.98_0.005_75)] text-[oklch(0.2_0.02_50)] hover:bg-[oklch(0.94_0.018_75)]"
+                }`}
+              >
+                <MapPin className="h-5 w-5 shrink-0 text-brand" />
+                <div className="text-left flex-1">
+                  <p className="font-bold">Shop Settings</p>
+                  <p className="text-[11px] opacity-75 font-normal">Manage store location and delivery radius</p>
                 </div>
                 <ChevronRight className="h-4 w-4 opacity-50" />
               </button>
@@ -572,6 +601,7 @@ function DashboardTab({ orders, menuItems }: TabProps) {
   const categoryData = useMemo(() => {
     const counts: Record<string, number> = {
       Burgers: 0,
+      Sandos: 0,
       Burrito: 0,
       Sides: 0,
       Drinks: 0,
@@ -581,6 +611,7 @@ function DashboardTab({ orders, menuItems }: TabProps) {
     orders.forEach((o) => {
       const itemLower = (o.item || "").toLowerCase();
       if (itemLower.includes("burrito")) counts.Burrito += 1;
+      else if (itemLower.includes("sando") || itemLower.includes("melt")) counts.Sandos += 1;
       else if (itemLower.includes("burger") || itemLower.includes("smash") || itemLower.includes("cluck")) counts.Burgers += 1;
       else if (itemLower.includes("tender") || itemLower.includes("loaded") || itemLower.includes("fries") || itemLower.includes("sides") || itemLower.includes("mac")) counts.Sides += 1;
       else if (itemLower.includes("drink") || itemLower.includes("shake") || itemLower.includes("beverage")) counts.Drinks += 1;
@@ -1598,7 +1629,7 @@ function MenuTab({ menuItems }: MenuTabProps) {
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [price, setPrice] = useState("");
-  const [category, setCategory] = useState<"Burgers" | "Burrito" | "Sides" | "Drinks" | "Combos">("Burgers");
+  const [category, setCategory] = useState<"Burgers" | "Sandos" | "Burrito" | "Sides" | "Drinks" | "Combos" | "Tenders" | "Wings" | "Pasta" | "Loaded" | "Add-ons">("Burgers");
   const [tag, setTag] = useState("");
   const [isAvailable, setIsAvailable] = useState(true);
   const [isComingSoon, setIsComingSoon] = useState(false);
@@ -1645,9 +1676,10 @@ function MenuTab({ menuItems }: MenuTabProps) {
           ? isItemActive
           : !isItemActive;
 
+      const normalizedItemCat = item.category?.toLowerCase() === "add_ons" ? "add-ons" : item.category?.toLowerCase();
       const matchesCategory =
         selectedCategory === "All" ||
-        item.category?.toLowerCase() === selectedCategory.toLowerCase();
+        normalizedItemCat === selectedCategory.toLowerCase();
 
       const matchesSearch =
         !searchQuery.trim() ||
@@ -1990,10 +2022,16 @@ function MenuTab({ menuItems }: MenuTabProps) {
               >
                 <option value="All">All Categories</option>
                 <option value="Burgers">Burgers</option>
+                <option value="Sandos">Sandos</option>
+                <option value="Tenders">Tenders</option>
+                <option value="Wings">Wings</option>
+                <option value="Pasta">Pasta</option>
+                <option value="Loaded">Loaded</option>
                 <option value="Burrito">Burrito</option>
                 <option value="Sides">Sides</option>
                 <option value="Drinks">Drinks</option>
                 <option value="Combos">Combos</option>
+                <option value="Add-ons">Add-ons</option>
               </select>
             </div>
           </div>
@@ -2276,10 +2314,16 @@ function MenuTab({ menuItems }: MenuTabProps) {
                   className="w-full rounded-xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] px-3 py-2.5 text-sm focus:border-brand focus:outline-none cursor-pointer"
                 >
                   <option value="Burgers">Burgers</option>
+                  <option value="Sandos">Sandos</option>
+                  <option value="Tenders">Tenders</option>
+                  <option value="Wings">Wings</option>
+                  <option value="Pasta">Pasta</option>
+                  <option value="Loaded">Loaded</option>
                   <option value="Burrito">Burrito</option>
                   <option value="Sides">Sides</option>
                   <option value="Drinks">Drinks</option>
                   <option value="Combos">Combos</option>
+                  <option value="Add-ons">Add-ons</option>
                 </select>
               </div>
             </div>

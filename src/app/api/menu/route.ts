@@ -41,7 +41,9 @@ export async function GET(req: NextRequest) {
       isComingSoon: Boolean((item as any).isComingSoon) || item.tag?.toLowerCase() === "coming soon",
       isFeatured: Boolean((item as any).isFeatured),
       variants: item.variants ?? null,
-      category: item.category
+      category: item.category === "ADD_ONS" 
+        ? "Add-ons" 
+        : item.category
         ? item.category.charAt(0).toUpperCase() + item.category.slice(1).toLowerCase()
         : "Burgers",
     }));

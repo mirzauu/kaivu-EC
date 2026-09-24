@@ -9,7 +9,9 @@ import { cart, useCart, getPaidSubtotal, getFreeDrinkItem, getAmountNeededForFre
 import { ordersStore } from "@/lib/orders-store";
 import { auth, useAuth } from "@/lib/auth-store";
 import { usePublicSettings } from "@/lib/public-settings-store";
-import { getImageUrl } from "@/lib/utils";
+import { getImageUrl, calculateDistance } from "@/lib/utils";
+import { useMenu } from "@/lib/menu-store";
+import { menu as defaultMenu } from "@/lib/menu-data";
 
 import { Minus, Plus, X, ShoppingBag, Coins, Loader2, ChevronDown, Banknote, CheckCircle2, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,8 +22,13 @@ export default function Cart() {
   const user = useAuth((s) => s.user);
   const rewardSectionEnabled = usePublicSettings((s) => s.rewardSectionEnabled);
   const storeStatus = usePublicSettings((s) => s.storeStatus);
+  const deliveryConfig = usePublicSettings((s) => s.deliveryConfig);
   const isStoreClosed = !storeStatus?.isOpen;
   
+  const storeMenu = useMenu((s) => s.menu);
+  const allItems = storeMenu && storeMenu.length > 0 ? storeMenu : defaultMenu;
+  const addOns = allItems.filter((item: any) => item.category === "Add-ons" || item.category === "ADD_ONS");
+
   const freeDrinkItem = getFreeDrinkItem(items);
   const amountNeededForFreeDrink = getAmountNeededForFreeDrink(items, 400);
 
@@ -38,8 +45,41 @@ export default function Cart() {
     }
   }, [user]);
 
+  const addr = user?.addresses?.find((a) => a.id === selectedAddressId) || user?.addresses?.[0];
+  const deliveryAddress = addr?.fullAddress || "";
+  let deliveryLat: number | undefined;
+  let deliveryLng: number | undefined;
+
+  if (addr?.lat !== null && addr?.lat !== undefined && addr?.lng !== null && addr?.lng !== undefined) {
+    deliveryLat = Number(addr.lat);
+    deliveryLng = Number(addr.lng);
+  }
+
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  const delivery = 0;
+  
+  // Calculate delivery fee
+  let delivery = 0;
+  let deliveryError = "";
+
+  if (deliveryConfig) {
+    const { shopLat, shopLng, maxDeliveryKm, freeDeliveryKm, perKmCharge, freeDeliveryThreshold, globalDeliveryFee } = deliveryConfig;
+    
+    delivery = subtotal >= freeDeliveryThreshold && freeDeliveryThreshold > 0 ? 0 : globalDeliveryFee;
+
+    if (shopLat !== 0 && shopLng !== 0 && deliveryLat && deliveryLng) {
+      const distanceKm = calculateDistance(shopLat, shopLng, deliveryLat, deliveryLng);
+      
+      if (maxDeliveryKm > 0 && distanceKm > maxDeliveryKm) {
+        deliveryError = `Your address is outside our ${maxDeliveryKm}km delivery range.`;
+      } else if (subtotal < freeDeliveryThreshold || freeDeliveryThreshold === 0) {
+        if (distanceKm <= freeDeliveryKm) {
+          delivery = 0;
+        } else {
+          delivery = (distanceKm - freeDeliveryKm) * perKmCharge;
+        }
+      }
+    }
+  }
 
   // Calculate coin discount if checked: 100 coins = ₹10 off (₹0.10 per coin)
   const maxCoinsToRedeem = user?.kaivuCoins || 0;
@@ -60,6 +100,11 @@ export default function Cart() {
   const handleCheckout = async () => {
     if (items.length === 0 || checkingOut) return;
 
+    if (deliveryError) {
+      alert(deliveryError);
+      return;
+    }
+
     if (freeDrinkItem && amountNeededForFreeDrink > 0) {
       alert(`Add ₹${amountNeededForFreeDrink} more worth of items to unlock your free drink (${freeDrinkItem.name.replace(" (Free)", "")}) with this order!`);
       return;
@@ -70,16 +115,6 @@ export default function Cart() {
       return;
     }
 
-    const addr = user?.addresses?.find((a) => a.id === selectedAddressId) || user?.addresses?.[0];
-    const deliveryAddress = addr?.fullAddress || "";
-    let deliveryLat: number | undefined;
-    let deliveryLng: number | undefined;
-
-    if (addr?.lat !== null && addr?.lat !== undefined && addr?.lng !== null && addr?.lng !== undefined) {
-      deliveryLat = Number(addr.lat);
-      deliveryLng = Number(addr.lng);
-    }
-    
     if (!deliveryAddress.trim()) {
       alert("Please add a delivery address to place your order.");
       router.push("/profile/addresses/new?redirect=/cart");
@@ -108,8 +143,9 @@ export default function Cart() {
         await cart.clear();
         router.push("/orders");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(err.message || "Failed to place order. Please try again.");
     } finally {
       setCheckingOut(false);
     }
@@ -413,6 +449,54 @@ export default function Cart() {
             </AnimatePresence>
           </section>
 
+          {/* Add-ons Upsell Section */}
+          {addOns.length > 0 && (
+            <section className="mx-5 mt-6 pt-4 border-t border-[#E5DDD0]">
+              <h3 className="text-[13px] font-bold text-[#661E28] mb-3 uppercase font-display tracking-wide">Complete your meal</h3>
+              <div className="flex overflow-x-auto gap-3 pb-2 -mx-5 px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {addOns.map(addon => {
+                  const cartItem = items.find(i => i.id === addon.id);
+                  const qty = cartItem ? cartItem.qty : 0;
+                  
+                  return (
+                    <div key={addon.id} className="min-w-[120px] max-w-[140px] flex-shrink-0 bg-white rounded-xl p-3 shadow-xs border border-black/5 relative flex flex-col justify-between">
+                      <div>
+                        <h4 className="text-xs font-bold text-[#1A1A1A] line-clamp-2 leading-tight">{addon.name}</h4>
+                        {addon.tag && <span className="text-[9px] text-[#A0937D] mt-1 block">{addon.tag}</span>}
+                      </div>
+                      <div className="flex items-center justify-between mt-3">
+                        <span className="text-xs font-bold text-[#1A1A1A]">₹{addon.price}</span>
+                        {qty > 0 ? (
+                          <div className="flex items-center gap-1.5 bg-[#1A1A1A] text-white rounded-full px-1.5 py-0.5">
+                            <button onClick={() => cart.remove(addon.id)} className="grid h-4 w-4 place-items-center active:scale-90">
+                              <Minus className="h-2.5 w-2.5" />
+                            </button>
+                            <span className="text-[10px] font-bold">{qty}</span>
+                            <button onClick={() => cart.add({ id: addon.id, name: addon.name, price: Number(addon.price), image: "" })} className="grid h-4 w-4 place-items-center active:scale-90">
+                              <Plus className="h-2.5 w-2.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => cart.add({
+                              id: addon.id,
+                              name: addon.name,
+                              price: Number(addon.price),
+                              image: ""
+                            })}
+                            className="grid h-6 w-6 place-items-center rounded-full bg-[#661E28] text-white active:scale-90 transition-transform shadow-xs"
+                          >
+                            <Plus className="h-3.5 w-3.5 stroke-[3]" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
           {/* Order Summary / Subtotal */}
           <section className="mx-5 mt-4 pt-4 border-t border-[#E5DDD0]">
             <div className="flex items-center justify-between mb-2">
@@ -431,7 +515,25 @@ export default function Cart() {
               </div>
             )}
 
-            {coinDiscount > 0 && (
+            {delivery > 0 && (
+              <div className="flex justify-between text-sm font-semibold text-[#1A1A1A] mb-2">
+                <span className="flex items-center gap-1">
+                  Delivery Fee
+                </span>
+                <span>₹{delivery.toFixed(2)}</span>
+              </div>
+            )}
+            
+            {delivery === 0 && (
+              <div className="flex justify-between text-sm font-semibold text-emerald-600 mb-2">
+                <span className="flex items-center gap-1">
+                  Delivery Fee
+                </span>
+                <span>FREE</span>
+              </div>
+            )}
+
+            {(coinDiscount > 0 || delivery > 0) && (
               <div className="flex justify-between text-base font-bold border-t border-[#E5DDD0] pt-2 mb-2">
                 <span className="text-[#1A1A1A]">Grand Total</span>
                 <span className="text-[#661E28]">₹{total.toFixed(2)}</span>
@@ -441,16 +543,13 @@ export default function Cart() {
             <p className="text-[11px] text-[#1A1A1A]/50 mt-2 leading-relaxed">
               One or more items are priced on confirmation — final total will be shared over WhatsApp.
             </p>
-            <p className="text-[11px] text-[#1A1A1A]/50 mt-1 leading-relaxed">
-              Delivery charge, if any, is confirmed over WhatsApp — not calculated here.
-            </p>
 
             {/* Checkout Button */}
             <button
               onClick={handleCheckout}
-              disabled={checkingOut || isStoreClosed}
+              disabled={checkingOut || isStoreClosed || !!deliveryError}
               className={`mt-5 grid w-full place-items-center rounded-full py-4 text-sm font-bold transition-all shadow-md ${
-                isStoreClosed
+                (isStoreClosed || !!deliveryError)
                   ? "bg-[#E5DDD0] text-[#A0937D] cursor-not-allowed opacity-80"
                   : "bg-[#661E28] text-[#FFF8E7] active:scale-[0.98] cursor-pointer disabled:opacity-70 hover:bg-[#7a2432]"
               }`}
@@ -459,6 +558,8 @@ export default function Cart() {
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : isStoreClosed ? (
                 "Store is Closed for Orders"
+              ) : deliveryError ? (
+                "Address Outside Delivery Range"
               ) : (
                 `Checkout · ₹${total.toFixed(2)}`
               )}

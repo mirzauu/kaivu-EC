@@ -67,7 +67,7 @@ export const PUT = withAdmin(async (req: AuthenticatedRequest, context) => {
         price: body.price !== undefined ? body.price : item.price,
         imageUrl: body.imageUrl !== undefined ? body.imageUrl : (body.image !== undefined ? body.image : item.imageUrl),
         videoUrl: body.videoUrl !== undefined ? body.videoUrl : item.videoUrl,
-        category: body.category ? body.category.toUpperCase() : item.category,
+        category: body.category ? (body.category === "Add-ons" || body.category === "ADD_ONS" ? "ADD_ONS" : body.category.toUpperCase()) : item.category,
         tag: body.tag !== undefined ? body.tag : item.tag,
         rating: body.rating ?? item.rating,
         isAvailable: body.isAvailable !== undefined ? Boolean(body.isAvailable) : item.isAvailable,

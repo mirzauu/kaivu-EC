@@ -131,11 +131,17 @@ model MenuItem {
 
 enum MenuCategory {
   BURGERS
+  SANDOS
+  TENDERS
+  WINGS
+  PASTA
+  LOADED
   BURRITO
   SIDES
   DRINKS
   DESSERTS
   COMBOS
+  ADD_ONS
 }
 
 // ─── CART ──────────────────────────────────────────────────────────────────────

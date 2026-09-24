@@ -271,10 +271,14 @@ export const ordersStore = {
         
         return data.data.order.id;
       }
+      
+      if (!data.success && data.error) {
+        throw new Error(data.error);
+      }
       return null;
-    } catch (e) {
+    } catch (e: any) {
       console.error("Failed to place order", e);
-      return null;
+      throw e;
     }
   },
 

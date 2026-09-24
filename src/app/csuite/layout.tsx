@@ -8,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function CSuiteLayout({ children }: { children: React.ReactNode }) {
-  return <AdminGuard>{children}</AdminGuard>;
+  return (
+    <div className="text-[oklch(0.18_0.02_50)] min-h-screen">
+      <AdminGuard>{children}</AdminGuard>
+    </div>
+  );
 }

@@ -37,7 +37,7 @@ export const POST = withAdmin(async (req: AuthenticatedRequest) => {
         price,
         imageUrl: imageUrl || image || null,
         videoUrl: videoUrl || null,
-        category: category.toUpperCase(),
+        category: category === "Add-ons" || category === "ADD_ONS" ? "ADD_ONS" : category.toUpperCase(),
         tag: tag || null,
         rating: rating || 5.0,
         isComingSoon: Boolean(isComingSoon) || tag?.toLowerCase() === "coming soon",

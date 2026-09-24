@@ -6,6 +6,7 @@ import {
   DEFAULT_NOTIFICATION_BANNERS_CONFIG,
   getStoreStatus,
   DEFAULT_STORE_STATUS,
+  getDeliveryConfig,
 } from "@/lib/services/settings-service";
 
 export const dynamic = "force-dynamic";
@@ -16,10 +17,11 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   try {
-    const [rewardSectionEnabled, notificationBanners, storeStatus] = await Promise.all([
+    const [rewardSectionEnabled, notificationBanners, storeStatus, deliveryConfig] = await Promise.all([
       isRewardSectionEnabled(),
       getNotificationBannersConfig(),
       getStoreStatus(),
+      getDeliveryConfig(),
     ]);
 
     return NextResponse.json(
@@ -27,6 +29,7 @@ export async function GET() {
         rewardSectionEnabled,
         notificationBanners,
         storeStatus,
+        deliveryConfig,
       })
     );
   } catch (error) {
@@ -36,6 +39,7 @@ export async function GET() {
         rewardSectionEnabled: false,
         notificationBanners: DEFAULT_NOTIFICATION_BANNERS_CONFIG,
         storeStatus: DEFAULT_STORE_STATUS,
+        deliveryConfig: null,
       })
     );
   }

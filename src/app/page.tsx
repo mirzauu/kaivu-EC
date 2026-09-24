@@ -7,8 +7,12 @@ import {
   ShoppingBag,
   X,
   HelpCircle,
+  MapPin,
+  ChevronRight,
+  RefreshCw,
 } from "lucide-react";
 import { MobileShell } from "@/components/MobileShell";
+import { StoreStatusAlert } from "@/components/StoreStatusAlert";
 import { HelpSupportModal } from "@/components/HelpSupportModal";
 import { ProductDetailModal } from "@/components/ProductDetailModal";
 import { useMenu } from "@/lib/menu-store";
@@ -20,16 +24,19 @@ import { useLocation, locationStore } from "@/lib/location-store";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFlyToCart } from "@/components/FlyToCartProvider";
 import { KaivuBrandLogo } from "@/components/KaivuBrandLogo";
-import { getImageUrl } from "@/lib/utils";
+import { getImageUrl, calculateDistance } from "@/lib/utils";
+import { usePublicSettings } from "@/lib/public-settings-store";
 
 import { menu as defaultMenu, MenuItem } from "@/lib/menu-data";
 
 const topCategories = [
   { name: "Burgers", emoji: "🍔" },
-  { name: "Burrito", emoji: "🌯" },
-  { name: "Sides", emoji: "🍟" },
+  { name: "Sandos", emoji: "🥪" },
+  { name: "Tenders", emoji: "🍗" },
+  { name: "Wings", emoji: "🐓" },
+  { name: "Pasta", emoji: "🍝" },
+  { name: "Loaded", emoji: "🍟" },
   { name: "Drinks", emoji: "🥤" },
-  { name: "Combos", emoji: "🎁" },
 ];
 
 const emptySubscribe = () => () => {};
@@ -40,6 +47,12 @@ export default function Home() {
 
   const user = useAuth((s) => s.user);
   const { flyToCart } = useFlyToCart();
+  
+  const deliveryConfig = usePublicSettings((s) => s.deliveryConfig);
+  const currentCoords = useLocation((s) => s.coords);
+  const currentAddress = useLocation((s) => s.address);
+  const locationIsLoading = useLocation((s) => s.isLoading);
+  const locationError = useLocation((s) => s.error);
 
   const itemCount = useCart((s) => s.itemCount);
   const items = useCart((s) => s.items);
@@ -131,14 +144,55 @@ export default function Home() {
     }
   };
 
+  let displayAddressText = "Add delivery address";
+  let isOutOfRange = false;
+
+  const savedAddress = user?.addresses?.length ? (user.addresses.find((a: any) => a.isDefault) || user.addresses[0]) : null;
+  const activeLat = currentCoords?.lat ?? (savedAddress ? Number(savedAddress.lat) : null);
+  const activeLng = currentCoords?.lng ?? (savedAddress ? Number(savedAddress.lng) : null);
+
+  if (activeLat != null && activeLng != null && !isNaN(activeLat) && !isNaN(activeLng) && deliveryConfig?.shopLat) {
+    const dist = calculateDistance(deliveryConfig.shopLat, deliveryConfig.shopLng, activeLat, activeLng);
+    if (deliveryConfig.maxDeliveryKm > 0 && dist > deliveryConfig.maxDeliveryKm) {
+      isOutOfRange = true;
+      displayAddressText = "we not delivery your location comming soon";
+    } else if (currentCoords && currentAddress) {
+      displayAddressText = `Delivering to: ${currentAddress}`;
+    } else if (savedAddress) {
+      displayAddressText = `Delivering to: ${savedAddress.label}`;
+    } else {
+      displayAddressText = "Location found";
+    }
+  } else if (locationIsLoading) {
+    displayAddressText = "Locating...";
+  } else if (locationError) {
+    if (savedAddress) {
+      displayAddressText = `Delivering to: ${savedAddress.label}`;
+    } else {
+      displayAddressText = "Location blocked (click to allow)";
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#111111] text-[#FFF8E7] pb-20">
       <main className="mx-auto max-w-md bg-[#111111] min-h-screen">
-        {/* Top Header Bar — Sticky on Scroll */}
-        <div className="sticky top-0 z-50 bg-[#161616] px-4 py-3 flex items-center justify-between border-b border-white/10">
-          <span className="text-base font-bold text-white tracking-wide font-display uppercase">
-            Kaivu — Order Online
-          </span>
+        {/* Top Header Bar & Category Nav — Sticky on Scroll */}
+        <div className="sticky top-0 z-50 flex flex-col w-full shadow-md">
+          <StoreStatusAlert />
+          <div className="bg-[#161616] px-4 py-3 flex items-center justify-between border-b border-white/10">
+            <div className="flex flex-col">
+              <span className="text-base font-bold text-white tracking-wide font-display uppercase leading-tight">
+                Kaivu — Order Online
+              </span>
+              
+              <button onClick={() => locationStore.refresh()} className="flex items-center gap-1.5 mt-0.5 text-[11px] text-white/60 hover:text-white transition-colors w-max cursor-pointer text-left">
+                <MapPin className={`h-3 w-3 shrink-0 ${isOutOfRange ? "text-red-400" : ""}`} />
+                <span className={`truncate max-w-[220px] sm:max-w-[280px] font-medium ${isOutOfRange ? "text-red-400 font-bold" : ""}`}>
+                  {displayAddressText}
+                </span>
+                <RefreshCw className={`h-3 w-3 opacity-50 shrink-0 ${locationIsLoading ? "animate-spin opacity-100" : ""}`} />
+              </button>
+            </div>
 
           <div className="flex items-center gap-2">
             <button
@@ -161,11 +215,11 @@ export default function Home() {
               )}
             </Link>
           </div>
-        </div>
+          </div>
 
-        {/* Category Navigation Bar — Sticky below Header on Scroll */}
-        <nav className="sticky top-[57px] z-40 bg-white py-2.5 px-3 shadow-md border-b border-black/5">
-          <ul className="flex items-center justify-between gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {/* Category Navigation Bar */}
+          <nav className="bg-white py-2.5 px-3 border-b border-black/5">
+            <ul className="flex items-center justify-between gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {topCategories.map((cat) => {
               const isSelected = activeCategory === cat.name;
               return (
@@ -207,6 +261,7 @@ export default function Home() {
             })}
           </ul>
         </nav>
+        </div>
 
         {/* Quote Banner — Full Width Rich Maroon */}
         <div className="bg-[#66101F] px-5 py-4 border-y border-[#4A0A15]">

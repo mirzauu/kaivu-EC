@@ -102,7 +102,7 @@ export function AdminLogin() {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full rounded-2xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] px-4 py-3 text-sm focus:border-brand focus:outline-none transition-colors"
+              className="w-full rounded-2xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] px-4 py-3 text-sm text-[oklch(0.18_0.02_50)] focus:border-brand focus:outline-none transition-colors"
               placeholder="e.g. admin"
             />
           </div>
@@ -116,7 +116,7 @@ export function AdminLogin() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-2xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] px-4 py-3 text-sm focus:border-brand focus:outline-none transition-colors"
+              className="w-full rounded-2xl border border-[oklch(0.9_0.015_75)] bg-[oklch(0.98_0.005_75)] px-4 py-3 text-sm text-[oklch(0.18_0.02_50)] focus:border-brand focus:outline-none transition-colors"
               placeholder="••••••••"
             />
           </div>

@@ -233,3 +233,33 @@ export async function updateStoreStatus(status: Partial<StoreStatus>): Promise<S
   return getStoreStatus();
 }
 
+export type DeliveryConfig = {
+  shopLat: number;
+  shopLng: number;
+  maxDeliveryKm: number;
+  freeDeliveryKm: number;
+  perKmCharge: number;
+  freeDeliveryThreshold: number;
+  globalDeliveryFee: number;
+};
+
+export async function getDeliveryConfig(): Promise<DeliveryConfig> {
+  const shopLat = await getSettingNumber("shop_lat", 0);
+  const shopLng = await getSettingNumber("shop_lng", 0);
+  const maxDeliveryKm = await getSettingNumber("max_delivery_km", 0);
+  const freeDeliveryKm = await getSettingNumber("free_delivery_km", 0);
+  const perKmCharge = await getSettingNumber("per_km_charge", 0);
+  const freeDeliveryThreshold = await getSettingNumber("free_delivery_threshold", 0);
+  const globalDeliveryFee = await getSettingNumber("delivery_fee", 0);
+
+  return {
+    shopLat,
+    shopLng,
+    maxDeliveryKm,
+    freeDeliveryKm,
+    perKmCharge,
+    freeDeliveryThreshold,
+    globalDeliveryFee,
+  };
+}
+

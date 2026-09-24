@@ -17,6 +17,7 @@ type PublicSettingsState = {
   rewardSectionEnabled: boolean;
   notificationBanners: NotificationBannersConfig;
   storeStatus: StoreStatus;
+  deliveryConfig: any | null;
   isLoading: boolean;
 };
 
@@ -24,6 +25,7 @@ let state: PublicSettingsState = {
   rewardSectionEnabled: false,
   notificationBanners: DEFAULT_NOTIFICATION_BANNERS_CONFIG,
   storeStatus: DEFAULT_STORE_STATUS,
+  deliveryConfig: null,
   isLoading: true,
 };
 
@@ -43,6 +45,7 @@ async function loadPublicSettings() {
         rewardSectionEnabled: Boolean(data.data.rewardSectionEnabled),
         notificationBanners: data.data.notificationBanners || DEFAULT_NOTIFICATION_BANNERS_CONFIG,
         storeStatus: data.data.storeStatus || DEFAULT_STORE_STATUS,
+        deliveryConfig: data.data.deliveryConfig || null,
         isLoading: false,
       };
     } else {
@@ -102,6 +105,7 @@ export function usePublicSettings<T>(selector: (state: PublicSettingsState) => T
         rewardSectionEnabled: false,
         notificationBanners: DEFAULT_NOTIFICATION_BANNERS_CONFIG,
         storeStatus: DEFAULT_STORE_STATUS,
+        deliveryConfig: null,
         isLoading: false,
       })
   );

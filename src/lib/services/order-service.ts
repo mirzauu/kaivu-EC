@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { generateOrderNumber } from "@/lib/api-utils";
 import { getSettingNumber } from "@/lib/services/settings-service";
 import { Prisma } from "@prisma/client";
+import { calculateDistance } from "@/lib/utils";
 
 /**
  * Place a new order from the user's cart.
@@ -64,10 +65,33 @@ export async function placeOrder(params: {
       0
     );
 
-    // Get dynamic delivery fee and threshold from settings (default 0 for free delivery)
-    const deliveryFeeAmount = await getSettingNumber("delivery_fee", 0);
+    // Get dynamic delivery fee and threshold from settings
     const freeDeliveryThreshold = await getSettingNumber("free_delivery_threshold", 0);
-    const deliveryFee = subtotal >= freeDeliveryThreshold ? 0 : deliveryFeeAmount;
+    const globalDeliveryFee = await getSettingNumber("delivery_fee", 0);
+    let deliveryFee = subtotal >= freeDeliveryThreshold ? 0 : globalDeliveryFee;
+
+    // Advanced Distance-Based Logic
+    const shopLat = await getSettingNumber("shop_lat", 0);
+    const shopLng = await getSettingNumber("shop_lng", 0);
+    const maxDeliveryKm = await getSettingNumber("max_delivery_km", 0);
+    const freeDeliveryKm = await getSettingNumber("free_delivery_km", 0);
+    const perKmCharge = await getSettingNumber("per_km_charge", 0);
+
+    if (shopLat !== 0 && shopLng !== 0 && deliveryLat && deliveryLng) {
+      const distanceKm = calculateDistance(shopLat, shopLng, deliveryLat, deliveryLng);
+      
+      if (maxDeliveryKm > 0 && distanceKm > maxDeliveryKm) {
+        throw new Error("We are not delivering there.");
+      }
+
+      if (subtotal < freeDeliveryThreshold || freeDeliveryThreshold === 0) {
+        if (distanceKm <= freeDeliveryKm) {
+          deliveryFee = 0;
+        } else {
+          deliveryFee = (distanceKm - freeDeliveryKm) * perKmCharge;
+        }
+      }
+    }
 
     // 3. Handle coin redemption
     let coinDiscount = 0;
