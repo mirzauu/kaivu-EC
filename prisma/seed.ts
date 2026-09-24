@@ -152,7 +152,7 @@ async function main() {
       tag: "Nashville Hot",
       rating: 4.9,
       sortOrder: 1,
-      variants: null
+      variants: undefined
     },
     {
       slug: "mac-and-rooster",
@@ -164,7 +164,7 @@ async function main() {
       tag: "Comfort",
       rating: 4.9,
       sortOrder: 2,
-      variants: null
+      variants: undefined
     },
     {
       slug: "classic-fried-bird",
@@ -176,7 +176,7 @@ async function main() {
       tag: "Classic",
       rating: 4.8,
       sortOrder: 3,
-      variants: null
+      variants: undefined
     },
     {
       slug: "og-buff-smash",
@@ -188,7 +188,7 @@ async function main() {
       tag: "Double Beef",
       rating: 5,
       sortOrder: 4,
-      variants: null
+      variants: undefined
     },
     {
       slug: "classic-smash",
@@ -200,7 +200,7 @@ async function main() {
       tag: "Single Beef",
       rating: 4.8,
       sortOrder: 5,
-      variants: null
+      variants: undefined
     },
     {
       slug: "yolk-me-up",
@@ -212,7 +212,7 @@ async function main() {
       tag: "Bullseye Egg",
       rating: 5,
       sortOrder: 6,
-      variants: null
+      variants: undefined
     },
     {
       slug: "beef-patty-melt",
@@ -224,7 +224,7 @@ async function main() {
       tag: "Sando",
       rating: 4.8,
       sortOrder: 7,
-      variants: null
+      variants: undefined
     },
     {
       slug: "grilled-chicken-sando",
@@ -236,7 +236,7 @@ async function main() {
       tag: "Sando",
       rating: 4.8,
       sortOrder: 8,
-      variants: null
+      variants: undefined
     },
     {
       slug: "normal-tenders",
@@ -320,7 +320,7 @@ async function main() {
       tag: "Special",
       rating: 4.9,
       sortOrder: 15,
-      variants: null
+      variants: undefined
     },
     {
       slug: "nashville-loaded",
@@ -332,7 +332,7 @@ async function main() {
       tag: "Loaded Fries",
       rating: 4.8,
       sortOrder: 16,
-      variants: null
+      variants: undefined
     },
     {
       slug: "hot-tender-addon",
@@ -344,7 +344,7 @@ async function main() {
       tag: "Add-on",
       rating: 4.8,
       sortOrder: 17,
-      variants: null
+      variants: undefined
     },
     {
       slug: "ranch-dip",
@@ -356,7 +356,7 @@ async function main() {
       tag: "50 ml",
       rating: 4.8,
       sortOrder: 18,
-      variants: null
+      variants: undefined
     },
     {
       slug: "hot-honey-dip",
@@ -368,7 +368,7 @@ async function main() {
       tag: "50 ml",
       rating: 4.8,
       sortOrder: 19,
-      variants: null
+      variants: undefined
     },
     {
       slug: "chipotle-mayo-dip",
@@ -380,7 +380,7 @@ async function main() {
       tag: "50 ml",
       rating: 4.8,
       sortOrder: 20,
-      variants: null
+      variants: undefined
     },
     {
       slug: "bread-addon",
@@ -392,7 +392,7 @@ async function main() {
       tag: "Add-on",
       rating: 4.7,
       sortOrder: 21,
-      variants: null
+      variants: undefined
     },
     {
       slug: "cola",
@@ -404,7 +404,7 @@ async function main() {
       tag: "Chilled",
       rating: 4.7,
       sortOrder: 22,
-      variants: null
+      variants: undefined
     },
     {
       slug: "sprite",
@@ -416,7 +416,7 @@ async function main() {
       tag: "Chilled",
       rating: 4.7,
       sortOrder: 23,
-      variants: null
+      variants: undefined
     },
     {
       slug: "7up",
@@ -428,7 +428,7 @@ async function main() {
       tag: "Chilled",
       rating: 4.7,
       sortOrder: 24,
-      variants: null
+      variants: undefined
     },
     {
       slug: "pepsi",
@@ -440,7 +440,7 @@ async function main() {
       tag: "Chilled",
       rating: 4.7,
       sortOrder: 25,
-      variants: null
+      variants: undefined
     }
   ];
 
