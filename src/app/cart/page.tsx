@@ -355,7 +355,7 @@ export default function Cart() {
                         className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[#661E28] px-4 py-2 text-xs font-bold text-[#FFF8E7] shadow-xs hover:bg-[#7a2432] active:scale-95 transition-all cursor-pointer"
                       >
                         <Store className="h-3.5 w-3.5" />
-                        <span>Switch to Store Pickup (Free)</span>
+                        <span>Switch to Store Pickup</span>
                       </button>
                     </div>
                   </div>
@@ -452,9 +452,6 @@ export default function Cart() {
                     </p>
                   </div>
                 </div>
-                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-black uppercase text-emerald-800 tracking-wider">
-                  FREE
-                </span>
               </div>
 
               {pickupConfig?.spotAddress ? (
