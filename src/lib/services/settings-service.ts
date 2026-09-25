@@ -263,3 +263,33 @@ export async function getDeliveryConfig(): Promise<DeliveryConfig> {
   };
 }
 
+export type PickupConfig = {
+  enabled: boolean;
+  spotName: string;
+  spotAddress: string;
+  lat: number;
+  lng: number;
+  instructions: string;
+};
+
+export async function getPickupConfig(): Promise<PickupConfig> {
+  const enabled = await getSettingBoolean("pickup_enabled", true);
+  const spotName = await getSettingString("pickup_spot_name", "Kaivu Counter");
+  const spotAddress = await getSettingString("pickup_spot_address", "");
+  const lat = await getSettingNumber("pickup_spot_lat", 0);
+  const lng = await getSettingNumber("pickup_spot_lng", 0);
+  const instructions = await getSettingString(
+    "pickup_instructions",
+    "Show your order ID at the counter to collect your order."
+  );
+
+  return {
+    enabled,
+    spotName,
+    spotAddress,
+    lat,
+    lng,
+    instructions,
+  };
+}
+

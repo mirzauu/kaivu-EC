@@ -13,11 +13,30 @@ export const DEFAULT_STORE_STATUS: StoreStatus = {
   closedMessage: "We are currently closed for orders. Check back soon!",
 };
 
+export type PickupConfig = {
+  enabled: boolean;
+  spotName: string;
+  spotAddress: string;
+  lat: number;
+  lng: number;
+  instructions: string;
+};
+
+export const DEFAULT_PICKUP_CONFIG: PickupConfig = {
+  enabled: true,
+  spotName: "Kaivu Counter",
+  spotAddress: "",
+  lat: 0,
+  lng: 0,
+  instructions: "Show your order ID at the counter to collect your order.",
+};
+
 type PublicSettingsState = {
   rewardSectionEnabled: boolean;
   notificationBanners: NotificationBannersConfig;
   storeStatus: StoreStatus;
   deliveryConfig: any | null;
+  pickupConfig: PickupConfig | null;
   isLoading: boolean;
 };
 
@@ -26,6 +45,7 @@ let state: PublicSettingsState = {
   notificationBanners: DEFAULT_NOTIFICATION_BANNERS_CONFIG,
   storeStatus: DEFAULT_STORE_STATUS,
   deliveryConfig: null,
+  pickupConfig: null,
   isLoading: true,
 };
 
@@ -46,6 +66,7 @@ async function loadPublicSettings() {
         notificationBanners: data.data.notificationBanners || DEFAULT_NOTIFICATION_BANNERS_CONFIG,
         storeStatus: data.data.storeStatus || DEFAULT_STORE_STATUS,
         deliveryConfig: data.data.deliveryConfig || null,
+        pickupConfig: data.data.pickupConfig || DEFAULT_PICKUP_CONFIG,
         isLoading: false,
       };
     } else {
@@ -106,6 +127,7 @@ export function usePublicSettings<T>(selector: (state: PublicSettingsState) => T
         notificationBanners: DEFAULT_NOTIFICATION_BANNERS_CONFIG,
         storeStatus: DEFAULT_STORE_STATUS,
         deliveryConfig: null,
+        pickupConfig: DEFAULT_PICKUP_CONFIG,
         isLoading: false,
       })
   );

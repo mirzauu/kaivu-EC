@@ -1089,10 +1089,19 @@ function OrdersTab({ orders }: OrdersTabProps) {
                           className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl object-cover shrink-0"
                         />
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <h4 className="font-bold text-xs sm:text-sm text-[oklch(0.18_0.02_50)] truncate">
                               {o.id}
                             </h4>
+                            {o.orderType === "PICKUP" ? (
+                              <span className="rounded-md bg-purple-100 text-purple-800 text-[10px] font-black uppercase px-1.5 py-0.5 tracking-wider">
+                                🛍️ Pickup
+                              </span>
+                            ) : (
+                              <span className="rounded-md bg-amber-100 text-amber-900 text-[10px] font-bold uppercase px-1.5 py-0.5 tracking-wider">
+                                🚚 Delivery
+                              </span>
+                            )}
                             <span className="text-[10px] text-[oklch(0.5_0.02_60)] shrink-0">
                               {o.date}
                             </span>
@@ -1104,11 +1113,15 @@ function OrdersTab({ orders }: OrdersTabProps) {
                       </div>
 
                       <div className="flex items-center justify-between sm:justify-end gap-2.5 sm:gap-3 pl-8 sm:pl-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-[oklch(0.95_0.01_75)] shrink-0">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand">
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                          o.orderType === "PICKUP" && o.stage === 2
+                            ? "bg-purple-100 text-purple-800"
+                            : "bg-brand/10 text-brand"
+                        }`}>
                           <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
                           {o.stage === 0 && "Confirmed"}
                           {o.stage === 1 && "Cooking"}
-                          {o.stage === 2 && "On the way"}
+                          {o.stage === 2 && (o.orderType === "PICKUP" ? "Ready for Pickup" : "On the way")}
                         </span>
 
                         <div className="flex items-center gap-2">
@@ -1288,11 +1301,18 @@ function OrdersTab({ orders }: OrdersTabProps) {
                   <div className="flex items-start gap-3">
                     <MapPin className="h-5 w-5 text-brand shrink-0 mt-0.5" />
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider mb-1">
-                        Delivery Address
-                      </p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-xs font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">
+                          {selectedOrder.orderType === "PICKUP" ? "Store Pickup Spot" : "Delivery Address"}
+                        </p>
+                        {selectedOrder.orderType === "PICKUP" && (
+                          <span className="rounded bg-purple-100 text-purple-800 text-[9px] font-black uppercase px-1.5 py-0.5">
+                            Self Collect
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-[oklch(0.5_0.02_60)] leading-snug break-words">
-                        {selectedOrder.deliveryAddress}
+                        {selectedOrder.pickupSpotAddress || selectedOrder.deliveryAddress}
                       </p>
                     </div>
                   </div>
@@ -1301,7 +1321,7 @@ function OrdersTab({ orders }: OrdersTabProps) {
                       selectedOrder.deliveryLat && selectedOrder.deliveryLng
                         ? `https://maps.google.com/?q=${selectedOrder.deliveryLat},${selectedOrder.deliveryLng}`
                         : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                            selectedOrder.deliveryAddress
+                            selectedOrder.pickupSpotAddress || selectedOrder.deliveryAddress
                           )}`
                     }
                     target="_blank"
@@ -1309,7 +1329,7 @@ function OrdersTab({ orders }: OrdersTabProps) {
                     className="flex w-full items-center justify-center gap-2 rounded-full border border-[oklch(0.9_0.015_75)] bg-white py-2.5 text-xs font-bold text-[oklch(0.18_0.02_50)] hover:bg-[oklch(0.98_0.005_75)] transition-colors"
                   >
                     <ExternalLink className="h-4 w-4" />
-                    Navigate with Google Maps
+                    {selectedOrder.orderType === "PICKUP" ? "View Pickup Spot on Google Maps" : "Navigate with Google Maps"}
                   </a>
                 </div>
               )}
@@ -1352,7 +1372,9 @@ function OrdersTab({ orders }: OrdersTabProps) {
                       }`}
                     >
                       <TrendingUp className="h-4 w-4" />
-                      <span className="text-[9px] font-bold mt-1 uppercase">In Transit</span>
+                      <span className="text-[9px] font-bold mt-1 uppercase">
+                        {selectedOrder.orderType === "PICKUP" ? "Ready" : "In Transit"}
+                      </span>
                     </div>
                   </div>
 
@@ -1370,7 +1392,9 @@ function OrdersTab({ orders }: OrdersTabProps) {
                         onClick={() => handleAdvanceStage(selectedOrder.id, 1)}
                         className="w-full rounded-full bg-primary py-2.5 text-xs font-bold text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer"
                       >
-                        Advance to "On The Way"
+                        {selectedOrder.orderType === "PICKUP"
+                          ? 'Advance to "Ready for Pickup"'
+                          : 'Advance to "On The Way"'}
                       </button>
                     )}
                     {selectedOrder.stage === 2 && (
@@ -1378,7 +1402,9 @@ function OrdersTab({ orders }: OrdersTabProps) {
                         onClick={() => handleAdvanceStage(selectedOrder.id, 2)}
                         className="w-full rounded-full bg-emerald-600 py-2.5 text-xs font-bold text-white hover:bg-emerald-700 transition-colors cursor-pointer"
                       >
-                        Mark as "Delivered"
+                        {selectedOrder.orderType === "PICKUP"
+                          ? 'Mark as "Picked Up / Completed"'
+                          : 'Mark as "Delivered"'}
                       </button>
                     )}
                   </div>
@@ -1475,11 +1501,18 @@ function OrdersTab({ orders }: OrdersTabProps) {
                 <div className="flex items-start gap-2.5">
                   <MapPin className="h-4 w-4 text-brand shrink-0 mt-0.5" />
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider mb-0.5">
-                      Delivery Address
-                    </p>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <p className="text-[10px] font-bold text-[oklch(0.18_0.02_50)] uppercase tracking-wider">
+                        {selectedOrder.orderType === "PICKUP" ? "Store Pickup Spot" : "Delivery Address"}
+                      </p>
+                      {selectedOrder.orderType === "PICKUP" && (
+                        <span className="rounded bg-purple-100 text-purple-800 text-[9px] font-black uppercase px-1.5 py-0.5">
+                          Self Collect
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-[oklch(0.5_0.02_60)] leading-snug break-words">
-                      {selectedOrder.deliveryAddress}
+                      {selectedOrder.pickupSpotAddress || selectedOrder.deliveryAddress}
                     </p>
                   </div>
                 </div>
@@ -1488,7 +1521,7 @@ function OrdersTab({ orders }: OrdersTabProps) {
                     selectedOrder.deliveryLat && selectedOrder.deliveryLng
                       ? `https://maps.google.com/?q=${selectedOrder.deliveryLat},${selectedOrder.deliveryLng}`
                       : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                          selectedOrder.deliveryAddress
+                          selectedOrder.pickupSpotAddress || selectedOrder.deliveryAddress
                         )}`
                   }
                   target="_blank"
@@ -1496,7 +1529,7 @@ function OrdersTab({ orders }: OrdersTabProps) {
                   className="flex w-full items-center justify-center gap-2 rounded-full border border-[oklch(0.9_0.015_75)] bg-white py-2 text-xs font-bold text-[oklch(0.18_0.02_50)] hover:bg-[oklch(0.98_0.005_75)] transition-colors"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
-                  Navigate with Google Maps
+                  {selectedOrder.orderType === "PICKUP" ? "View Pickup Spot on Google Maps" : "Navigate with Google Maps"}
                 </a>
               </div>
             )}
@@ -1539,7 +1572,9 @@ function OrdersTab({ orders }: OrdersTabProps) {
                     }`}
                   >
                     <TrendingUp className="h-4 w-4" />
-                    <span className="text-[9px] font-bold mt-1 uppercase">In Transit</span>
+                    <span className="text-[9px] font-bold mt-1 uppercase">
+                      {selectedOrder.orderType === "PICKUP" ? "Ready" : "In Transit"}
+                    </span>
                   </div>
                 </div>
 
@@ -1557,7 +1592,9 @@ function OrdersTab({ orders }: OrdersTabProps) {
                       onClick={() => handleAdvanceStage(selectedOrder.id, 1)}
                       className="w-full rounded-full bg-primary py-3 text-xs font-bold text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer"
                     >
-                      Advance to "On The Way"
+                      {selectedOrder.orderType === "PICKUP"
+                        ? 'Advance to "Ready for Pickup"'
+                        : 'Advance to "On The Way"'}
                     </button>
                   )}
                   {selectedOrder.stage === 2 && (
@@ -1565,7 +1602,9 @@ function OrdersTab({ orders }: OrdersTabProps) {
                       onClick={() => handleAdvanceStage(selectedOrder.id, 2)}
                       className="w-full rounded-full bg-emerald-600 py-3 text-xs font-bold text-white hover:bg-emerald-700 transition-colors cursor-pointer"
                     >
-                      Mark as "Delivered"
+                      {selectedOrder.orderType === "PICKUP"
+                        ? 'Mark as "Picked Up / Completed"'
+                        : 'Mark as "Delivered"'}
                     </button>
                   )}
                 </div>

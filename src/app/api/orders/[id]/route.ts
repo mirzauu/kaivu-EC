@@ -87,6 +87,7 @@ export const PATCH = withAdmin(
         "PENDING",
         "CONFIRMED",
         "COOKING",
+        "READY_FOR_PICKUP",
         "ON_THE_WAY",
         "DELIVERED",
         "CANCELLED",
@@ -116,6 +117,53 @@ export const PATCH = withAdmin(
         where: { id: order.id },
         data: updateData,
       });
+
+      // Send Push Notifications if status is READY_FOR_PICKUP
+      if (status === "READY_FOR_PICKUP") {
+        try {
+          const subscriptions = await db.pushSubscription.findMany({
+            where: { userId: order.userId },
+          });
+
+          // Save notification to DB for history tracking
+          await db.notification.create({
+            data: {
+              userId: order.userId,
+              title: "Order Ready for Pickup! 🛍️",
+              body: `Your order ${order.orderNumber} is hot and ready at the counter!`,
+            },
+          });
+
+          if (subscriptions.length > 0) {
+            const payload = JSON.stringify({
+              title: "Order Ready for Pickup! 🛍️",
+              body: `Your order ${order.orderNumber} is hot and ready at the counter!`,
+              icon: "https://res.cloudinary.com/gohdctov/image/upload/v1787242046/kaivu/menu/burger-classic.jpg",
+              data: { url: `/orders/${order.orderNumber}` },
+            });
+
+            await Promise.all(
+              subscriptions.map((sub) =>
+                webpush
+                  .sendNotification(
+                    {
+                      endpoint: sub.endpoint,
+                      keys: { p256dh: sub.p256dh, auth: sub.auth },
+                    },
+                    payload
+                  )
+                  .catch((err) => {
+                    if (err.statusCode === 410 || err.statusCode === 404) {
+                      db.pushSubscription.delete({ where: { id: sub.id } }).catch(() => {});
+                    }
+                  })
+              )
+            );
+          }
+        } catch (e) {
+          console.error("Failed to send push notification for ready for pickup:", e);
+        }
+      }
 
       // Send Push Notifications if status is ON_THE_WAY
       if (status === "ON_THE_WAY") {

@@ -2,6 +2,9 @@ import { sendWhatsAppTextMessage } from "./client";
 
 export interface OrderNotificationPayload {
   orderNumber: string;
+  orderType?: string | null;
+  pickupSpotName?: string | null;
+  pickupSpotAddress?: string | null;
   total: number | string;
   paymentMethod?: string | null;
   deliveryAddress?: string | null;
@@ -37,13 +40,23 @@ export async function notifyNewOrderToWhatsAppGroup(payload: OrderNotificationPa
       ? `👤 *Customer:* ${payload.customer.name || "Customer"} (${payload.customer.phone || "N/A"})\n`
       : "";
 
+    const isPickup = payload.orderType === "PICKUP";
+    const typeLine = isPickup
+      ? `🛍️ *Type:* STORE PICKUP (Self Collect)`
+      : `🛵 *Type:* HOME DELIVERY`;
+
     const lat = payload.deliveryLat != null ? Number(payload.deliveryLat) : null;
     const lng = payload.deliveryLng != null ? Number(payload.deliveryLng) : null;
     const hasGps = lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng);
     const googleMapsUrl = hasGps ? `https://maps.google.com/?q=${lat},${lng}` : null;
 
     let addressDetails = "";
-    if (payload.deliveryAddress) {
+    if (isPickup) {
+      addressDetails = `🛍️ *Fulfillment:* Store Pickup\n📍 *Pickup Spot:* ${payload.pickupSpotName || "Kaivu Counter"}${payload.pickupSpotAddress ? ` - ${payload.pickupSpotAddress}` : ""}\n`;
+      if (googleMapsUrl) {
+        addressDetails += `🗺️ *Pickup Location Map:*\n${googleMapsUrl}\n`;
+      }
+    } else if (payload.deliveryAddress) {
       addressDetails = `📍 *Delivery Address:*\n${payload.deliveryAddress}\n`;
       if (googleMapsUrl) {
         addressDetails += `🗺️ *Google Maps Link:*\n${googleMapsUrl}\n`;
@@ -62,6 +75,7 @@ export async function notifyNewOrderToWhatsAppGroup(payload: OrderNotificationPa
       `🍔 *NEW KAIVU ORDER RECEIVED!*`,
       `━━━━━━━━━━━━━━━━━━━━`,
       `📋 *Order ID:* #${payload.orderNumber}`,
+      typeLine,
       customerDetails.trim(),
       `💰 *Total Amount:* ₹${Number(payload.total).toFixed(2)} (${payload.paymentMethod || "WALLET"})`,
       `━━━━━━━━━━━━━━━━━━━━`,

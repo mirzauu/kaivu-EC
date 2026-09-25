@@ -13,7 +13,22 @@ import { getImageUrl, calculateDistance } from "@/lib/utils";
 import { useMenu } from "@/lib/menu-store";
 import { menu as defaultMenu } from "@/lib/menu-data";
 
-import { Minus, Plus, X, ShoppingBag, Coins, Loader2, ChevronDown, Banknote, CheckCircle2, AlertTriangle } from "lucide-react";
+import {
+  Minus,
+  Plus,
+  X,
+  ShoppingBag,
+  Coins,
+  Loader2,
+  ChevronDown,
+  Banknote,
+  CheckCircle2,
+  AlertTriangle,
+  Store,
+  Truck,
+  MapPin,
+  ExternalLink,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Cart() {
@@ -23,6 +38,7 @@ export default function Cart() {
   const rewardSectionEnabled = usePublicSettings((s) => s.rewardSectionEnabled);
   const storeStatus = usePublicSettings((s) => s.storeStatus);
   const deliveryConfig = usePublicSettings((s) => s.deliveryConfig);
+  const pickupConfig = usePublicSettings((s) => s.pickupConfig);
   const isStoreClosed = !storeStatus?.isOpen;
   
   const storeMenu = useMenu((s) => s.menu);
@@ -32,6 +48,7 @@ export default function Cart() {
   const freeDrinkItem = getFreeDrinkItem(items);
   const amountNeededForFreeDrink = getAmountNeededForFreeDrink(items, 400);
 
+  const [fulfillmentType, setFulfillmentType] = useState<"DELIVERY" | "PICKUP">("DELIVERY");
   const [isSummaryOpen, setIsSummaryOpen] = useState(true);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [redeemCoins, setRedeemCoins] = useState(false);
@@ -61,7 +78,7 @@ export default function Cart() {
   let delivery = 0;
   let deliveryError = "";
 
-  if (deliveryConfig) {
+  if (fulfillmentType === "DELIVERY" && deliveryConfig) {
     const { shopLat, shopLng, maxDeliveryKm, freeDeliveryKm, perKmCharge, freeDeliveryThreshold, globalDeliveryFee } = deliveryConfig;
     
     delivery = subtotal >= freeDeliveryThreshold && freeDeliveryThreshold > 0 ? 0 : globalDeliveryFee;
@@ -79,6 +96,9 @@ export default function Cart() {
         }
       }
     }
+  } else if (fulfillmentType === "PICKUP") {
+    delivery = 0;
+    deliveryError = "";
   }
 
   // Calculate coin discount if checked: 100 coins = ₹10 off (₹0.10 per coin)
@@ -100,7 +120,7 @@ export default function Cart() {
   const handleCheckout = async () => {
     if (items.length === 0 || checkingOut) return;
 
-    if (deliveryError) {
+    if (fulfillmentType === "DELIVERY" && deliveryError) {
       alert(deliveryError);
       return;
     }
@@ -115,25 +135,41 @@ export default function Cart() {
       return;
     }
 
-    if (!deliveryAddress.trim()) {
-      alert("Please add a delivery address to place your order.");
-      router.push("/profile/addresses/new?redirect=/cart");
-      return;
-    }
+    if (fulfillmentType === "DELIVERY") {
+      if (!deliveryAddress.trim()) {
+        alert("Please add a delivery address to place your order.");
+        router.push("/profile/addresses/new?redirect=/cart");
+        return;
+      }
 
-    if (deliveryLat === undefined || deliveryLng === undefined || isNaN(deliveryLat) || isNaN(deliveryLng)) {
-      alert("Your selected delivery address is missing GPS coordinates. Please add a GPS-verified address to place your order.");
-      router.push("/profile/addresses/new?redirect=/cart");
-      return;
+      if (deliveryLat === undefined || deliveryLng === undefined || isNaN(deliveryLat) || isNaN(deliveryLng)) {
+        alert("Your selected delivery address is missing GPS coordinates. Please add a GPS-verified address to place your order.");
+        router.push("/profile/addresses/new?redirect=/cart");
+        return;
+      }
     }
     
     setCheckingOut(true);
     
     try {
       const orderId = await ordersStore.addOrder({
-        deliveryAddress,
-        deliveryLat,
-        deliveryLng,
+        orderType: fulfillmentType,
+        pickupSpotName: fulfillmentType === "PICKUP" ? (pickupConfig?.spotName || "Kaivu Shop Counter") : undefined,
+        pickupSpotAddress: fulfillmentType === "PICKUP" ? (pickupConfig?.spotAddress || "") : undefined,
+        deliveryAddress:
+          fulfillmentType === "PICKUP"
+            ? (pickupConfig?.spotAddress
+                ? `Store Pickup: ${pickupConfig.spotName} - ${pickupConfig.spotAddress}`
+                : "Store Pickup")
+            : deliveryAddress,
+        deliveryLat:
+          fulfillmentType === "PICKUP"
+            ? (pickupConfig?.lat ? Number(pickupConfig.lat) : undefined)
+            : deliveryLat,
+        deliveryLng:
+          fulfillmentType === "PICKUP"
+            ? (pickupConfig?.lng ? Number(pickupConfig.lng) : undefined)
+            : deliveryLng,
         paymentMethod: "COD",
         redeemCoins: coinsRedeemedCount,
       });
@@ -269,77 +305,204 @@ export default function Cart() {
             ))}
           </ul>
 
-          {/* Delivery Address Section */}
-          <section className="mx-5 mt-4 rounded-2xl bg-white p-5 border border-[#E5DDD0]">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold text-[#1A1A1A] font-display uppercase">Delivery Address</h3>
-              {user && user.addresses && user.addresses.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => router.push("/profile/addresses/new?redirect=/cart")}
-                  className="text-xs font-bold text-[#661E28] hover:underline"
-                >
-                  + Add New
-                </button>
-              )}
-            </div>
+          {/* Fulfillment Mode Toggle (Delivery vs Pickup) */}
+          <section className="mx-5 mt-4">
+            <div className="grid grid-cols-2 p-1.5 rounded-2xl bg-white border border-[#E5DDD0] shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setFulfillmentType("DELIVERY")}
+                className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  fulfillmentType === "DELIVERY"
+                    ? "bg-[#661E28] text-[#FFF8E7] shadow-xs"
+                    : "text-[#1A1A1A]/70 hover:text-[#1A1A1A] hover:bg-[#FFF8F0]"
+                }`}
+              >
+                <Truck className="h-4 w-4" />
+                <span>Delivery</span>
+              </button>
 
-            {user?.addresses && user.addresses.length > 0 ? (
-              <div className="space-y-2">
-                <div className="relative">
-                  <select
-                    value={selectedAddressId}
-                    onChange={(e) => setSelectedAddressId(e.target.value)}
-                    className="w-full appearance-none rounded-xl border border-[#E5DDD0] bg-[#FFF8F0] p-3 pr-10 text-sm font-semibold text-[#1A1A1A] focus:border-[#661E28] focus:outline-none focus:ring-1 focus:ring-[#661E28] cursor-pointer"
-                  >
-                    {user.addresses.map((addr) => (
-                      <option key={addr.id} value={addr.id}>
-                        {addr.lat != null && addr.lng != null ? "📍 " : "⚠️ "}{addr.label} {addr.name ? `(${addr.name})` : ""} - {addr.fullAddress}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#A0937D]">
-                    <ChevronDown className="h-4 w-4" />
+              <button
+                type="button"
+                onClick={() => setFulfillmentType("PICKUP")}
+                className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  fulfillmentType === "PICKUP"
+                    ? "bg-[#661E28] text-[#FFF8E7] shadow-xs"
+                    : "text-[#1A1A1A]/70 hover:text-[#1A1A1A] hover:bg-[#FFF8F0]"
+                }`}
+              >
+                <Store className="h-4 w-4" />
+                <span>Store Pickup</span>
+              </button>
+            </div>
+          </section>
+
+          {/* Delivery Address Section (When Delivery Selected) */}
+          {fulfillmentType === "DELIVERY" && (
+            <>
+              {/* Out of range notification & 1-click switch to pickup */}
+              {deliveryError && (
+                <div className="mx-5 mt-4 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-900 shadow-xs animate-fadeIn">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-xs font-extrabold text-amber-950">Outside Delivery Area</p>
+                      <p className="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
+                        {deliveryError} You can still enjoy Kaivu by picking up your order directly from our shop counter!
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setFulfillmentType("PICKUP")}
+                        className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[#661E28] px-4 py-2 text-xs font-bold text-[#FFF8E7] shadow-xs hover:bg-[#7a2432] active:scale-95 transition-all cursor-pointer"
+                      >
+                        <Store className="h-3.5 w-3.5" />
+                        <span>Switch to Store Pickup (Free)</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
+              )}
 
-                {(() => {
-                  const activeAddr = user.addresses.find((a) => a.id === selectedAddressId) || user.addresses[0];
-                  return activeAddr?.lat != null && activeAddr?.lng != null ? (
-                    <p className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                      <span>GPS location verified for direct delivery</span>
-                    </p>
-                  ) : (
-                    <p className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-600">
-                      <AlertTriangle className="h-3.5 w-3.5" />
-                      <span>Address missing GPS. Please click &apos;+ Add New&apos; above.</span>
-                    </p>
-                  );
-                })()}
-              </div>
-            ) : (
-              <div>
-                {user ? (
-                  <button
-                    type="button"
-                    onClick={() => router.push("/profile/addresses/new?redirect=/cart")}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#661E28]/10 border border-[#661E28]/20 py-3.5 text-sm font-bold text-[#661E28] transition-colors hover:bg-[#661E28]/15 cursor-pointer"
-                  >
-                    + Add Delivery Address
-                  </button>
+              <section className="mx-5 mt-4 rounded-2xl bg-white p-5 border border-[#E5DDD0]">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold text-[#1A1A1A] font-display uppercase">Delivery Address</h3>
+                  {user && user.addresses && user.addresses.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => router.push("/profile/addresses/new?redirect=/cart")}
+                      className="text-xs font-bold text-[#661E28] hover:underline"
+                    >
+                      + Add New
+                    </button>
+                  )}
+                </div>
+
+                {user?.addresses && user.addresses.length > 0 ? (
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <select
+                        value={selectedAddressId}
+                        onChange={(e) => setSelectedAddressId(e.target.value)}
+                        className="w-full appearance-none rounded-xl border border-[#E5DDD0] bg-[#FFF8F0] p-3 pr-10 text-sm font-semibold text-[#1A1A1A] focus:border-[#661E28] focus:outline-none focus:ring-1 focus:ring-[#661E28] cursor-pointer"
+                      >
+                        {user.addresses.map((addr) => (
+                          <option key={addr.id} value={addr.id}>
+                            {addr.lat != null && addr.lng != null ? "📍 " : "⚠️ "}{addr.label} {addr.name ? `(${addr.name})` : ""} - {addr.fullAddress}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#A0937D]">
+                        <ChevronDown className="h-4 w-4" />
+                      </div>
+                    </div>
+
+                    {(() => {
+                      const activeAddr = user.addresses.find((a) => a.id === selectedAddressId) || user.addresses[0];
+                      return activeAddr?.lat != null && activeAddr?.lng != null ? (
+                        <p className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          <span>GPS location verified for direct delivery</span>
+                        </p>
+                      ) : (
+                        <p className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-600">
+                          <AlertTriangle className="h-3.5 w-3.5" />
+                          <span>Address missing GPS. Please click &apos;+ Add New&apos; above.</span>
+                        </p>
+                      );
+                    })()}
+                  </div>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => auth.openModal()}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#661E28]/10 border border-[#661E28]/20 py-3.5 text-sm font-bold text-[#661E28] transition-colors hover:bg-[#661E28]/15 cursor-pointer"
-                  >
-                    Log in to select delivery address
-                  </button>
+                  <div>
+                    {user ? (
+                      <button
+                        type="button"
+                        onClick={() => router.push("/profile/addresses/new?redirect=/cart")}
+                        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#661E28]/10 border border-[#661E28]/20 py-3.5 text-sm font-bold text-[#661E28] transition-colors hover:bg-[#661E28]/15 cursor-pointer"
+                      >
+                        + Add Delivery Address
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => auth.openModal()}
+                        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#661E28]/10 border border-[#661E28]/20 py-3.5 text-sm font-bold text-[#661E28] transition-colors hover:bg-[#661E28]/15 cursor-pointer"
+                      >
+                        Log in to select delivery address
+                      </button>
+                    )}
+                  </div>
                 )}
+              </section>
+            </>
+          )}
+
+          {/* Pickup Spot Details Section (When Pickup Selected) */}
+          {fulfillmentType === "PICKUP" && (
+            <section className="mx-5 mt-4 rounded-2xl bg-white p-5 border border-[#E5DDD0] space-y-3.5 shadow-2xs animate-fadeIn">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-purple-100 text-purple-700">
+                    <Store className="h-4.5 w-4.5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-[#1A1A1A] font-display uppercase tracking-wide">
+                      {pickupConfig?.spotName || "Kaivu Shop Counter"}
+                    </h3>
+                    <p className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
+                      <CheckCircle2 className="h-3 w-3" /> Ready in ~15-20 mins · No delivery fee
+                    </p>
+                  </div>
+                </div>
+                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-black uppercase text-emerald-800 tracking-wider">
+                  FREE
+                </span>
               </div>
-            )}
-          </section>
+
+              {pickupConfig?.spotAddress ? (
+                <div className="rounded-xl bg-[#FFF8F0] p-3 text-xs text-[#1A1A1A]/80 border border-[#E5DDD0]">
+                  <p className="font-semibold text-[#1A1A1A] flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5 text-[#661E28] shrink-0" />
+                    <span>Pickup Spot Location:</span>
+                  </p>
+                  <p className="mt-1 pl-5 text-[11px] text-[#1A1A1A]/70 leading-relaxed">
+                    {pickupConfig.spotAddress}
+                  </p>
+                </div>
+              ) : null}
+
+              {pickupConfig?.instructions ? (
+                <p className="text-[11px] text-[#1A1A1A]/70 bg-slate-50 px-3.5 py-2.5 rounded-xl border border-slate-200 leading-relaxed">
+                  💡 <span className="font-medium">{pickupConfig.instructions}</span>
+                </p>
+              ) : null}
+
+              {/* Embedded Google Map Preview */}
+              {pickupConfig?.lat && pickupConfig?.lng && Number(pickupConfig.lat) !== 0 ? (
+                <div className="space-y-2 pt-1">
+                  <div className="overflow-hidden rounded-xl border border-[#E5DDD0] h-48 w-full bg-slate-100 relative shadow-inner">
+                    <iframe
+                      title="Kaivu Pickup Spot Location"
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      loading="lazy"
+                      src={`https://maps.google.com/maps?q=${pickupConfig.lat},${pickupConfig.lng}&hl=en&z=15&output=embed`}
+                    />
+                  </div>
+
+                  <a
+                    href={`https://maps.google.com/?q=${pickupConfig.lat},${pickupConfig.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full rounded-xl bg-slate-100 hover:bg-slate-200 py-2.5 text-xs font-bold text-[#1A1A1A] transition-colors"
+                  >
+                    <MapPin className="h-3.5 w-3.5 text-[#661E28]" />
+                    <span>Open in Google Maps / Get Directions</span>
+                    <ExternalLink className="h-3 w-3 text-[#1A1A1A]/50" />
+                  </a>
+                </div>
+              ) : null}
+            </section>
+          )}
 
           {/* Kaivu Coins Rewards Section */}
           {user && user.kaivuCoins > 0 ? (
@@ -515,16 +678,21 @@ export default function Cart() {
               </div>
             )}
 
-            {delivery > 0 && (
+            {fulfillmentType === "PICKUP" ? (
+              <div className="flex justify-between text-sm font-semibold text-emerald-600 mb-2">
+                <span className="flex items-center gap-1">
+                  Delivery Fee (Store Pickup)
+                </span>
+                <span>FREE</span>
+              </div>
+            ) : delivery > 0 ? (
               <div className="flex justify-between text-sm font-semibold text-[#1A1A1A] mb-2">
                 <span className="flex items-center gap-1">
                   Delivery Fee
                 </span>
                 <span>₹{delivery.toFixed(2)}</span>
               </div>
-            )}
-            
-            {delivery === 0 && (
+            ) : (
               <div className="flex justify-between text-sm font-semibold text-emerald-600 mb-2">
                 <span className="flex items-center gap-1">
                   Delivery Fee
@@ -547,9 +715,13 @@ export default function Cart() {
             {/* Checkout Button */}
             <button
               onClick={handleCheckout}
-              disabled={checkingOut || isStoreClosed || !!deliveryError}
+              disabled={
+                checkingOut ||
+                isStoreClosed ||
+                (fulfillmentType === "DELIVERY" && !!deliveryError)
+              }
               className={`mt-5 grid w-full place-items-center rounded-full py-4 text-sm font-bold transition-all shadow-md ${
-                (isStoreClosed || !!deliveryError)
+                isStoreClosed || (fulfillmentType === "DELIVERY" && !!deliveryError)
                   ? "bg-[#E5DDD0] text-[#A0937D] cursor-not-allowed opacity-80"
                   : "bg-[#661E28] text-[#FFF8E7] active:scale-[0.98] cursor-pointer disabled:opacity-70 hover:bg-[#7a2432]"
               }`}
@@ -558,8 +730,10 @@ export default function Cart() {
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : isStoreClosed ? (
                 "Store is Closed for Orders"
-              ) : deliveryError ? (
+              ) : fulfillmentType === "DELIVERY" && deliveryError ? (
                 "Address Outside Delivery Range"
+              ) : fulfillmentType === "PICKUP" ? (
+                `Checkout (Store Pickup) · ₹${total.toFixed(2)}`
               ) : (
                 `Checkout · ₹${total.toFixed(2)}`
               )}

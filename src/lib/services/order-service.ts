@@ -17,13 +17,26 @@ import { calculateDistance } from "@/lib/utils";
  */
 export async function placeOrder(params: {
   userId: string;
+  orderType?: "DELIVERY" | "PICKUP";
+  pickupSpotName?: string;
+  pickupSpotAddress?: string;
   deliveryAddress?: string;
   deliveryLat?: number;
   deliveryLng?: number;
   paymentMethod?: string;
   redeemCoins?: number; // number of coins to redeem
 }) {
-  const { userId, deliveryAddress, deliveryLat, deliveryLng, paymentMethod, redeemCoins = 0 } = params;
+  const {
+    userId,
+    orderType = "DELIVERY",
+    pickupSpotName,
+    pickupSpotAddress,
+    deliveryAddress,
+    deliveryLat,
+    deliveryLng,
+    paymentMethod,
+    redeemCoins = 0,
+  } = params;
 
   return db.$transaction(async (tx) => {
     // 1. Fetch cart items with menu item details
@@ -66,31 +79,38 @@ export async function placeOrder(params: {
     );
 
     // Get dynamic delivery fee and threshold from settings
-    const freeDeliveryThreshold = await getSettingNumber("free_delivery_threshold", 0);
-    const globalDeliveryFee = await getSettingNumber("delivery_fee", 0);
-    let deliveryFee = subtotal >= freeDeliveryThreshold ? 0 : globalDeliveryFee;
+    let deliveryFee = 0;
 
-    // Advanced Distance-Based Logic
-    const shopLat = await getSettingNumber("shop_lat", 0);
-    const shopLng = await getSettingNumber("shop_lng", 0);
-    const maxDeliveryKm = await getSettingNumber("max_delivery_km", 0);
-    const freeDeliveryKm = await getSettingNumber("free_delivery_km", 0);
-    const perKmCharge = await getSettingNumber("per_km_charge", 0);
+    if (orderType === "DELIVERY") {
+      const freeDeliveryThreshold = await getSettingNumber("free_delivery_threshold", 0);
+      const globalDeliveryFee = await getSettingNumber("delivery_fee", 0);
+      deliveryFee = subtotal >= freeDeliveryThreshold ? 0 : globalDeliveryFee;
 
-    if (shopLat !== 0 && shopLng !== 0 && deliveryLat && deliveryLng) {
-      const distanceKm = calculateDistance(shopLat, shopLng, deliveryLat, deliveryLng);
-      
-      if (maxDeliveryKm > 0 && distanceKm > maxDeliveryKm) {
-        throw new Error("We are not delivering there.");
-      }
+      // Advanced Distance-Based Logic
+      const shopLat = await getSettingNumber("shop_lat", 0);
+      const shopLng = await getSettingNumber("shop_lng", 0);
+      const maxDeliveryKm = await getSettingNumber("max_delivery_km", 0);
+      const freeDeliveryKm = await getSettingNumber("free_delivery_km", 0);
+      const perKmCharge = await getSettingNumber("per_km_charge", 0);
 
-      if (subtotal < freeDeliveryThreshold || freeDeliveryThreshold === 0) {
-        if (distanceKm <= freeDeliveryKm) {
-          deliveryFee = 0;
-        } else {
-          deliveryFee = (distanceKm - freeDeliveryKm) * perKmCharge;
+      if (shopLat !== 0 && shopLng !== 0 && deliveryLat && deliveryLng) {
+        const distanceKm = calculateDistance(shopLat, shopLng, deliveryLat, deliveryLng);
+        
+        if (maxDeliveryKm > 0 && distanceKm > maxDeliveryKm) {
+          throw new Error("We are not delivering there.");
+        }
+
+        if (subtotal < freeDeliveryThreshold || freeDeliveryThreshold === 0) {
+          if (distanceKm <= freeDeliveryKm) {
+            deliveryFee = 0;
+          } else {
+            deliveryFee = (distanceKm - freeDeliveryKm) * perKmCharge;
+          }
         }
       }
+    } else {
+      // Store Pickup is always free and has no delivery radius restriction
+      deliveryFee = 0;
     }
 
     // 3. Handle coin redemption
@@ -153,7 +173,7 @@ export async function placeOrder(params: {
     let finalLat = deliveryLat;
     let finalLng = deliveryLng;
 
-    if (deliveryAddress && (finalLat === undefined || finalLat === null || finalLng === undefined || finalLng === null)) {
+    if (orderType === "DELIVERY" && deliveryAddress && (finalLat === undefined || finalLat === null || finalLng === undefined || finalLng === null)) {
       const savedAddr = await tx.address.findFirst({
         where: { userId, fullAddress: deliveryAddress },
       });
@@ -164,6 +184,13 @@ export async function placeOrder(params: {
     }
 
     // Create order
+    const finalAddress =
+      orderType === "PICKUP"
+        ? pickupSpotAddress
+          ? `Store Pickup: ${pickupSpotName || "Counter"} - ${pickupSpotAddress}`
+          : "Store Pickup"
+        : deliveryAddress;
+
     const order = await tx.order.create({
       data: {
         orderNumber,
@@ -175,15 +202,18 @@ export async function placeOrder(params: {
         coinsEarned,
         coinsRedeemed: actualCoinsRedeemed,
         status: "CONFIRMED",
-        deliveryAddress,
+        orderType,
+        pickupSpotName: orderType === "PICKUP" ? (pickupSpotName || null) : null,
+        pickupSpotAddress: orderType === "PICKUP" ? (pickupSpotAddress || null) : null,
+        deliveryAddress: finalAddress,
         deliveryLat: finalLat ? new Prisma.Decimal(finalLat) : null,
         deliveryLng: finalLng ? new Prisma.Decimal(finalLng) : null,
         paymentMethod: paymentMethod || "WALLET",
-        estimatedDelivery: new Date(Date.now() + 30 * 60 * 1000), // 30 min ETA
+        estimatedDelivery: new Date(Date.now() + (orderType === "PICKUP" ? 20 : 30) * 60 * 1000),
       },
     });
 
-    if (deliveryAddress) {
+    if (orderType !== "PICKUP" && deliveryAddress) {
       const existingAddress = await tx.address.findFirst({
         where: { userId, fullAddress: deliveryAddress },
       });

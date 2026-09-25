@@ -291,8 +291,8 @@ export default function Home() {
                     group.items.map((item) => {
                       const isComingSoon =
                         Boolean(item.isComingSoon) ||
-                        item.tag?.toLowerCase() === "coming soon" ||
-                        !item.image;
+                        item.tag?.toLowerCase() === "coming soon";
+                      const hasPhoto = Boolean(item.image);
                       const imageSrc = getImageUrl(item.image);
 
                       return (
@@ -303,7 +303,7 @@ export default function Home() {
                         >
                           {/* Top Card: Photo or Striped Photo Coming Soon */}
                           <div className="relative aspect-square w-full bg-[#1A1A1A] overflow-hidden">
-                            {isComingSoon ? (
+                            {!hasPhoto ? (
                               <div className="h-full w-full bg-maroon-stripes flex items-center justify-center p-3 text-center">
                                 <span className="text-[#FFF8E7] text-xs font-black uppercase tracking-wider font-display leading-tight drop-shadow-md">
                                   PHOTO COMING SOON
@@ -364,17 +364,11 @@ export default function Home() {
                               </button>
                             </div>
 
-                            {/* Price / Market Price */}
+                            {/* Price */}
                             <div className="mt-2 pt-1">
-                              {isComingSoon || item.price === 0 ? (
-                                <span className="text-xs font-black text-[#111111] font-display uppercase tracking-wider">
-                                  MARKET PRICE
-                                </span>
-                              ) : (
-                                <span className="text-xs font-black text-[#111111] font-display uppercase tracking-wider">
-                                  ₹{item.price}
-                                </span>
-                              )}
+                              <span className="text-xs font-black text-[#111111] font-display uppercase tracking-wider">
+                                ₹{item.price}
+                              </span>
                             </div>
                           </div>
                         </div>

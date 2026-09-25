@@ -45,6 +45,9 @@ export const GET = withAuth(async (req: AuthenticatedRequest) => {
 
     const serialized = orders.map((order) => ({
       ...order,
+      orderType: (order as any).orderType || "DELIVERY",
+      pickupSpotName: (order as any).pickupSpotName || null,
+      pickupSpotAddress: (order as any).pickupSpotAddress || null,
       subtotal: Number(order.subtotal),
       deliveryFee: Number(order.deliveryFee),
       discount: Number(order.discount),
@@ -82,7 +85,19 @@ export const GET = withAuth(async (req: AuthenticatedRequest) => {
 export const POST = withAuth(async (req: AuthenticatedRequest) => {
   try {
     const body = await req.json().catch(() => ({}));
-    const { deliveryAddress, deliveryLat, deliveryLng, paymentMethod, redeemCoins } = body as {
+    const {
+      orderType,
+      pickupSpotName,
+      pickupSpotAddress,
+      deliveryAddress,
+      deliveryLat,
+      deliveryLng,
+      paymentMethod,
+      redeemCoins,
+    } = body as {
+      orderType?: "DELIVERY" | "PICKUP";
+      pickupSpotName?: string;
+      pickupSpotAddress?: string;
       deliveryAddress?: string;
       deliveryLat?: number;
       deliveryLng?: number;
@@ -92,6 +107,9 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
 
     const result = await placeOrder({
       userId: req.user.userId,
+      orderType,
+      pickupSpotName,
+      pickupSpotAddress,
       deliveryAddress,
       deliveryLat,
       deliveryLng,
@@ -109,6 +127,9 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
 
         await notifyNewOrderToWhatsAppGroup({
           orderNumber: result.order.orderNumber,
+          orderType: (result.order as any).orderType || orderType,
+          pickupSpotName: (result.order as any).pickupSpotName || pickupSpotName,
+          pickupSpotAddress: (result.order as any).pickupSpotAddress || pickupSpotAddress,
           total: result.order.total,
           paymentMethod: result.order.paymentMethod,
           deliveryAddress: result.order.deliveryAddress,

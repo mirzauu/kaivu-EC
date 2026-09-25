@@ -7,6 +7,7 @@ import {
   getStoreStatus,
   DEFAULT_STORE_STATUS,
   getDeliveryConfig,
+  getPickupConfig,
 } from "@/lib/services/settings-service";
 
 export const dynamic = "force-dynamic";
@@ -17,12 +18,14 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   try {
-    const [rewardSectionEnabled, notificationBanners, storeStatus, deliveryConfig] = await Promise.all([
-      isRewardSectionEnabled(),
-      getNotificationBannersConfig(),
-      getStoreStatus(),
-      getDeliveryConfig(),
-    ]);
+    const [rewardSectionEnabled, notificationBanners, storeStatus, deliveryConfig, pickupConfig] =
+      await Promise.all([
+        isRewardSectionEnabled(),
+        getNotificationBannersConfig(),
+        getStoreStatus(),
+        getDeliveryConfig(),
+        getPickupConfig(),
+      ]);
 
     return NextResponse.json(
       apiSuccess({
@@ -30,6 +33,7 @@ export async function GET() {
         notificationBanners,
         storeStatus,
         deliveryConfig,
+        pickupConfig,
       })
     );
   } catch (error) {
@@ -40,7 +44,16 @@ export async function GET() {
         notificationBanners: DEFAULT_NOTIFICATION_BANNERS_CONFIG,
         storeStatus: DEFAULT_STORE_STATUS,
         deliveryConfig: null,
+        pickupConfig: {
+          enabled: true,
+          spotName: "Kaivu Counter",
+          spotAddress: "",
+          lat: 0,
+          lng: 0,
+          instructions: "Show your order ID at the counter to collect your order.",
+        },
       })
     );
   }
 }
+

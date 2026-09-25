@@ -10,7 +10,7 @@ export type Order = {
   item: string;
   image: string;
   eta: string;
-  stage: number; // 0: Confirmed, 1: Cooking, 2: On the way, 3: Delivered, -1: Cancelled
+  stage: number; // 0: Confirmed, 1: Cooking, 2: On the way / Ready for pickup, 3: Delivered / Picked up, -1: Cancelled
   price: number; // Final total amount paid
   subtotal?: number;
   deliveryFee?: number;
@@ -19,6 +19,9 @@ export type Order = {
   coinsEarned?: number;
   date: string;
   status: "active" | "delivered" | "cancelled";
+  orderType?: "DELIVERY" | "PICKUP";
+  pickupSpotName?: string;
+  pickupSpotAddress?: string;
   deliveryAddress?: string;
   deliveryLat?: number;
   deliveryLng?: number;
@@ -88,16 +91,42 @@ function triggerOnTheWayNotification(order: Order) {
   });
 }
 
+function triggerReadyForPickupNotification(order: Order) {
+  playNotificationSound();
+  toast.success(`Order ${order.id} is ready for pickup! 🛍️`, {
+    description: `Your order is packed and ready at the counter. Please collect your order!`,
+    duration: 8000,
+  });
+}
+
 /**
  * Format a status & stage for the UI.
  */
-function mapStatusAndStage(status: string): { status: "active" | "delivered" | "cancelled"; stage: number; eta: string } {
+function mapStatusAndStage(status: string, orderType: string = "DELIVERY"): { status: "active" | "delivered" | "cancelled"; stage: number; eta: string } {
+  if (orderType === "PICKUP") {
+    switch (status) {
+      case "PENDING":
+      case "CONFIRMED":
+        return { status: "active", stage: 0, eta: "20 min" };
+      case "COOKING":
+        return { status: "active", stage: 1, eta: "10 min" };
+      case "READY_FOR_PICKUP":
+        return { status: "active", stage: 2, eta: "Ready for pickup!" };
+      case "DELIVERED":
+        return { status: "delivered", stage: 3, eta: "0 min" };
+      case "CANCELLED":
+      default:
+        return { status: "cancelled", stage: -1, eta: "0 min" };
+    }
+  }
+
   switch (status) {
     case "PENDING":
     case "CONFIRMED":
       return { status: "active", stage: 0, eta: "25 min" };
     case "COOKING":
       return { status: "active", stage: 1, eta: "15 min" };
+    case "READY_FOR_PICKUP":
     case "ON_THE_WAY":
       return { status: "active", stage: 2, eta: "5 min" };
     case "DELIVERED":
@@ -148,7 +177,8 @@ async function loadOrders() {
 
     if (data.success && data.data?.orders) {
       const mappedOrders: Order[] = data.data.orders.map((order: any) => {
-        const { status, stage, eta } = mapStatusAndStage(order.status);
+        const orderType = order.orderType || "DELIVERY";
+        const { status, stage, eta } = mapStatusAndStage(order.status, orderType);
         
         // Find first item's image URL or use fallback
         const firstItem = order.items?.[0];
@@ -172,18 +202,25 @@ async function loadOrders() {
           coinsEarned: Number(order.coinsEarned ?? 0),
           date: formatDate(order.createdAt),
           status,
+          orderType,
+          pickupSpotName: order.pickupSpotName,
+          pickupSpotAddress: order.pickupSpotAddress,
           deliveryAddress: order.deliveryAddress,
           deliveryLat: order.deliveryLat ? Number(order.deliveryLat) : undefined,
           deliveryLng: order.deliveryLng ? Number(order.deliveryLng) : undefined,
         };
       });
 
-      // Track transitions to check if order went to "On the way" (stage 2)
+      // Track transitions to check if order went to stage 2 (On the way / Ready for pickup)
       if (state.orders.length > 0) {
         mappedOrders.forEach((newOrder) => {
           const oldOrder = state.orders.find((o) => o.id === newOrder.id);
           if (oldOrder && oldOrder.stage < 2 && newOrder.stage === 2) {
-            triggerOnTheWayNotification(newOrder);
+            if (newOrder.orderType === "PICKUP") {
+              triggerReadyForPickupNotification(newOrder);
+            } else {
+              triggerOnTheWayNotification(newOrder);
+            }
           }
         });
       }
@@ -241,7 +278,16 @@ export const ordersStore = {
   /**
    * Places a new order from the cart.
    */
-  async addOrder(params?: { deliveryAddress?: string; deliveryLat?: number; deliveryLng?: number; paymentMethod?: string; redeemCoins?: number }): Promise<string | null> {
+  async addOrder(params?: {
+    orderType?: "DELIVERY" | "PICKUP";
+    pickupSpotName?: string;
+    pickupSpotAddress?: string;
+    deliveryAddress?: string;
+    deliveryLat?: number;
+    deliveryLng?: number;
+    paymentMethod?: string;
+    redeemCoins?: number;
+  }): Promise<string | null> {
     try {
       const res = await fetch("/api/orders", {
         method: "POST",
@@ -319,8 +365,11 @@ export const ordersStore = {
     // Find local order to get DB ID
     const localOrder = state.orders.find((o) => o.id === id);
     const dbId = (localOrder as any)?.dbId || id;
+    const isPickup = localOrder?.orderType === "PICKUP";
 
-    const statusMap = ["CONFIRMED", "COOKING", "ON_THE_WAY", "DELIVERED"];
+    const statusMap = isPickup
+      ? ["CONFIRMED", "COOKING", "READY_FOR_PICKUP", "DELIVERED"]
+      : ["CONFIRMED", "COOKING", "ON_THE_WAY", "DELIVERED"];
     const status = statusMap[stage] || "CONFIRMED";
 
     try {

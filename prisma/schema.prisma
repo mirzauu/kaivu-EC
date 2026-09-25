@@ -178,6 +178,9 @@ model Order {
   deliveryAddress   String?     @map("delivery_address")
   deliveryLat       Decimal?    @map("delivery_lat") @db.Decimal(10, 7)
   deliveryLng       Decimal?    @map("delivery_lng") @db.Decimal(10, 7)
+  orderType         String      @default("DELIVERY") @map("order_type") // DELIVERY | PICKUP
+  pickupSpotName    String?     @map("pickup_spot_name")
+  pickupSpotAddress String?     @map("pickup_spot_address")
   paymentMethod     String?     @map("payment_method")
   estimatedDelivery DateTime?   @map("estimated_delivery")
   deliveredAt       DateTime?   @map("delivered_at")
@@ -199,6 +202,7 @@ enum OrderStatus {
   PENDING
   CONFIRMED
   COOKING
+  READY_FOR_PICKUP
   ON_THE_WAY
   DELIVERED
   CANCELLED
